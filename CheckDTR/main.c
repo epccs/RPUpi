@@ -24,6 +24,7 @@
 #include "../lib/pins_board.h"
 
 static unsigned long blink_started_at;
+static uint8_t Check_Diff_Bias;
 
 void blink(uint8_t count)
 {
@@ -58,12 +59,18 @@ int main(void)
     digitalWrite(HOST_nRTS, HIGH); // with AVR when the pin DDR is set as an input setting pin high will trun on a weak pullup 
     pinMode(HOST_nCTS, OUTPUT);
     digitalWrite(HOST_nCTS, HIGH);
-    
+
+    // setup DTR/DSR, they are just test points on RPUpi
+    pinMode(HOST_nDTR, INPUT);
+    digitalWrite(HOST_nDTR, HIGH); // another weak pullup 
+    pinMode(HOST_nDSR, OUTPUT);
+    digitalWrite(HOST_nDSR, LOW);
+
     // setup DTR transceiver
     pinMode(DTR_TXD,OUTPUT);
     digitalWrite(DTR_TXD,LOW);
     pinMode(DTR_DE,OUTPUT);
-    digitalWrite(DTR_DE,HIGH);
+    digitalWrite(DTR_DE, LOW);  // yep there is startup glitch, so disallow DTR pair driver until after the UART is running.
     pinMode(DTR_nRE,OUTPUT);
     digitalWrite(DTR_nRE,LOW);
 
@@ -80,12 +87,17 @@ int main(void)
     // do not use this firmware with a node board, or a Pi Zero 
     pinMode(nSS, OUTPUT); // nSS is connected to a open collector buffer used to pull the node's MCU nRESET low
     digitalWrite(nSS, LOW); 
-    pinMode(SHUTDOWN, OUTPUT);
-    digitalWrite(SHUTDOWN, LOW); // tell the Pi Zero to shutdown, it should not have been installed when usingthis firmware
+    pinMode(SHUTDOWN, INPUT);
+    digitalWrite(SHUTDOWN, HIGH); // weak pull-up. This is used to remove RX/TX lockout
 
     initTimers(); //Timer0 Fast PWM mode, Timer1 & Timer2 Phase Correct PWM mode.
 
     sei(); // Enable global interrupts to start TIMER0
+
+    // the UART has a startup glitch... this should keep it from to the DTR pair.
+    // NOTE UART is not initalized for this program, but will keep the logic.
+    _delay_ms(10);
+    digitalWrite(DTR_DE, HIGH); 
 
     while (1) 
     {
@@ -137,6 +149,18 @@ int main(void)
             blink(4);
             _delay_ms(1000);
         } while (digitalRead(DTR_RXD) != HIGH);
+
+        uint8_t shutdown_now = !digitalRead(SHUTDOWN);
+
+        // if the shutdown switch is pressed then remove RX/TX lockout
+        if (!Check_Diff_Bias && shutdown_now)
+        {
+            Check_Diff_Bias = 1;
+            digitalWrite(RX_DE, HIGH);  // allow RX pair driver to enable if FTDI_TX is low
+            digitalWrite(RX_nRE, LOW);  // enable RX pair recevior to output to local MCU's RX input
+            digitalWrite(TX_DE, HIGH); // allow TX pair driver to enable if TX (from MCU) is low
+            digitalWrite(TX_nRE, LOW);  // enable TX pair recevior to output to FTDI_RX input
+        }
     }    
 }
 

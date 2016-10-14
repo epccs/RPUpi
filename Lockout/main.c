@@ -49,14 +49,28 @@ int main(void)
 {
     pinMode(LED_BUILTIN, OUTPUT);
     digitalWrite(LED_BUILTIN, HIGH);
+    
+    // setup RTS/CTS so the host can send
     pinMode(HOST_nRTS, INPUT);
     digitalWrite(HOST_nRTS, HIGH); // with AVR when the pin DDR is set as an input setting pin high will trun on a weak pullup 
     pinMode(HOST_nCTS, OUTPUT);
     digitalWrite(HOST_nCTS, LOW);
+    
+    // setup DTR/DSR, they are just test points on RPUpi
     pinMode(HOST_nDTR, INPUT);
     digitalWrite(HOST_nDTR, HIGH); // another weak pullup 
     pinMode(HOST_nDSR, OUTPUT);
     digitalWrite(HOST_nDSR, LOW);
+
+    // setup DTR transceiver
+    pinMode(DTR_TXD, OUTPUT);
+    digitalWrite(DTR_TXD, LOW);
+    pinMode(DTR_DE, OUTPUT);
+    digitalWrite(DTR_DE, LOW);  // yep there is startup glitch, so disallow DTR pair driver until after the UART is running.
+    pinMode(DTR_nRE, OUTPUT);
+    digitalWrite(DTR_nRE, LOW);
+
+    // setup TX and RX transceiver so both the host and node are locked out from the differential pairs 
     pinMode(RX_DE, OUTPUT);
     digitalWrite(RX_DE, LOW);  // disallow RX pair driver to enable if FTDI_TX is low
     pinMode(RX_nRE, OUTPUT);
@@ -65,10 +79,10 @@ int main(void)
     digitalWrite(TX_DE, LOW); // disallow TX pair driver to enable if TX (from MCU) is low
     pinMode(TX_nRE, OUTPUT);
     digitalWrite(TX_nRE, HIGH);  // disable TX pair recevior to output to FTDI_RX input
-    pinMode(DTR_DE, OUTPUT);
-    digitalWrite(DTR_DE, LOW);  // seems to be a startup glitch ??? so disallow DTR pair driver to enable if DTR_TXD is low
-    pinMode(nSS, OUTPUT); // nSS is input to a Open collector buffer used to pull to MCU nRESET low
-    digitalWrite(nSS, HIGH); 
+
+    // this firmware allows the Pi Zero Serial to be used as a command line interface (e.g. its default setup).
+    pinMode(nSS, OUTPUT); // nSS is connected to a open collector buffer that can pull the node's MCU nRESET low
+    digitalWrite(nSS, LOW); // hold the node in RESET
     pinMode(SHUTDOWN, INPUT);
     digitalWrite(SHUTDOWN, HIGH); // with AVR when the pin DDR is set as an input setting pin high will trun on a weak pullup 
     
@@ -77,6 +91,11 @@ int main(void)
     initTimers(); //Timer0 Fast PWM mode, Timer1 & Timer2 Phase Correct PWM mode.
 
     sei(); // Enable global interrupts to start TIMER0
+
+    // the UART has a startup glitch... this should keep it from to the DTR pair.
+    // NOTE UART is not initalized for this program, but will keep the logic.
+    _delay_ms(10);
+    digitalWrite(DTR_DE, HIGH); 
 
     while (1) 
     {
