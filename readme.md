@@ -1,19 +1,16 @@
-![EPCCS.ORG Logo](http://epccs.org/indexes/Document/Logo/Documents/HeaderName.jpg "EPCCS.ORG Logo")
-# RPUadpt Software
+# RPUadpt shield for RS-422 over CAT5 with Pi Zero host
 
-From <http://epccs.org/hg/open/RPUpi/>
+![Status](https://raw.githubusercontent.com/epccs/RPUftdi/master/Hardware/status_icon.png "Status")
 
-![Status](http://epccs.org/indexes/Board/RPUpi/status_icon.png "RPUadpt Status")
+From <https://github.com/epccs/RPUpi>
 
 Shield used to connect a Pi Zero host to RPU_BUS node. RPU_BUS is multidrop RS-422 (RX and TX pairs) with management.
 
-![Schematic](http://epccs.org/indexes/Board/RPUpi/Documents/16197,Schematic.png "RPUadpt Schematic")
+![Schematic](https://raw.githubusercontent.com/epccs/RPUpi/master/Hardware/16197,Schematic.png "RPUpi Schematic")
 
-[RPUpi](http://epccs.org/indexes/Board/RPUpi/) Board development and hardware.
+[HackADay](https://hackaday.io/project/16424-rpupi).
 
-[Forum](http://rpubus.org/bb/viewforum.php?f=8) for notes and ideas about this hardware.
+[Forum](http://rpubus.org/bb/viewforum.php?f=8).
 
-I am using Makefiles and am hopeful the files can be kept to a manageable size.
-
-Makefile setup <http://epccs.org/indexes/Document/DvlpNotes/LinuxBoxCrossCompiler.html>
+The core files are in the /lib folder while each example has its own Makefile.
     
