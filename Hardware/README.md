@@ -58,9 +58,9 @@ This board connects a Pi Zero to a multi-drop RS-422 bus and a RPUno board.
             *during review the Design may change without changing the revision.
 ```
 
-Debugging and fixing problems i.e. [Schooling] [./Schooling/].
+Debugging and fixing problems i.e. [Schooling](./Schooling/)
 
-Setup and methods used for [Evaluation] [./Evaluation/]
+Setup and methods used for [Evaluation](./Evaluation/)
 
 
 # Design
@@ -93,12 +93,12 @@ The board is 0.063 thick, FR4, two layer, 1 oz copper with ENIG (gold) finish.
 
 ## Testing
 
-Check correct assembly and function with [Testing] [./Testing/]
+Check correct assembly and function with [Testing](./Testing/)
 
 
 # Bill of Materials
 
-Import the [BOM][./Design/16197,BOM.csv] into LibreOffice Calc (or Excel) with semicolon separated values, or use a text editor.
+Import the [BOM](./Design/16197,BOM.csv) into LibreOffice Calc (or Excel) with semicolon separated values, or use a text editor.
 
 
 # How To Use
@@ -113,7 +113,7 @@ The BCM2835 Broadcom chip used in the Raspberry Pi Zero is a Cortex-A7 (aka ARM1
 
 [Raspbian]: https://www.raspbian.org/
 
-__WARNING: The shield will be damaged if removed from a powered RPUno board. Before separating a shield from the RPUno it is very important to step back, take a breath and double check that all power sources are disconnected.
+__WARNING: The shield will be damaged if removed from a powered RPUno board. Before separating a shield from the RPUno it is very important to step back, take a breath and double check that all power sources are disconnected.__
 
 ## Serial
 
