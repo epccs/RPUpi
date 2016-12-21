@@ -43,19 +43,20 @@ This board connects a Pi Zero to a multi-drop RS-422 bus and a RPUno board.
 ![Status](./status_icon.png "RPUno Status")
 
 ```
-        ^1  Done: Design, Layout, BOM, Review*, Order Boards,
-            WIP: Assembly,
-            Todo: Testing, Evaluation.
+        ^2  Done: 
+            WIP: 
+            Todo: Design, Layout, BOM, Review*, Order Boards, Assembly, Testing, Evaluation.
+            *during review the Design may change without changing the revision.
+            Remove I2C form Pi, run I2C form MCU to bus manager with pullup.
+
+        ^1  Done: Design, Layout, BOM, Review*, Order Boards, Assembly,
+            WIP: Testing,
+            Todo: Evaluation.
             *during review the Design may change without changing the revision.
             Note: Power for the RPU_BUS is now taken from +5V of the MCU board. The 
             SBC (Pi Zero) takes power from VIN. Changed Pi pinout so it will mount to a 
             right angle 2x20 header (Pi Zero is perpendicular to the shield). 
-            Move management ICSP header so it clears the Pi Zero header.
-            
-        ^0  Done: Design, Layout, BOM, Review*, Order Boards, Assembly, Testing,
-            WIP: Evaluation.
-            Todo:  
-            *during review the Design may change without changing the revision.
+            Moved management ICSP header so it clears the Pi Zero header.
 ```
 
 Debugging and fixing problems i.e. [Schooling](./Schooling/)
