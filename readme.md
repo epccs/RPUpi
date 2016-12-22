@@ -1,4 +1,4 @@
-# RPUadpt
+# RPUpi
 
 From <https://github.com/epccs/RPUpi>
 
@@ -17,7 +17,7 @@ Shield used to connect a Pi Zero host to [RPUno], and a multidrop RS-422 (RPU_BU
 
 ## Status
 
-![Status](https://raw.githubusercontent.com/epccs/RPUftdi/master/Hardware/status_icon.png "Status")
+![Status](./Hardware/status_icon.png "Status")
 
 ## [Hardware](./Hardware)
 
