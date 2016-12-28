@@ -48,10 +48,11 @@ This board connects a Pi Zero to a multi-drop RS-422 bus and a RPUno board.
             Todo: Design, Layout, BOM, Review*, Order Boards, Assembly, Testing, Evaluation.
             *during review the Design may change without changing the revision.
             Remove I2C form Pi, run I2C form MCU to bus manager with pullup.
+            Add pull up to the Pi Tx line.
 
-        ^1  Done: Design, Layout, BOM, Review*, Order Boards, Assembly,
-            WIP: Testing,
-            Todo: Evaluation.
+        ^1  Done: Design, Layout, BOM, Review*, Order Boards, Assembly, Testing,
+            WIP: Evaluation.
+            Todo: 
             *during review the Design may change without changing the revision.
             Note: Power for the RPU_BUS is now taken from +5V of the MCU board. The 
             SBC (Pi Zero) takes power from VIN. Changed Pi pinout so it will mount to a 
@@ -77,8 +78,8 @@ The board is 0.063 thick, FR4, two layer, 1 oz copper with ENIG (gold) finish.
 ## Electrical Parameters (Typical)
 
 ```
-        VIN pin needs 7V to 30V at 15W for SMPS regulator that powers Pi Zero
-        5V is used to power RPU_BUS
+        VIN pin needs 7V to 30V (RPUno has 12.8V) at 4W for SMPS regulator that powers Pi Zero
+        5V pin needs 150mA (RPUno has over 1A) to power RPU_BUS
         This is OSH so refer to the parts used for storage and operation limits.
 ```
 
@@ -108,7 +109,7 @@ Import the [BOM](./Design/16197,BOM.csv) into LibreOffice Calc (or Excel) with s
 
 [Linux] is used on the Pi Zero. Bascily the Pi Zero is a Single Board Computer (SBC) running Linux. It can be used as a Linux host machine and has enough memory and processing power for applications (like the AVR toolchain) as well as self-hosted compiling for its own applications and services like an MQTT broker. It can even act as a small SCADA system for multiple RPUno boards.
 
-[Linux]: ./linux.md
+[Linux]: ./Testing/linux.md
 
 The BCM2835 Broadcom chip used in the Raspberry Pi Zero is a Cortex-A7 (aka ARM11) running at 1 GHz it is well supported by many Linux distributions, with [Raspbian] being the main distribution that the Raspberry Pi Foundation points to. 
 

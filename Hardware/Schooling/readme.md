@@ -4,9 +4,17 @@ Some lessons I learned doing RPUpi.
 
 # Table Of Contents:
 
+2. [ ^1 Pi Tx Pull-Up](#1-pi-tx-pull-up)
 2. [ ^1 I2C](#1-i2c)
 1. [ ^0 U3 Placed Backward](#0-u3-placed-backward)
 
+
+## ^1 Pi Tx Pull-Up
+
+Add a 10k pull up to the Pi Zero Tx line. This will automatically disable the transceiver driver when the Pi is not powered or is absent.
+
+![Pi Tx Pull Up Pads](./16197^1,PiTxPullUpPads.png "Pi Tx Pull Up Pads")
+![Pi Tx With 10k Pull Up](./16197^1,PiTxWith10kPullUp.jpg "Pi Tx With 10k Pull Up")
 
 ## ^1 I2C
 

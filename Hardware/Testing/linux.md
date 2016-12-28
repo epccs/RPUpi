@@ -10,9 +10,11 @@ This is a list of notes regarding Linux things for RPUpi.
 3. [Network Setup](#network-setup)
 4. [SSH](#ssh)
 5. [Samba](#samba)
-6. [Packages used for the AVR toolchain](#packages-used-for-the-avr-toolchain)
-7. [GPIO, I2C, and SPI](#gpio-i2c-and-spi)
-8. [WiFi Dropout](#wiFi-dropout)
+6. [Serial](#serial)
+7. [Packages used for the AVR toolchain](#packages-used-for-the-avr-toolchain)
+8. [Avrdude](#avrdude)
+9. [GPIO, I2C, and SPI](#gpio-i2c-and-spi)
+10. [WiFi Dropout](#wiFi-dropout)
 
 
 ## Prepare SD Card
@@ -211,6 +213,21 @@ testparm
 \\raspberrypi\Samba
 ```
 Note the Pi also shows the user home folders so it has a setting that Ubuntu did not... do I care... no.
+
+
+## Serial 
+
+To use the serial port just run
+
+```
+sudo raspi-config
+```
+
+go to Advanced Options/Serial. Also the UART may be disabled in kernel. E.g. set enable_uart in /boot/config.txt then reboot.
+
+```
+enable_uart=1
+```
 
 
 ## Packages used for the AVR toolchain
