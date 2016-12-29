@@ -49,6 +49,7 @@ This board connects a Pi Zero to a multi-drop RS-422 bus and a RPUno board.
             *during review the Design may change without changing the revision.
             Remove I2C form Pi, run I2C form MCU to bus manager with pullup.
             Add pull up to the Pi Tx line.
+            Add 10k on SCK and MOSI.
 
         ^1  Done: Design, Layout, BOM, Review*, Order Boards, Assembly, Testing,
             WIP: Evaluation.

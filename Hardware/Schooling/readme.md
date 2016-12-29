@@ -4,10 +4,21 @@ Some lessons I learned doing RPUpi.
 
 # Table Of Contents:
 
-2. [ ^1 Pi Tx Pull-Up](#1-pi-tx-pull-up)
-2. [ ^1 I2C](#1-i2c)
-1. [ ^0 U3 Placed Backward](#0-u3-placed-backward)
+4. [^1 Open SCK and MOSI](#1-open-sck-and-mosi)
+3. [^1 Pi Tx Pull-Up](#1-pi-tx-pull-up)
+2. [^1 I2C](#1-i2c)
+1. [^0 U3 Placed Backward](#0-u3-placed-backward)
 
+
+## ^1 Open SCK and MOSI
+
+The 74LVC07 can damage the AVR by sinking current, therefore I need to open these traces and place a 10k Ohm resistor. This will allow the AVR to drive without causing damage when the 74LVC07's open drain output is sinking.
+
+![Open SCK MOSI](./16197^1_OpenSckMosi.png "Open SCK MOSI")
+
+Some nasty rework to add the 10k for more evaluation.
+
+![10k ON SCK MOSI](./16197^1_10kOnSckMosi.jpg "10k ON SCK MOSI")
 
 ## ^1 Pi Tx Pull-Up
 
@@ -15,6 +26,7 @@ Add a 10k pull up to the Pi Zero Tx line. This will automatically disable the tr
 
 ![Pi Tx Pull Up Pads](./16197^1,PiTxPullUpPads.png "Pi Tx Pull Up Pads")
 ![Pi Tx With 10k Pull Up](./16197^1,PiTxWith10kPullUp.jpg "Pi Tx With 10k Pull Up")
+
 
 ## ^1 I2C
 
