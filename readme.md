@@ -4,7 +4,7 @@ From <https://github.com/epccs/RPUpi>
 
 ## Overview
 
-Shield used to connect a Pi Zero host to [RPUno], and a multidrop RS-422 (RPU_BUS) that can connect additional RPUno with [RPUadpt] shields.
+Shield used to connect a Pi Zero host to a multidrop RS-422 (RPU_BUS) and an [RPUno] or [Irrigate7]. The multidrop bus can connect additional [RPUno] or [Irrigate7] with [RPUadpt] shields.
 
 [HackADay](https://hackaday.io/project/16424-rpupi)
 
@@ -13,6 +13,7 @@ Shield used to connect a Pi Zero host to [RPUno], and a multidrop RS-422 (RPU_BU
 [OSHpark](https://oshpark.com/shared_projects/KWIJgjF8)
 
 [RPUno]: https://github.com/epccs/RPUno
+[Irrigate7]: https://github.com/epccs/Irrigate7
 [RPUadpt]: https://github.com/epccs/RPUadpt
 [RPUftdi]: https://github.com/epccs/RPUftdi
 
@@ -26,7 +27,7 @@ Hardware files are in Eagle, there is also some testing, evaluation, and schooli
 
 ## Example
 
-A Pi Zero Host computer issues commands to the RPU_BUS microcontrollers over a serial (UART) interface. The microcontrollers run a command processor that accepts interactive textual commands that operate the microcontroller peripherals as a bare metal system. This means the microcontroller can perform event capture task for a flow meter or control an array of half-bridge power outputs to run a BLDC water pump. 
+A Pi Zero host computer controls the microcontrollers through the serial (UART) interface. The microcontrollers run a command processor which accepts interactive textual commands and operates the peripherals as a bare metal system. The microcontroller firmware can be compiled from source that is version managed on GitHub, it can then be uploaded to the targets bootloader with avrdude. The Pi Zero host can be remotely accessed using SSH. The Pi Zero does not need to expose a raw serial port to the network because the microcontrollers development toolchain can reside on the Pi Zero.
 
 ![MultiDrop](./Hardware/Documents/MultiDrop.png "MultiDrop")
 
