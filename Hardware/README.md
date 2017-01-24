@@ -2,7 +2,9 @@
 
 ## Overview
 
-This board connects a Pi Zero to a multi-drop RS-422 bus and a RPUno board.
+This board connects a Pi Zero to a multi-drop RS-422 bus and a [RPUno] board.
+
+[RPUno]: https://github.com/epccs/RPUno
 
 ## Inputs/Outputs/Functions
 
@@ -18,7 +20,7 @@ This board connects a Pi Zero to a multi-drop RS-422 bus and a RPUno board.
 ## Uses
 
 ```
-        Use solar power (e.g. 20W PV needed) from a RPUno to run a Pi Zero
+        Use solar power (e.g. 20W PV needed) from a [RPUno] to run a Pi Zero
         Pi with Linux, ssh, Python, and AVR toolchain is a compelling platform.
         Allows (locally compiled) updates without exposing serial ports to a network.
 ```
@@ -26,7 +28,7 @@ This board connects a Pi Zero to a multi-drop RS-422 bus and a RPUno board.
 ## Notice
 
 ```
-        If the SBC bootloads local RPUno it must not turn off VIN power at reset.
+        If the SBC bootloads local [RPUno] it must not turn off VIN power at reset.
 ```
 
 
@@ -40,7 +42,7 @@ This board connects a Pi Zero to a multi-drop RS-422 bus and a RPUno board.
 
 # Status
 
-![Status](./status_icon.png "RPUno Status")
+![Status](./status_icon.png "RPUpi Status")
 
 ```
         ^2  Done: 
@@ -50,6 +52,7 @@ This board connects a Pi Zero to a multi-drop RS-422 bus and a RPUno board.
             Remove I2C form Pi, run I2C form MCU to bus manager with pullup.
             Add pull up to the Pi Tx line.
             Add 10k on SCK and MOSI.
+            Have Pi Zero 3V3 power the 74LVC07, ouputs hi-z when Pi is off and inputs are 5V tolerant (even when off).
 
         ^1  Done: Design, Layout, BOM, Review*, Order Boards, Assembly, Testing,
             WIP: Evaluation.

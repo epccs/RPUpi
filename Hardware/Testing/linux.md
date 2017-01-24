@@ -15,6 +15,7 @@ This is a list of notes regarding Linux things for RPUpi.
 8. [Avrdude](#avrdude)
 9. [GPIO, I2C, and SPI](#gpio-i2c-and-spi)
 10. [WiFi Dropout](#wiFi-dropout)
+11. [Package Updates](#package-updates)
 
 
 ## Prepare SD Card
@@ -217,16 +218,25 @@ Note the Pi also shows the user home folders so it has a setting that Ubuntu did
 
 ## Serial 
 
-To use the serial port just run
+To use the serial port select Interfacing Options => Serial and stop using it for a login (Pi needs another true UART).
 
 ```
 sudo raspi-config
 ```
 
-go to Advanced Options/Serial. Also the UART may be disabled in kernel. E.g. set enable_uart in /boot/config.txt then reboot.
+The UART also needs enabled for the kernel. E.g. set enable_uart in /boot/config.txt then reboot.
 
 ```
 enable_uart=1
+```
+
+I use picocom to connect with the serial devices. Make sure the user (rsutherland is for myself) is in the dialout group.
+
+```
+sudo apt-get install picocom
+sudo usermod -a -G dialout rsutherland
+# restart the ssh login to gain the new group 
+picocom -b 115200 /dev/ttyAMA0
 ```
 
 
@@ -303,4 +313,17 @@ restart
 
 ```
 sudo shutdown -r now
+```
+
+
+## Package Updates
+
+```
+# resynchronize
+sudo apt-get update
+# upgrade + handles dependencies
+sudo apt-get dist-upgrade
+# remove stale dependencies
+sudo apt-get autoremove
+sudo apt-get clean
 ```

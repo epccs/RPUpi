@@ -4,10 +4,35 @@ Some lessons I learned doing RPUpi.
 
 # Table Of Contents:
 
+6. [^1 Serial When Powered Down](#1-serial-when-powered-down)
+5. [^1 Pi Zero Placement](#1-pi-zero-placement)
 4. [^1 Open SCK and MOSI](#1-open-sck-and-mosi)
 3. [^1 Pi Tx Pull-Up](#1-pi-tx-pull-up)
 2. [^1 I2C](#1-i2c)
 1. [^0 U3 Placed Backward](#0-u3-placed-backward)
+
+
+## ^1  Serial When Powered Down
+
+When the Pi is powered down the nRTS line, which is active low seems to become active. Also, HOST_TX pulls down and causes a bus lock-up. Finally nCTS, HOST_RX sinks too much current from the transceivers without some sort of protection when Pi is powered down.
+
+ Another 74LVC07 with Pi as target is needed to fix all this.
+
+
+## ^1 Pi Zero Placement
+
+The Pi Zero fits but if it can be moved in that would be helpful. I think the SMPS can rotate and I can ditch the SWD port.
+
+![Pi Zero Placement](./RPUpi^1WithRPUno^5.jpg "Pi Zero Placement")
+
+
+## ^1 Target Should Power 74LVC07 
+
+In this case the Pi is the target, and it should power the 74LVC07 buffer I used for level shifting. If the target is off it disables the IC (and the open drain is hi-z). If the target has 3.3V the IC is on and tolerant of 5V on its inputs. The outputs can be pulled up to 5V or 3.3V as needed. Also the inputs are tolerant of 5V when power is off.
+
+![SPI Level Shift](./SPI_Lvl_Shift_With_Pwr_Down_Target.png "SPI Level Shift With Power Down Target")
+
+Note: I am using the term target sort of like how I view ICSP, which is to say the thing that will get powered off. In this case oddly enough the bare metal  board (RPUno) will not power off, and is therefor not what I'm calling the target (I need to find a better way to say this...).
 
 
 ## ^1 Open SCK and MOSI
