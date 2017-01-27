@@ -31,6 +31,17 @@ A Pi Zero host computer controls the microcontrollers through the serial (UART) 
 
 ![MultiDrop](./Hardware/Documents/MultiDrop.png "MultiDrop")
 
+To bootload the AVR from the Pi serial port, first it needs to be disabled as a [debug port] and then enabled for use as a [serial] device, also the [RTS and CTS] pin functions can be enabled (since nRTS can be used in place of nDTR, to start the bootloader). 
+
+[debug port]: ./Hardware/Testing/linux.md#serial
+[serial]: ./Hardware/Testing/linux.md#serial
+[RTS and CTS]: ./RPiRtsCts
+
+The Pi also needs a way to [halt] from an onboard button push. When mounted on an [RPUno] the shield VIN pin can be powered off using a somewhat involved [power management] firmware technique.
+
+[halt]: ./Shutdown
+[power management]: https://github.com/epccs/RPUno/tree/master/PwrMgt
+
 ## AVR toolchain
 
 The core files for this board are in the /lib folder. Each example has its files and a Makefile in its own folder. The toolchain packages that I use are available on Ubuntu and Raspbian. 
