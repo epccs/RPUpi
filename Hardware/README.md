@@ -46,22 +46,21 @@ This board connects a Pi Zero to a multi-drop RS-422 bus and a [RPUno] board.
 
 ```
         ^2  Done: 
-            WIP: 
-            Todo: Design, Layout, BOM, Review*, Order Boards, Assembly, Testing, Evaluation.
+            WIP: Design,
+            Todo:  Layout, BOM, Review*, Order Boards, Assembly, Testing, Evaluation.
             *during review the Design may change without changing the revision.
-            Remove I2C form Pi, run I2C form MCU to bus manager with pullup.
+            Run I2C form MCU board to bus manager with 3V3 pull-up (not to Pi).
+            Add Option to use I2C1 with a ATmega328pb (note the Pi will pull these lines down when power is off).
             Add pull up to the Pi Tx line.
-            Add 10k on SCK and MOSI.
-            Have Pi Zero 3V3 power the 74LVC07, ouputs hi-z when Pi is off and inputs are 5V tolerant (even when off).
+            Add 10k on SCK and MOSI so the 74LVC07 can't damage the MCU board's SPI pins.
+            Have PI3V3 power the 74LVC07, ouputs hi-z when power is off and inputs are 5V tolerant (even when off).
+            Move Pi back .2"
+            Add 74LVC07 buffer to Pi seril interface so it will hi-z nRTS and PI_TX when PI3V3 is off.
+            populate with 12MHz crystal.
 
         ^1  Done: Design, Layout, BOM, Review*, Order Boards, Assembly, Testing,
             WIP: Evaluation.
-            Todo: 
-            *during review the Design may change without changing the revision.
-            Note: Power for the RPU_BUS is now taken from +5V of the MCU board. The 
-            SBC (Pi Zero) takes power from VIN. Changed Pi pinout so it will mount to a 
-            right angle 2x20 header (Pi Zero is perpendicular to the shield). 
-            Moved management ICSP header so it clears the Pi Zero header.
+            location: 2017-2-6 Test Bench, used as an RPUadpt with an RPUno^4.
 ```
 
 Debugging and fixing problems i.e. [Schooling](./Schooling/)
