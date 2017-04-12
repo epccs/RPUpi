@@ -48,7 +48,7 @@ The core files for this board are in the /lib folder. Each example has its files
 
 ```
 sudo apt-get install git gcc-avr binutils-avr gdb-avr avr-libc avrdude
-git clone https://github.com/epccs/RPUno
+git clone https://github.com/epccs/RPUpi
 ```
 
 [gcc-avr](http://packages.ubuntu.com/search?keywords=gcc-avr)

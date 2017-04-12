@@ -49,14 +49,14 @@ This board connects a Pi Zero to a multi-drop RS-422 bus and a [RPUno] board.
             WIP: Review*,
             Todo:  Order Boards, Assembly, Testing, Evaluation.
             *during review the Design may change without changing the revision.
-            Run I2C form MCU board to bus manager with 3V3 pull-up (not to Pi).
+            Run I2C from MCU board to bus manager with 3V3 pull-up (not to Pi).
             Add Option to use I2C1 with a ATmega328pb (note the Pi will pull these lines down when power is off).
             Add pull up to the Pi Tx line.
             Add 10k on SCK and MOSI so the 74LVC07 can't damage the MCU board's SPI pins.
-            Have PI3V3 power the 74LVC07, ouputs hi-z (IOFF) when power is off.
+            Have PI3V3 power the 74LVC07, outputs hi-z (IOFF) when power is off.
             Move Pi back .2"
-            Add 74LVC07 buffer to Pi seril interface so it will hi-z (IOFF) nRTS and PI_TX when PI3V3 is off.
-            populate with 12MHz crystal to use 250kbit rate on DTR pair.
+            Add 74LVC07 buffer to Pi serial interface so it will hi-z (IOFF) nRTS and PI_TX when PI3V3 is off.
+            Populate with 12MHz crystal to use 250kbit rate on DTR pair.
 
         ^1  Done: Design, Layout, BOM, Review*, Order Boards, Assembly, Testing,
             WIP: Evaluation.
