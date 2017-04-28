@@ -2,7 +2,7 @@
 
 ## Overview
 
-This board connects a Pi Zero to a multi-drop RS-422 bus and a [RPUno] board.
+This board connects a Pi Zero (not provided) to a multi-drop RS-422 bus and a [RPUno] board. 
 
 [RPUno]: https://github.com/epccs/RPUno
 
@@ -28,7 +28,13 @@ This board connects a Pi Zero to a multi-drop RS-422 bus and a [RPUno] board.
 ## Notice
 
 ```
-        If the SBC bootloads its local [RPUno] it must not turn off VIN power after the reset.
+        If the Pi Zero bootloads its local [RPUno] then the VIN power must 
+        not turn off after reset (at time of writing the defaut setup should 
+        work). 
+        
+        I advise acquiring a Pi Zero, setting it up on your own network and 
+        learn how to use the serial, I2C, and SPI interfaces before acquiring 
+        this board. 
 ```
 
 
@@ -162,14 +168,28 @@ Card [corruption] seems to happen when the SD card is doing wear leveling operat
 
 ## Agile
 
-I'm not an Agile developer but someone once tried (and failed) to encapsulate some good ideas. When developing software or hardware (the RPUpi for example) the only thing that seems to get results is to first make something, anything really, and then start fixing the broken stuff. Add new stuff to push it in the desired direction (that is not evolution BTW, but it is also not intelligent design, it is something in between). Keep iterating by fixing, and adding (and sometimes change direction when needed). It will never be truly finished, but at some point, things start to click and reveal if it is useful or useless. To speed up this process with software development the hardware needs to be easy to remotely program, and I guess I like how an AVR with a serial bootloader does this trick. It allows full hardware control by uploading an executable binary image compiled from C (or C++ if you can deal with heap and stack usage better than I). Allowing a peasant, like myself, direct access to the machine registers is normally a bad idea, but that is what maximizes options. Understand that hardware of this nature has no safety guards, again the uploaded machine code has full register level access, the training wheels are off.
+I'm not an Agile developer but when developing software or hardware the only thing that seems to get results is to make the first attempt at something, and then start fixing the broken stuff. Then add new stuff to push it in the desired direction. Keep iterating by fixing, and adding (and sometimes change direction when needed). It will never be truly finished, but at some point, things start to click and reveal if it is useful or useless. 
 
 
 ## Security
+
+Hardware with connectivity is easy to do presently but most of it ends up in the landfill quickly. The problem is that connectivity is like an exposed surface and is difficult to maintain. A device with RS-232 has a very limited connectivity surface. Only the serial interface can be used to control the device and it is connected to a computer (e.g. Pi Zero) that the user maintains. RS-422 connectivity is similar to RS-232 but the differential pairs can run over a 1km, and to multiple devices. 
+
+Serial software is typically done to control a UART for RS-232 and does not know how to control the differential transceiver for RS-422. This problem can be compensated for if the transceiver includes hardware for failsafe biasing, which basically means the differential lines have a defined state when not driven. When failsafe is used the transceiver can also enable its transmitter automatically for the opposite state.  That results in the ability of software done for RS-232 to also work over RS-422. Connecting multiple devices over RS-422 to a single computer reduces the maintenance work load. 
+
+Programming the devices on the serial interface is less about security and more about keeping things useful. I like how an AVR with a serial bootloader does this. It uploads programs that have full hardware control since they are an executable binary image compiled from C (or C++). This allows me direct access to the machine registers which maximizes what I can do with the controller. Understand that hardware of this nature has no safety guards since the uploaded machine code has full register level access. I would suggest only using boards with sufficient documentation and have the necessary hardware safety guards.
 
 A Yun [worm].
 
 [worm]: http://hackaday.com/2016/11/11/arduworm-a-malware-for-your-arduino-yun/
 
-One lesson I see is to not expose the raw serial hardware on a network. Although I try to keep track of the serial line length and ignore bytes when a line is too long in my examples, I bet there are areas that leak. I use C and avoid the malloc functions so the stack memory alone is used (not heap memory). Arduino compiles with C++ which mixes heap and stack memory usage in complicated ways I don't understand (and have had problems with). On the Pi C++ is fine since Linux can manage the heap fairly well, but bare metal does nothing for heap memory management it just makes a fragmented mess.  Anyway I tend to use Python on the Pi, so my C++ is never going to imporve.
+One lesson I see is to not expose the raw serial hardware on a network (i.e. minimize the exposed surface). Although I try to keep track of the serial line length and ignore bytes when a line is too long in my examples, I bet there are mistakes. Since I don't set the Pi Zero to show the network its serial interface the mistakes on my AVR software should not be a security problem. 
 
+
+## AVR vs ARM
+
+To prevent heap memory fragmentation on the AVR I use C and avoid the malloc functions. This means only the stack and static memory is used. Compiling with C++ can mix heap and stack memory usage in complicated ways I don't understand (and have had problems with). On the Pi, C++ is fine since Linux can manage the heap, but bare metal does nothing for heap memory management it just makes a fragmented mess.  Anyway, I tend to use Python on the Pi, so my C++ is not good enough to know when I am using the heap.
+
+The AVR has a single clock domain (for the most part), so the GPIO, peripherals and flash memory operate in a predictable and repeatable way. That is to say, an AVR will pull an instruction from flash and use it to fiddle with an output in a predictable consistent way, however a fast machine may need to wait for instructions and will experience timing variations from the instruction cashing system as well as other clock domain transitions that cause timing variability in devices that run with multiple clock domains (e.g. MCU at higher speeds have to pre-fetch instructions from flash that runs in a slower clock domain, and write to GPIO in yet another slower clock domain).
+
+When a task is small and/or simple enough to be done with an AVR it takes less time and effort to just use an AVR. It uses the same GCC toolchain as the big boys (GCC also does x86, ARM, MIPS...), but the AVR is a simple device with a fraction of the documentation to understand.
