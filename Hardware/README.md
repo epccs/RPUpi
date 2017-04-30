@@ -51,9 +51,9 @@ This board connects a Pi Zero (not provided) to a multi-drop RS-422 bus and a [R
 ![Status](./status_icon.png "RPUpi Status")
 
 ```
-        ^2  Done: Design, Layout, BOM,
-            WIP: Review*,
-            Todo:  Order Boards, Assembly, Testing, Evaluation.
+        ^2  Done: Design, Layout, BOM, Review*,
+            WIP: Order Boards,
+            Todo:  Assembly, Testing, Evaluation.
             *during review the Design may change without changing the revision.
             Run I2C from MCU board to bus manager with 3V3 pull-up (not to Pi).
             Add Option to use I2C1 with a ATmega328pb (note the Pi will pull these lines down when power is off).
