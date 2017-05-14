@@ -1,0 +1,55 @@
+#!/bin/bash
+# Copyright (C) 2016  Ronald Steven Sutherland
+#
+# This program is free software; you can redistribute it and/or modify
+# it under the terms of the GNU General Public License as published by
+# the Free Software Foundation; either version 2 of the License, or
+# (at your option) any later version.
+#
+# This program is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU General Public License for more details.
+#
+# You should have received a copy of the GNU General Public License
+# along with this program; if not, write to the Free Software
+# Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
+#
+# Install keys in ~/.ssh/authorized_keys
+
+if [ $# -ne 1 ]
+then
+	echo "make keys DSA, RSA. usable for ssh, scp, sftp"
+	echo "usage: ${0##*/} [<user>@]<server>"
+	exit 1
+fi
+local_svr=`hostname`
+if [ ! -f ~/.ssh/id_dsa.pub ]
+then
+	if [ ! -f ~/.ssh/id_dsa ]
+	then
+		ssh-keygen -f ~/.ssh/id_dsa -t dsa -P ""
+	else
+		ssh-keygen -y -f ~/.ssh/id_dsa > ~/.ssh/id_dsa.pub
+	fi
+fi
+if [ ! -f ~/.ssh/id_rsa.pub ]
+then
+	if [ ! -f ~/.ssh/id_rsa ]
+	then
+		ssh-keygen -f ~/.ssh/id_rsa -t rsa -P ""
+	else
+		ssh-keygen -y -f ~/.ssh/id_rsa > ~/.ssh/id_rsa.pub
+	fi
+fi
+
+echo "Installing keys on $1 in ~/.ssh/authorized_keys2"
+(	echo 'mkdir -p ~/.ssh';
+	echo 'chmod 700 ~/.ssh';
+	echo 'cat ~/.ssh/authorized_keys2 | grep -v '"$local_svr"' > ~/.ssh/authorized_keys2';
+	echo 'cat << EOF >> ~/.ssh/authorized_keys2';
+	cat ~/.ssh/id_dsa.pub;
+	cat ~/.ssh/id_rsa.pub;
+	echo 'EOF';
+	echo 'chmod 600 ~/.ssh/authorized_keys2') | ssh -4 $1
+

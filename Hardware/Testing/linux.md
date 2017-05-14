@@ -129,7 +129,7 @@ sudo ifup wlan0
 
 # also see WiFi Dropout (bellow) after getting updates
 
-# I want some versions just for a referance point
+# some versions just for a referance point
 uname -a
 Linux raspberrypi 4.4.11+ #888 Mon May 23 20:02:58 BST 2016 armv6l GNU/Linux
 python3
@@ -159,14 +159,15 @@ sudo nano /etc/ssh/sshd_config
 # I have a bash scrip to do some of the grunt work
 [mkdir bin]
 cd bin
-wget http://epccs.org/indexes/Document/DvlpNotes/mkeys
+wget https://github.com/epccs/RPUpi/blob/master/Hardware/Testing/mkeys
 chmod u+x mkeys
-# note if you have a private key you want to use place it in .ssh now
+# note if you have a private key (e.g. id_dsa or id_rsa file) and you want to use it then place it in the .ssh folder now
 ~/bin/mkeys localhost
-# that should have setup the keys so try to log in
+# that should have built the public (and if missing a new private) key and added the public key to the authorized file 
+# now try to log in (it should not ask for a password)
 ssh localhost
 # if that works one of the putty tools can convert the private key for use on Windows.
-# mkeys can place the public keys on other Linux machines, e.g. conversion is a 
+# mkeys can also place the public key on the authorized file of other Linux machines, e.g. conversion is a 
 # Ubuntu 16.04 and it's zeroconf seems to work (try with a ping first).
 ~/bin/mkeys conversion.local
 ssh conversion.local

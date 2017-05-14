@@ -51,9 +51,9 @@ This board connects a Pi Zero (not provided) to a multi-drop RS-422 bus and a [R
 ![Status](./status_icon.png "RPUpi Status")
 
 ```
-        ^2  Done: Design, Layout, BOM, Review*,
-            WIP: Order Boards,
-            Todo:  Assembly, Testing, Evaluation.
+        ^2  Done: Design, Layout, BOM, Review*, Order Boards, Assembly, 
+            WIP: Testing,
+            Todo: Evaluation.
             *during review the Design may change without changing the revision.
             Run I2C from MCU board to bus manager with 3V3 pull-up (not to Pi).
             Add Option to use I2C1 with a ATmega328pb (note the Pi will pull these lines down when power is off).
@@ -113,6 +113,20 @@ Import the [BOM](./Design/16197,BOM.csv) into LibreOffice Calc (or Excel) with s
 
 
 # How To Use
+
+## ICSP
+
+[ArduinoISP] sketch on an [Uno] with a SPI level converter is the [ICSP] tool I use to program the bus manager with the [Host2Remote] firmware. I then plug the RPUpi into an [RPUno] board and load my application firmware (e.g. [Solenoid] is used with a [K3] board). The RPUpi's Pi Zero host can communicate through RS-422 with other RPUno boards that have an [RPUadpt] pluged onto them. The additional boards will need the [Remote] firmware on there bus manager and have the rpu_bus address set in EEPROM.
+
+[ArduinoISP]: https://github.com/arduino/Arduino/blob/master/build/shared/examples/11.ArduinoISP/ArduinoISP/ArduinoISP.ino
+[Uno]: https://www.adafruit.com/product/50
+[ICSP]: https://github.com/epccs/Driver/tree/master/ICSP
+[Host2Remote]: ../Host2Remote
+[Remote]: https://github.com/epccs/RPUadpt/tree/master/Remote
+[Solenoid]: https://github.com/epccs/RPUno/tree/master/Solenoid
+[K3]: https://github.com/epccs/Driver/tree/master/K3
+[RPUadpt]: https://github.com/epccs/RPUadpt
+[RPUno]: https://github.com/epccs/RPUno
 
 ## Pi Zero Setup 
 
