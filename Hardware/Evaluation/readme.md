@@ -7,8 +7,24 @@ This shows the setup and method used for evaluation of RPUno.
 
 # Table Of Contents:
 
-2. [^1 Vertical Mounting](#1-vertica-mounting)
-1. [^0 Mounting](#0-mounting)
+4. ^2 Clearance IDE Connector For ICSP Tool
+3. ^2 Clearance Between Pi and Plugable
+2. ^1 Vertical Mounting
+1. ^0 Mounting
+
+
+## ^2 Clearance IDE Connector For ICSP Tool
+
+ICSP tools normaly have an IDE connector, now it has room to fit.
+
+![Clearance IDE ICSP](./16197^2,ClearanceIdeConnForICSP.jpg "Clearance IDE ICSP")
+
+
+## ^2 Clearance Between Pi and Plugable
+
+The Pi does not overhang the plugable connectors now, but it is a tight fit.
+
+![Clearance Pi Plugable](./16197^2,ClearanceBetweenPiAndPlugable.jpg "Clearance Pi Plugable")
 
 
 ## ^1 Vertical Mounting

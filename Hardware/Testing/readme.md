@@ -7,25 +7,25 @@ This is a list of Test preformed on each RPUpi after assembly.
 
 # Table Of Contents:
 
-1. [Basics](#basics)
-2. [Assembly check](#assembly-check)
-3. [IC Solder Test](#ic-solder-test)
-4. [Bias 3V3](#bias-3v3)
-5. [Bias +5V and Check LDO Regulator](#bias-5v-and-check-ldo-regulator)
-6. [Set MCU Fuse](#set-mcu-fuse)
-7. [Load CheckDTR Firmware](#load-checkdtr-firmware)
-8. [Check Differential Bias](#check-differential-bias)
-9. [Differential Loopback with TX Driver](#differential-loopback-with-tx-driver)
-10. [Differential Loopback with RX Driver](#differential-loopback-with-rx-driver)
-11. [Load Lockout Firmware](#load-lockout-firmware)
-12. [Pi Zero without SD card](#pi-zero-without-sd-card)
-13. [Boot Pi Zero](#boot-pi-zero)
-14. [With Pi Zero and Wi-Fi](#with-pi-zero-and-wi-fi)
+1. Basics
+2. Assembly check
+3. IC Solder Test
+4. Bias +5V and Check LDO Regulator
+5. Set MCU Fuse
+6. Load CheckDTR Firmware
+7. Check Differential Bias
+8. Differential Loopback with TX Driver
+9. Differential Loopback with RX Driver
+10. Bias VIN and Check +5V_2PI from SMPS
+11. Load Lockout Firmware
+12. Pi Zero without SD card
+13. Boot Pi Zero
+14. With Pi Zero and Wi-Fi
 
 
 ## Basics
 
-These tests are for an assembled RPUno board 16197^0 which may be referred to as a Unit Under Test (UUT). If the UUT fails and can be reworked then do so, otherwise it needs to be scraped. 
+These tests are for an assembled RPUpi board 16197^2 which may be referred to as a Unit Under Test (UUT). If the UUT fails and can be reworked then do so, otherwise it needs to be scraped. 
 
 **Warning: never use a soldering iron to rework ceramic capacitors due to the thermal shock.**
     
@@ -36,7 +36,7 @@ Items used for test.
 
 ## Assembly check
 
-After assembly check the circuit carefully to make sure all parts are soldered and correct. The device marking is used as the part name on the schematic and assembly drawing.  In other words, the name KB33 (U6 on ^1) is actually the device marking. Check the bill of materials to figure out what the device is, which shows that it is a Micrel MIC5205-3.3YM5.
+After assembly check the circuit carefully to make sure all parts are soldered and correct. The device marking is used as the part name on the schematic and assembly drawing. Check the bill of materials to figure out what the device is.
 
 
 ## IC Solder Test
@@ -44,108 +44,147 @@ After assembly check the circuit carefully to make sure all parts are soldered a
 Check continuity between pin and pad by measuring the reverse body diode drop from 0V (aka ground) and all other IC pads not connected to 0V. This value will vary somewhat depending on what the pin does, but there is typically an ESD diode to ground or sometimes a body diode (e.g. open drain MOSFET), thus a value of .4V to .7V is valid to indicate a solder connection. Note the RS485 drivers will show high impedance on the differential lines, so skip those.
 
 
-## Bias 3V3
-
-Apply a 3V3 current limited source at about 20mA to the ICSP VCC (J10 pin 2) and ICSP 0V (J10 pin 6). Check that the current drawn is about 5 mA.
-
-```
-        Data from unit(s):
-            { "I_IN_BLANKMCU_mA":[2.0,] }
-```
-
-
 ## Bias +5V and Check LDO Regulator
 
-NOTE: ^0 did not have a LDO it used 3V3 from the Pi (this has changed in ^1). 
 
-Apply a 5V current limited source (about 20mA) to the +5V (J8 pin 4) and 0V (J8 pin 2). Check that the the linear regulator has 3.3V (use ICSP J10 pin2).  Check that the input current for the blank MCU is less than 5mA. Turn off power.
-
-NOTE: Startup with the least power that is reasonable to limit damage 
-should something be shorted.
+Apply a 30mA current limited (CC mode) supply set at 5V to the +5V (J7 pin 4) and 0V (J7 pin 2) header pins. Check that the the linear regulator has 3.3V (J9 pin 2).  Check that the input current is for the blank MCU. Turn off power.
 
 ```
-        Data from unit(s):
-            { "I_IN_PI_mA":[2.2,],
-               "LDO_V":[3.30,] }
+{  "I_IN_BLANKMCU_mA":[2.1,],
+    "LDO_V":[3.302,] }
 ```
 
 
 ## Set MCU Fuse
 
-Apply a 5V current limited source at about 50mA to the +5V (J8 pin 4) and 0V (J8 pin 2). The MCU needs its fuses set, run "make fuse" to do that. Remove the ICSP tool to read input current.
-
-Use the <https://github.com/epccs/RPUpi/tree/master/Bootload> Makefile
-
-Note: there is not a bootloader, it just sets fuses.
+Install Git and AVR toolchain on Ubuntu (16.04, on an old computer try https://wiki.ubuntu.com/Lubuntu). 
 
 ```
-        TODO:  some data from unit(s)
-            { "I_IN_MCU_8MHZ_INTRN_mA":[4.0,]}
+sudo apt-get install git gcc-avr binutils-avr gdb-avr avr-libc avrdude
+```
+
+Clone the RPUadpt repository.
+
+```
+cd ~
+git clone https://github.com/epccs/RPUpi
+cd ~/RPUpi/Bootload
+```
+
+Connect a 5V supply with CC mode set at 30mA to the +5V (J7 pin 4) and  0V (J7 pin 2). Connect the ICSP tool (J9). The MCU needs its fuses set, so run the Makefile rule to do that. 
+
+```
+make fuse
+```
+
+Note: There is not a bootloader, it just sets fuses.
+
+Disconnect the ICSP tool and measure the input current for 12Mhz crystal at 3.3V. It takes a long time to settel.
+
+```
+{  "I_IN_MCU_12MHZ_LP-CRYSTAL_mA":[4.9,]}
 ```
 
 
 ## Load CheckDTR Firmware
 
-If termination resistors are not placed connect a CAT5 cable with the 100 Ohm termination resistors. Apply a 5V current limited source at about 50mA to the +5V (J8 pin 4) and 0V (J8 pin 2). Connect the TX (J4 pin 4) to 5V to pull it up (the MCU normaly does this). Connect IOREF (J9 pin 2) to 5V. Load  CheckDTR firmware with "make isp" to verify DTR control is working:
+Plug a header (or jumper) onto the +5V pin so that IOREF is jumpered to +5V. Connect TX pin to IOREF to pull it up (the RPUno normaly does this). Plug a CAT5 RJ45 stub with 100 Ohm RX, TX and DTR pair terminations. Connect a 5V supply with CC mode set at 50mA to the +5V that was jumpered to IOREF (J7 pin 4) and  0V (J7 pin 2). Connect the ICSP tool (J9).
 
-Use the <https://github.com/epccs/RPUpi/tree/master/CheckDTR> Makefile
-
-The program loops through the test. It blinks the LED to show which test number is setup. If it keeps repeating a test then that test has failed.
-
-As the firmware loops the input current can be measured, it should have two distinct levels, one when the DTR pair is driven low with a 100 Ohm termination (e.g. half loaded) and one when the DTR pair is not driven. The blinking LED leaves the DMM unsettled. Turn off power.
+Use the command line to select the CheckDTR source working directory. Run the makefile rule used to load CheckDTR firmware that verifies DTR control is working:
 
 ```
-        TODO:  some data from the unit(s)
-            { "DTR_HLF_LD_mA":[36.9,],
-               "DTR_NO_LD_mA":[13.8,] }
+cd ~RPUpi/CheckDTR
+make isp
 ```
+
+The program loops through the test. It blinks the red LED to show which test number is setup. If it keeps repeating a test then that test has failed.
+
+As the firmware loops the input current can be measured, it should have two distinct levels, one when the DTR pair is driven low and one when the DTR pair is not driven. The blinking LED leaves the DMM unsettled. Turn off power.
+
+```
+{  "DTR_HLF_LD_mA":[33.4,],
+    "DTR_NO_LD_mA":[10.0,] }
+```
+
+Note: the ICSP tool is pluged in and has some pullups with the level shift. 
 
 
 ## Check Differential Bias
 
-If termination resistors are not placed connect a CAT5 cable with the 100 Ohm termination resistors. Apply a 5V current limited source at about 100mA to the +5V (J8 pin 4) and 0V (J8 pin 2). Connect the TX (J4 pin 4) to 5V to pull it up (the MCU normaly does this). Connect IOREF (J9 pin 2) to 5V. Hold down the shutdown switch while running the CheckDTR firmware to set TX_DE and RX_DE high. Verify that RX (J4 pin 3) has 5V and TX (J4 pin 4) has 5V. Check that TX pair transceiver driver input has 3.3V (U1 pin 4) and its driver enable (U1 pin 3) is pulled low while TX_DE is high. Check that HOST_TX has 3.3V. Check that RX transceiver enable (U6 pin 3) is pulled low while RX_DE is high. 
-    
-Now disconnect TX from IOREF and connect it to 0V, to simulate the MCU sending data. Check  that the input current is now cycling between 59mA and 37mA. At 59mA the TX driver is driving the TX pair with half load and DTR driver is driving the DTR pair with a half load, while ony the TX pair is driven at 37mA. Turn off power.
+Plug a header (or jumper) onto the +5V pin so that IOREF is jumpered to +5V. Plug a CAT5 RJ45 stub with 100 Ohm RX, TX and DTR pair terminations. Connect TX pin to 0V to pull it down to simulate the MCU sending data. Connect a 5V supply with CC mode set at 100mA to the +5V that was jumpered to IOREF (J7 pin 4) and 0V (J7 pin 2).
+
+Hold down the shutdown switch while running the CheckDTR firmware to set TX_DE and RX_DE high.
+
+Check  that the input current is cycling between 56mA and 33mA. At 56mA the TX driver is driving the TX pair with half load and DTR driver is driving the DTR pair with a half load, while ony the TX pair is driven at 33mA. 
 
 ```
-        TODO:  some data from the unit(s)
-            { "DTR_TX_HLF_LD_mA":[59.9,],
-               "TX_HLF_LD_mA":[36.7,] }
+{  "DTR_TX_HLF_LD_mA":[56.0,],
+    "TX_HLF_LD_mA":[33.0,] }
 ```
 
 
 ## Differential Loopback with TX Driver
 
-If termination resistors are not placed connect a CAT5 cable with the 100 Ohm termination resistors. Apply a 5V current limited source at about 100mA to the +5V (J8 pin 4) and 0V (J8 pin 2). Connect the TX (J4 pin 4) to 0V to pull it down. Connect IOREF (J9 pin 2) to 5V. Plug in a RJ45 loopback connector to connect the TX differential pair to the RX differential pair and the input current. Hold down the shutdown switch while running the CheckDTR firmware to set TX_DE and RX_DE high. The TX driver is now driving a differential pair with 50 Ohms on it, which is the normal load. Verify that RX has 0V on it now. Turn off power.
+Same as Differential Bias test with a plug in a RJ45 loopback connector to connect the TX differential pair to the RX differential pair and the input current. The TX driver is now driving a differential pair with 50 Ohms on it, which is the normal load. Verify that RX has 0V on it now.
 
 ```
-        TODO:  some data from the unit(s)
-            { "DTR_HLF_LD_TX_FL_LD_mA":[77.2,],
-               "TX_FL_LD_mA":[54.1,] }
+{  "DTR_HLF_LD_TX_FL_LD_mA":[72.4,],
+    "TX_FL_LD_mA":[49.1,] }
 ```
+
+Turn off power.
 
 
 ## Differential Loopback with RX Driver
 
-If termination resistors are not placed connect a CAT5 cable with the 100 Ohm termination resistors. Apply a 5V current limited source at about 100mA to the +5V (J8 pin 4) and 0V (J8 pin 2). Connect the TX (J4 pin 4) to 5V to pull it up, which will disable the TX driver (U2) so that the RX driver (U6) can operate through the RJ45 loopback. Plug in the RJ45 loopback connector so the TX pair is looped back to the RX pair. Connect HOST_TX (J1 pin 8) to 0V (J1 pin 6) to cause the RX driver to drive the RX pair (which is also looped into the TX pair). Hold down the shutdown switch while running the CheckDTR firmware to set TX_DE and RX_DE high. Measure supply current after test four when RX is driven with 50 Ohm and DTR is driven with 100 Ohm. Also measure supply current after test two when RX has 50 Ohm and DTR is not driven. Power off and remove connections.
+Continuing from previous test, now disconnect TX from ground and Connect it to IOREF, which will disable the TX driver (U2) so that the RX driver (U6) can operate through the RJ45 loopback. Keep the CAT5 RJ45 stub with 100 Ohm RX, TX and DTR pair terminations and the RJ45 loopback connector so the TX pair is looped back to the RX pair. 
+
+Bias PI3V3 (J1 pin 1) with IOREF (The Pi will power this with 3.3V but it will work with the 5V on IOREF for testing).
+
+Connect PI_TX (J1 pin 8) to 0V to cause the RX driver to drive the RX pair. 
+
+![ItemsUsedForTest9](./16197_ItemsUsedForTest[9].jpg "RPUpi Items Used For Test 9")
+
+Power on 5V supply at 100mA. Hold down the shutdown switch while running the CheckDTR firmware to set TX_DE and RX_DE high.
+
+Measure the supply current when RX is driven and when a DTR half load is added.
 
 ```
-        TODO:  some data from the unit(s)
-            { "DTR_HLF_LD_RX_FL_LD_mA":[77.3,],
-               "RX_FL_LD_mA":[54.2,] }
+{  "DTR_HLF_LD_RX_FL_LD_mA":[83.3,],
+    "RX_FL_LD_mA":[60.0,] }
 ```
 
+Disconnect the PI3V3 (J1 pin 1) bias. Disconnect the PI_TX also. Turn off power.
+
+
+## Bias VIN and Check +5V_2PI from SMPS
+
+Apply a 30mA current limited (CC mode) supply set at 12.8V to the VIN (J7 pin 1) and 0V (J7 pin 3) header pins. Measure the SMPS providing +5V_2PI (J1 pin 2). Check that the input current is for no load. Turn off power.
+
+```
+{  "VIN@NOLD_mA":[0.2,],
+    +5V2PI_V":[4.97,] }
+```
 
 ## Load Lockout Firmware
 
-Apply a 5V current limited source at about 100mA to the +5V (J8 pin 4) and 0V (J8 pin 2). Upload the Lockout firmware to allow connecting with Pi Zero serial port: 
+WIP: this is where I am at... Trying to give Remote (e.g. RPUadpt) an I2C function to lockout the host so I can do this test with the firmware I plan to load for operation.
 
-Use the <https://github.com/epccs/RPUpi/tree/master/Lockout> Makefile 
-        
+Connect a 5V supply with CC mode set at 30mA to the +5V (J7 pin 4) and  0V (J7 pin 2). Connect the ICSP tool (J9).
+
+Use the command line to select the Lockout source working directory. Run the makefile rule used to load Lockout firmware that blocks the Pi from using the serial port (so it can be used as a debug port):
+
+```
+cd ~RPUpi/Lockout
+make isp
+```
+
 This firmware turns off TX_nRE (and everything else) so that a serial port consol my be connected to the Pi Zero without interferance from the RPU_BUS. It also blinks the LED_BUILTIN until the Pi Shutdown switch is pressed, and bias the switch with a weak pull-up.
 
 
 ## Pi Zero without SD card
+
+
 
 Apply a 5V current limited source at about 150mA to the +5V (J8 pin 4) and 0V (J8 pin 2). Apply a 12.4V current limited source at about 250mA to VIN (J8 pin 1) and 0V (J8 pin 3). Measure U4 (OKI-78SR-5) output (5V) going to Pi Zero and the 3.3V from the Pi's onboard SMPS. Measure the VIN current.
     
