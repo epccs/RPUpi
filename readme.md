@@ -27,11 +27,15 @@ Hardware files are in Eagle, there is also some testing, evaluation, and schooli
 
 ## Example
 
-A Pi Zero host computer controls the microcontrollers through a serial (UART) interface. The microcontrollers run a command processor which accepts interactive textual commands and operate their peripherals as a bare metal machine. The microcontroller firmware is compiled from source that is version managed on GitHub, it is then compiled and uploaded to the targets serial bootloader with a software toolchain. Since this needs to work from a Pi Zero (as well as from a desktop) the only reasonably easy option I see is to use AVR microcontrollers since a no fuss toolchain for them is on Debian (which is where Pi's Raspbian and the OS I use on my desktop is from). The only network port that I expose on the Pi is SSH so I have a way to do remote access, the Pi Zero does not need to map the raw serial port to the network because the development toolchain is on the Pi Zero.
+A Pi Zero host computer interfaces with several microcontrollers through its serial (UART) interface in this simplified diagram. 
+
+![Simplified Diag](./Hardware/Documents/SimplifiedBlockDiag.png "Simplified Diag")
+
+The microcontrollers and Pi can run common serial communication software. I prefer textual commands, so my examples generally use a textual command processor which echo back the command like an interactive terminal, the commands operate firmware routines on the bare metal microcontrollers. The firmware is compiled from source that is version managed on GitHub, it is then uploaded to the targets with a serial bootloader and open source tools on Raspbian that are part of the AVR toolchain. AVR microcontrollers have a no fuss toolchain for them is on Debian (which is where Pi's Raspbian is from). The Pi does not need to be on a network but I generally setup SSH on it so I have a way to do remote access. 
 
 ![MultiDrop](./Hardware/Documents/MultiDrop.png "MultiDrop")
 
-To bootload the AVR from the Pi's serial port, first it needs to be disabled as a [debug port] and then enabled for [serial] use, also the [RTS and CTS] pin functions should be enabled (since nRTS can be used to start the bootloader just like nDTR is from a desktop). 
+To bootload the AVR from the Pi's serial port, first it needs to be disabled as a [debug port] and then enabled for [serial] use, also the [RTS and CTS] pin functions should be enabled (since nRTS is used to start the bootloader). 
 
 [debug port]: ./Hardware/Testing/linux.md#serial
 [serial]: ./Hardware/Testing/linux.md#serial
