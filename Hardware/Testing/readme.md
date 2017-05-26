@@ -17,7 +17,7 @@ This is a list of Test preformed on each RPUpi after assembly.
 8. Differential Loopback with TX Driver
 9. Differential Loopback with RX Driver
 10. Bias VIN and Check +5V_2PI from SMPS
-11. Load Lockout Firmware
+11. Host Lockout
 12. Pi Zero without SD card
 13. Boot Pi Zero
 14. With Pi Zero and Wi-Fi
@@ -166,18 +166,74 @@ Apply a 30mA current limited (CC mode) supply set at 12.8V to the VIN (J7 pin 1)
     +5V2PI_V":[4.97,] }
 ```
 
-## Load Lockout Firmware
+## Host Lockout
 
-WIP: this is where I am at... Trying to give Remote (e.g. RPUadpt) an I2C function to lockout the host so I can do this test with the firmware I plan to load for operation.
+The Remote firmware will ignore the host nRTS signal until the status bit is cleared.
 
-Connect a 5V supply with CC mode set at 30mA to the +5V (J7 pin 4) and  0V (J7 pin 2). Connect the ICSP tool (J9).
+Plug an [RPUftdi] shield with [Host2Remote] firmware onto an [RPUno] or Uno board (not the UUT but a separate board) connect the USB to computer and load [I2C-Debug] on it. Note that the default bootload address allows this to work.
 
-Use the command line to select the Lockout source working directory. Run the makefile rule used to load Lockout firmware that blocks the Pi from using the serial port (so it can be used as a debug port):
+[RPUftdi]: https://github.com/epccs/RPUftdi
+[Host2Remote]: https://github.com/epccs/RPUftdi/tree/master/Host2Remote
+[RPUno]: https://github.com/epccs/RPUno
+[I2C-Debug]: https://github.com/epccs/RPUno/tree/master/i2c-debug
 
 ```
-cd ~RPUpi/Lockout
+cd ~RPUno/i2c-debug
+make bootload
+```
+
+Use picocom to set the bootload address. The RPUftdi is at address 0x30 and the UUT will be at address 0x31.
+
+```
+picocom -b 38400 /dev/ttyUSB0
+...
+Terminal ready
+/0/address 41
+{"address":"0x29"}
+/0/buffer 3,49
+{"txBuffer":[{"data":"0x3"},{"data":"0x31"}]}
+/0/read? 2
+{"rxBuffer":[{"data":"0x3"},{"data":"0x31"}]}
+```
+
+Exit picocom (Cntl^a and Cntl^x). 
+
+Plug the UUT (the [RPUpi] shield) onto a second RPUno board. Connect the ICSP tool to UUT (J9). Power the RPUno (e.g. supply the PV input with 180mA CC and 20V, and connect a 12V SLA battery). Load the Remote firmware onto UUT.
+
+Use the command line to select the Remote source working directory. Run the makefile used to load firmware:
+
+```
+# note I am still using RPUadpt [Remote] during development
+cd ~RPUpi/Remote
 make isp
 ```
+
+[Remote]: https://github.com/epccs/RPUadpt/tree/master/Remote
+
+The UUT RPU_ADDRESS defaults to 0x31 with firmware installed, so the RPUno under the UUT will bootload when the computer opens the serial port on the RPUftdi. Now install [I2C-Debug] on the RPUno under UUT. 
+
+```
+cd ~RPUno/i2c-debug
+make bootload
+```
+
+Read the status byte with command 6, and check if it shows the host lockout bit 3 is set.
+
+```
+picocom -b 38400 /dev/ttyUSB0
+...
+Terminal ready
+/1/address 41
+{"address":"0x29"}
+/1/buffer 6,255
+{"txBuffer":[{"data":"0x6"},{"data":"0xFF"}]}
+/1/read? 2
+{"rxBuffer":[{"data":"0x6"},{"data":"0x8"}]}
+```
+
+WIP
+/1/buffer 7,0
+/1/read? 2
 
 This firmware turns off TX_nRE (and everything else) so that a serial port consol my be connected to the Pi Zero without interferance from the RPU_BUS. It also blinks the LED_BUILTIN until the Pi Shutdown switch is pressed, and bias the switch with a weak pull-up.
 

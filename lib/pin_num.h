@@ -1,4 +1,4 @@
-/* RPUadpt DigitalIO Library
+/* RPUpi DigitalIO Library
  * Copyright (C) 2016 Ronald Sutherland
  *
  * This Library is free software: you can redistribute it and/or modify
@@ -51,7 +51,7 @@ typedef struct {
 8 bit Port Data Register (PORTx) each bit drives a pin if set as output (or sets pullup if input)
 Where x is the port A, B, C, etc.
 
-Wiring uses pin numbers to control their functions.  {PCINT} function #notes [RPUadpt] */
+Wiring uses pin numbers to control their functions.  {PCINT} function #notes [RPUpi] */
 static const Pin_Map pinMap[NUM_DIGITAL_PINS] = {
     [0] = { .ddr=&DDRD, .pin=&PIND, .port=&PORTD, .bit= PD0 }, // {16} RXD [DTR_RXD]
     [1] = { .ddr=&DDRD, .pin=&PIND, .port=&PORTD, .bit= PD1 }, // {17} TXD [DTR_TXD]
@@ -61,7 +61,7 @@ static const Pin_Map pinMap[NUM_DIGITAL_PINS] = {
     [5] = { .ddr=&DDRD, .pin=&PIND, .port=&PORTD, .bit= PD5 }, // {21} T1 OC0B [TX_DE]
     [6] = { .ddr=&DDRD, .pin=&PIND, .port=&PORTD, .bit= PD6 }, // {22} OC0A [DTR_nRE]
     [7] = { .ddr=&DDRD, .pin=&PIND, .port=&PORTD, .bit= PD7 }, // {23} [DTR_DE]
-    [8] = { .ddr=&DDRB, .pin=&PINB, .port=&PORTB, .bit= PB0 }, // {0} ICP1 [SHUTDOWN]
+    [8] = { .ddr=&DDRB, .pin=&PINB, .port=&PORTB, .bit= PB0 }, // {0} ICP1 [SHUTDWN]
     [9] = { .ddr=&DDRB, .pin=&PINB, .port=&PORTB, .bit= PB1 }, // {1} OC1A [LED_BUILTIN]
     [10] = { .ddr=&DDRB, .pin=&PINB, .port=&PORTB, .bit= PB2 }, // {2} nSS OC1B [nSS]
     [11] = { .ddr=&DDRB, .pin=&PINB, .port=&PORTB, .bit= PB3 }, // {3} MOSI OC2A [MOSI]
@@ -71,8 +71,8 @@ static const Pin_Map pinMap[NUM_DIGITAL_PINS] = {
     [15] = { .ddr=&DDRC, .pin=&PINC, .port=&PORTC, .bit= PC1 }, // {9} ADC1 [HOST_nDSR]
     [16] = { .ddr=&DDRC, .pin=&PINC, .port=&PORTC, .bit= PC2 }, // {10} ADC2 [TX_nRE]
     [17] = { .ddr=&DDRC, .pin=&PINC, .port=&PORTC, .bit= PC3 }, // {11} ADC3 [RX_DE]
-    [18] = { .ddr=&DDRC, .pin=&PINC, .port=&PORTC, .bit= PC4 }, // {12} ADC4 SDA [SDA]
-    [19] = { .ddr=&DDRC, .pin=&PINC, .port=&PORTC, .bit= PC5 } // {13} ADC5 SCL [SCL]
+    [18] = { .ddr=&DDRC, .pin=&PINC, .port=&PORTC, .bit= PC4 }, // {12} ADC4 SDA [SDA0]
+    [19] = { .ddr=&DDRC, .pin=&PINC, .port=&PORTC, .bit= PC5 } // {13} ADC5 SCL [SCL0]
 };
 #endif  // defined(__AVR_ATmega168__) || defined(__AVR_ATmega168P__)  || defined(__AVR_ATmega328P__)
 
