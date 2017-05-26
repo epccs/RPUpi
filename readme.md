@@ -51,8 +51,8 @@ sudo apt-get install git gcc-avr binutils-avr gdb-avr avr-libc avrdude
 git clone https://github.com/epccs/RPUpi
 ```
 
-[gcc-avr](http://packages.ubuntu.com/search?keywords=gcc-avr)
-[binutils-avr](http://packages.ubuntu.com/search?keywords=binutils-avr)
-[gdb-avr](http://packages.ubuntu.com/search?keywords=gdb-avr)
-[avr-libc](http://packages.ubuntu.com/search?keywords=avr-libc)
-[avrdude](http://packages.ubuntu.com/search?keywords=avrdude)
+* [gcc-avr](http://packages.ubuntu.com/search?keywords=gcc-avr)
+* [binutils-avr](http://packages.ubuntu.com/search?keywords=binutils-avr)
+* [gdb-avr](http://packages.ubuntu.com/search?keywords=gdb-avr)
+* [avr-libc](http://packages.ubuntu.com/search?keywords=avr-libc)
+* [avrdude](http://packages.ubuntu.com/search?keywords=avrdude)
