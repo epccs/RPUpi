@@ -31,7 +31,7 @@ A Pi Zero host computer interfaces with several microcontrollers through its ser
 
 ![Simplified Diag](./Hardware/Documents/SimplifiedBlockDiag.png "Simplified Diag")
 
-The microcontrollers and Pi can run common serial communication software. I prefer textual commands, so my examples generally use a textual command processor which echo back the command like an interactive terminal, the commands operate firmware routines on the bare metal microcontrollers. The firmware is compiled from source that is version managed on GitHub, it is then uploaded to the targets with a serial bootloader and open source tools on Raspbian that are part of the AVR toolchain. AVR microcontrollers have a no fuss toolchain for them is on Debian (which is where Pi's Raspbian is from). The Pi does not need to be on a network but I generally setup SSH on it so I have a way to do remote access. 
+The microcontrollers and Pi can run common serial communication software. I prefer textual commands, so my examples generally use a textual command processor which echo back the command like an interactive terminal, the commands operate firmware routines on the bare metal microcontrollers. The firmware is compiled from source that is version managed on GitHub, it is then uploaded to the targets with a serial bootloader and open source tools on Raspbian that are part of the AVR toolchain. AVR microcontrollers have a no fuss toolchain on Debian (which is where Pi's Raspbian is from). The Pi does not need to be on a network but I generally setup SSH on it so I have a way to do remote access. 
 
 ![MultiDrop](./Hardware/Documents/MultiDrop.png "MultiDrop")
 

@@ -51,6 +51,14 @@ This board connects a Pi Zero (not provided) to a multi-drop RS-422 bus and a [R
 ![Status](./status_icon.png "RPUpi Status")
 
 ```
+        ^3  Done: 
+            WIP: Design,
+            Todo:  Layout, BOM, Review*, Order Boards, Assembly, Testing, Evaluation.
+            *during review the Design may change without changing the revision.
+            I2C add 182 Ohm between shield pins and bus manager
+            RS-422 Buffer needs Power (power U3 with +3V3) 
+            Flip U3E and U3F with U1E and U1F.
+
         ^2  Done: Design, Layout, BOM, Review*, Order Boards, Assembly, 
             WIP: Testing,
             Todo: Evaluation.
@@ -63,6 +71,7 @@ This board connects a Pi Zero (not provided) to a multi-drop RS-422 bus and a [R
             Move Pi back .2"
             Add 74LVC07 buffer to Pi serial interface so it will hi-z (IOFF) nRTS and PI_TX when PI3V3 is off.
             Populate with 12MHz crystal to use 250kbit rate on DTR pair.
+            location: 2017-5-26 Test Bench, hacked U3 to power serial buffers witout Pi.
 
         ^1  Done: Design, Layout, BOM, Review*, Order Boards, Assembly, Testing,
             WIP: Evaluation.

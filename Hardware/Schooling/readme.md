@@ -4,15 +4,33 @@ Some lessons I learned doing RPUpi.
 
 # Table Of Contents:
 
-6. [^1 Serial When Powered Down](#1-serial-when-powered-down)
-5. [^1 Pi Zero Placement](#1-pi-zero-placement)
-4. [^1 Open SCK and MOSI](#1-open-sck-and-mosi)
-3. [^1 Pi Tx Pull-Up](#1-pi-tx-pull-up)
-2. [^1 I2C](#1-i2c)
-1. [^0 U3 Placed Backward](#0-u3-placed-backward)
+8. ^2 Protect I2C With 182 Ohm 
+7. ^2 RS-422 Buffer needs Power
+6. ^1 Serial When Powered Down
+5. ^1 Pi Zero Placement
+4. ^1 Open SCK and MOSI
+3. ^1 Pi Tx Pull-Up
+2. ^1 I2C
+1. ^0 U3 Placed Backward
 
 
-## ^1  Serial When Powered Down
+## ^2 Protect I2C With 182 Ohm
+
+Add 182 Ohm in-line between shield pins and bus manager.
+
+
+## ^2 RS-422 Buffer needs Power
+
+When U3 (74LVC07) does not have power the serial RX and TX from shield can not reach RS-422 transceivers. 
+
+For testing, I need to cut U3 power from the PI3V3 nonde and bridge it to +3V3 node.
+
+![Power RS-422 Buffer](./RPUpi^2_PwrRS422Buffer.png "Power RS-422 Buffer")
+
+If U3E and U3F can be flipped with U1E and U1F that would also be helpful, U3B is fine as is.
+
+
+## ^1 Serial When Powered Down
 
 When the Pi is powered down the nRTS line, which is active low seems to become active. Also, HOST_TX pulls down and causes a bus lock-up. Finally nCTS, HOST_RX sinks too much current from the transceivers without some sort of protection when Pi is powered down.
 

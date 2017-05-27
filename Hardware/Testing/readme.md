@@ -203,7 +203,6 @@ Plug the UUT (the [RPUpi] shield) onto a second RPUno board. Connect the ICSP to
 Use the command line to select the Remote source working directory. Run the makefile used to load firmware:
 
 ```
-# note I am still using RPUadpt [Remote] during development
 cd ~RPUpi/Remote
 make isp
 ```
@@ -231,12 +230,14 @@ Terminal ready
 {"rxBuffer":[{"data":"0x6"},{"data":"0x8"}]}
 ```
 
-WIP
+NOTE for ^3, this is when ^2 was was found to not have power on U3, so the MCU UART on RPUno was not able to talk to the RPUftdi UART (a hack was done to power U3 see schooling for more info).
+
+Clear the lockout bit to alow the Pi Zero to use RS-422 as a host.
+
+```
 /1/buffer 7,0
 /1/read? 2
-
-This firmware turns off TX_nRE (and everything else) so that a serial port consol my be connected to the Pi Zero without interferance from the RPU_BUS. It also blinks the LED_BUILTIN until the Pi Shutdown switch is pressed, and bias the switch with a weak pull-up.
-
+```
 
 ## Pi Zero without SD card
 
