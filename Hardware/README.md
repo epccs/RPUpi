@@ -51,26 +51,17 @@ This board connects a Pi Zero (not provided) to a multi-drop RS-422 bus and a [R
 ![Status](./status_icon.png "RPUpi Status")
 
 ```
-        ^3  Done: 
-            WIP: Design,
-            Todo:  Layout, BOM, Review*, Order Boards, Assembly, Testing, Evaluation.
+        ^3  Done: Design, Layout, BOM, Review*, 
+            WIP: Order Boards,
+            Todo: Assembly, Testing, Evaluation.
             *during review the Design may change without changing the revision.
             I2C add 182 Ohm between shield pins and bus manager
             RS-422 Buffer needs Power (power U3 with +3V3) 
             Flip U3E and U3F with U1E and U1F.
+            Through hole LED
 
-        ^2  Done: Design, Layout, BOM, Review*, Order Boards, Assembly, 
-            WIP: Testing,
-            Todo: Evaluation.
-            *during review the Design may change without changing the revision.
-            Run I2C from MCU board to bus manager with 3V3 pull-up (not to Pi).
-            Add Option to use I2C1 with a ATmega328pb (note the Pi will pull these lines down when power is off).
-            Add pull up to the Pi Tx line.
-            Add 10k on SCK and MOSI so the 74LVC07 can't damage the MCU board's SPI pins.
-            Have PI3V3 power the 74LVC07, outputs hi-z (IOFF) when power is off.
-            Move Pi back .2"
-            Add 74LVC07 buffer to Pi serial interface so it will hi-z (IOFF) nRTS and PI_TX when PI3V3 is off.
-            Populate with 12MHz crystal to use 250kbit rate on DTR pair.
+        ^2  Done: Design, Layout, BOM, Review*, Order Boards, Assembly, Testing,
+            WIP: Evaluation.
             location: 2017-5-26 Test Bench, hacked U3 to power serial buffers witout Pi.
 
         ^1  Done: Design, Layout, BOM, Review*, Order Boards, Assembly, Testing,
@@ -139,7 +130,7 @@ Import the [BOM](./Design/16197,BOM.csv) into LibreOffice Calc (or Excel) with s
 
 ## Pi Zero Setup 
 
-The Pi Zero is a Single Board Computer (SBC) running [Linux]. I use it as a host machine since it has enough memory and processing power for the AVR toolchain as well as self-hosted compiling and other applications and services. My use is kind of like a small headless SCADA system controller for the RPUno boards I daisy-chained with CAT5. It is not an IoT setup since the control system is self-contained, and I still don't see a compelling reason to send data about my garden to the Nebula or is relative Nimbus.
+The Pi Zero is a Single Board Computer (SBC) running [Linux]. I use it as a host machine since it has enough memory and processing power for the AVR toolchain as well as self-hosted compiling for itself and other applications and services (it gives just enough Linux at the edge). My use is sort of like a headless SCADA system controller of the control boards I have an RS-422 daisy-chain with. It is not an IoT setup since the control system is self-contained. The example software I have implemented is a very minimalistic command line interface for the controllers. Each controller listens for an address and a command to perform. 
 
 [Linux]: ./Testing/linux.md
 

@@ -23,7 +23,7 @@ Add 182 Ohm in-line between shield pins and bus manager.
 
 When U3 (74LVC07) does not have power the serial RX and TX from shield can not reach RS-422 transceivers. 
 
-For testing, I need to cut U3 power from the PI3V3 nonde and bridge it to +3V3 node.
+For testing, I need to cut U3 power from the PI3V3 node and bridge it to +3V3 node.
 
 ![Power RS-422 Buffer](./RPUpi^2_PwrRS422Buffer.png "Power RS-422 Buffer")
 

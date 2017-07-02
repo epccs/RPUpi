@@ -188,49 +188,91 @@ Use picocom to set the bootload address. The RPUftdi is at address 0x30 and the 
 picocom -b 38400 /dev/ttyUSB0
 ...
 Terminal ready
-/0/address 41
+/0/iaddr 41
 {"address":"0x29"}
-/0/buffer 3,49
+/0/ibuff 3,49
 {"txBuffer":[{"data":"0x3"},{"data":"0x31"}]}
-/0/read? 2
+/0/iread? 2
 {"rxBuffer":[{"data":"0x3"},{"data":"0x31"}]}
 ```
 
 Exit picocom (Cntl^a and Cntl^x). 
 
-Plug the UUT (the [RPUpi] shield) onto a second RPUno board. Connect the ICSP tool to UUT (J9). Power the RPUno (e.g. supply the PV input with 180mA CC and 20V, and connect a 12V SLA battery). Load the Remote firmware onto UUT.
+Plug the UUT (the [RPUpi] shield) onto a second RPUno board. Connect the ICSP tool to UUT (J9). Power the RPUno (e.g. connect a 12V SLA battery and supply the PV input with 180mA CC and 20V). Load the Remote firmware onto UUT.
 
-Use the command line to select the Remote source working directory. Run the makefile used to load firmware:
+Use the command line to select the source working directory for the UUT bus manager firmware to use (i.e. [Remote]). Run the makefile rule used to load it:
+
+[Remote]: https://github.com/epccs/RPUadpt/tree/master/Remote
 
 ```
 cd ~RPUpi/Remote
 make isp
 ```
 
-[Remote]: https://github.com/epccs/RPUadpt/tree/master/Remote
+The UUT RPU_ADDRESS defaults to 0x31 with that firmware, so the RPUno under the UUT will bootload when the computer opens the serial port on the RPUftdi. Now install [PwrMgt] on the RPUno under UUT. 
 
-The UUT RPU_ADDRESS defaults to 0x31 with firmware installed, so the RPUno under the UUT will bootload when the computer opens the serial port on the RPUftdi. Now install [I2C-Debug] on the RPUno under UUT. 
+[PwrMgt]: https://github.com/epccs/RPUno/tree/master/PwrMgt
 
 ```
-cd ~RPUno/i2c-debug
+cd ~RPUno/PwrMgt
 make bootload
 ```
 
-Read the status byte with command 6, and check if it shows the host lockout bit 3 is set.
+Read the status byte from I2C with command 6, and check that it shows the host lockout bit 3 is set. A dumy byte (255) is put in the buffer to tell the slave to size the reply with one data byte.
 
 ```
 picocom -b 38400 /dev/ttyUSB0
 ...
 Terminal ready
-/1/address 41
+/1/iaddr 41
 {"address":"0x29"}
-/1/buffer 6,255
+/1/ibuff 6,255
 {"txBuffer":[{"data":"0x6"},{"data":"0xFF"}]}
-/1/read? 2
+/1/iread? 2
 {"rxBuffer":[{"data":"0x6"},{"data":"0x8"}]}
 ```
 
 NOTE for ^3, this is when ^2 was was found to not have power on U3, so the MCU UART on RPUno was not able to talk to the RPUftdi UART (a hack was done to power U3 see schooling for more info).
+
+Connect a battery to RPUno and power the PV input at 20V with CC 180mA. Measure the analog values.
+
+```
+/1/analog? 2,3,6,7
+{"CHRG_A":"0.027","DISCHRG_A":"0.000","PV_V":"19.98","PWR_V":"13.54"}
+/1/charge?
+{"CHRG_mAHr":"0.62","DCHRG_mAHr":"0.00","RMNG_mAHr":"0.00","ACCUM_Sec":"90.14"}
+```
+
+Turn off power to PV input.
+
+```
+/1/analog? 2,3,6,7
+{"CHRG_A":"0.001","DISCHRG_A":"0.019","PV_V":"0.39","PWR_V":"13.48"}
+/1/charge?
+{"CHRG_mAHr":"0.95","DCHRG_mAHr":"0.08","RMNG_mAHr":"0.00","ACCUM_Sec":"163.58"}
+```
+
+Disconnect the Battery.
+
+## Pi Zero without SD card
+
+Plug in a Pi Zero without an SD card. Connect a battery to RPUno and power the PV input at 20V with CC 180mA.
+
+Measure the analog values.
+
+
+    
+NOTE: The Pi Zero takes about 15mA for a second and then 23mA without an SD card. Verify the Pi's 3V3 output.
+
+```
+{ "I50115_V":[4.96,],
+  "FrstSecVIN_mA":[15.2,],
+  "WithoutSDcardVIN_mA":[22.6,],
+  "Pi3V3_V":[3.28,]}
+```
+
+
+## Boot Pi Zero
 
 Clear the lockout bit to alow the Pi Zero to use RS-422 as a host.
 
@@ -239,24 +281,6 @@ Clear the lockout bit to alow the Pi Zero to use RS-422 as a host.
 /1/read? 2
 ```
 
-## Pi Zero without SD card
-
-
-
-Apply a 5V current limited source at about 150mA to the +5V (J8 pin 4) and 0V (J8 pin 2). Apply a 12.4V current limited source at about 250mA to VIN (J8 pin 1) and 0V (J8 pin 3). Measure U4 (OKI-78SR-5) output (5V) going to Pi Zero and the 3.3V from the Pi's onboard SMPS. Measure the VIN current.
-    
-NOTE: The Pi Zero takes about 15mA for a second and then 23mA without an SD card. Verify the Pi's 3V3 output.
-
-```
-        TODO:  some data from the unit(s)
-            { "I50115_V":[4.96,],
-               "FrstSecVIN_mA":[15.2,],
-               "WithoutSDcardVIN_mA":[22.6,],
-               "Pi3V3_V":[3.28,]}
-```
-
-
-## Boot Pi Zero
 
 Apply a 12.4V current limited source at about 250mA to VIN (J7 pin 1) and 0V (J7 pin 3). Use SD card with shutdown-sw.py script. Watch VIN current durring bootup. Wait for idling current then press the shutdown switch and measure VIN current after shutdown.
 
