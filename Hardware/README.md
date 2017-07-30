@@ -51,9 +51,9 @@ This board connects a Pi Zero (not provided) to a multi-drop RS-422 bus and a [R
 ![Status](./status_icon.png "RPUpi Status")
 
 ```
-        ^3  Done: Design, Layout, BOM, Review*, 
-            WIP: Order Boards,
-            Todo: Assembly, Testing, Evaluation.
+        ^3  Done: Design, Layout, BOM, Review*, Order Boards, Assembly, 
+            WIP: Testing,
+            Todo: Evaluation.
             *during review the Design may change without changing the revision.
             I2C add 182 Ohm between shield pins and bus manager
             RS-422 Buffer needs Power (power U3 with +3V3) 
@@ -67,7 +67,7 @@ This board connects a Pi Zero (not provided) to a multi-drop RS-422 bus and a [R
         ^1  Done: Design, Layout, BOM, Review*, Order Boards, Assembly, Testing,
             WIP: Evaluation.
             location: 2017-2-6 Test Bench, used as an RPUadpt with an RPUno^4.
-            location: 2017-4-11 Scrap (in que).
+            location: 2017-4-11 Scrap (in que, some parts salvaged 2017-7-18).
 ```
 
 Debugging and fixing problems i.e. [Schooling](./Schooling/)
