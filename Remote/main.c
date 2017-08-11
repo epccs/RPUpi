@@ -180,7 +180,12 @@ void receiveEvent(uint8_t* inBytes, int numBytes)
         }
         if ( (i2cBuffer[0] == TWI_COMMAND_TO_SET_STATUS) )
         {
-            status_byt = i2cBuffer[1];
+            if (i2cBuffer[1] == 0)
+            {
+                status_byt &= ~(1<<HOST_LOCKOUT_STATUS); // clear the lockout bit
+                // only the lockout bit is cleared  at this time.
+                i2cBuffer[1] = status_byt; // echo back the status
+            }
         }
     }
 }

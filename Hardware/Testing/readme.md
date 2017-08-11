@@ -19,8 +19,7 @@ This is a list of Test preformed on each RPUpi after assembly.
 10. Bias VIN and Check +5V_2PI from SMPS
 11. Host Lockout
 12. Pi Zero without SD card
-13. Boot Pi Zero
-14. With Pi Zero and Wi-Fi
+13. Boot Headless Pi Zero
 
 
 ## Basics
@@ -47,11 +46,11 @@ Check continuity between pin and pad by measuring the reverse body diode drop fr
 ## Bias +5V and Check LDO Regulator
 
 
-Apply a 30mA current limited (CC mode) supply set at 5V to the +5V (J7 pin 4) and 0V (J7 pin 2) header pins. Check that the the linear regulator has 3.3V (J9 pin 2).  Check that the input current is for the blank MCU. Turn off power.
+Apply a 30mA current limited (CC mode) supply set at 5V to the +5V (J7 pin 4) and 0V (J7 pin 2) header pins. Check that the the linear regulator has 3.3V (J9 pin 2). Check that the input current is for the blank MCU. Turn off power.
 
 ```
-{  "I_IN_BLANKMCU_mA":[2.1,],
-    "LDO_V":[3.302,] }
+{  "I_IN_BLANKMCU_mA":[2.1,1.8,],
+    "LDO_V":[3.302,3.282,] }
 ```
 
 
@@ -82,13 +81,15 @@ Note: There is not a bootloader, it just sets fuses.
 Disconnect the ICSP tool and measure the input current for 12Mhz crystal at 3.3V. It takes a long time to settel.
 
 ```
-{  "I_IN_MCU_12MHZ_LP-CRYSTAL_mA":[4.9,]}
+{  "I_IN_MCU_12MHZ_LP-CRYSTAL_mA":[4.9,5.1,]}
 ```
 
 
 ## Load CheckDTR Firmware
 
-Plug a header (or jumper) onto the +5V pin so that IOREF is jumpered to +5V. Connect TX pin to IOREF to pull it up (the RPUno normaly does this). Plug a CAT5 RJ45 stub with 100 Ohm RX, TX and DTR pair terminations. Connect a 5V supply with CC mode set at 50mA to the +5V that was jumpered to IOREF (J7 pin 4) and  0V (J7 pin 2). Connect the ICSP tool (J9).
+Plug a header (or jumper) onto the +5V pin so that IOREF is jumpered to +5V. Connect TX pin to IOREF to pull it up (the RPUno normaly does his). Plug a CAT5 RJ45 stub with 100 Ohm RX, TX and DTR pair terminations. Connect a 5V supply with CC mode set at 50mA to the +5V that was jumpered to IOREF (J8 pin 2) and  0V (J7 pin 2). Connect the ICSP tool (J9).
+
+NOTE: IOREF J7 pin 4 is not connected 
 
 Use the command line to select the CheckDTR source working directory. Run the makefile rule used to load CheckDTR firmware that verifies DTR control is working:
 
@@ -102,8 +103,8 @@ The program loops through the test. It blinks the red LED to show which test num
 As the firmware loops the input current can be measured, it should have two distinct levels, one when the DTR pair is driven low and one when the DTR pair is not driven. The blinking LED leaves the DMM unsettled. Turn off power.
 
 ```
-{  "DTR_HLF_LD_mA":[33.4,],
-    "DTR_NO_LD_mA":[10.0,] }
+{  "DTR_HLF_LD_mA":[33.4,33.8,],
+    "DTR_NO_LD_mA":[10.0,10.5,] }
 ```
 
 Note: the ICSP tool is pluged in and has some pullups with the level shift. 
@@ -111,25 +112,31 @@ Note: the ICSP tool is pluged in and has some pullups with the level shift.
 
 ## Check Differential Bias
 
-Plug a header (or jumper) onto the +5V pin so that IOREF is jumpered to +5V. Plug a CAT5 RJ45 stub with 100 Ohm RX, TX and DTR pair terminations. Connect TX pin to 0V to pull it down to simulate the MCU sending data. Connect a 5V supply with CC mode set at 100mA to the +5V that was jumpered to IOREF (J7 pin 4) and 0V (J7 pin 2).
+Plug a header (or jumper) onto the +5V pin so that IOREF is jumpered to +5V. Plug a CAT5 RJ45 stub with 100 Ohm RX, TX and DTR pair terminations. Connect TX pin to 0V to pull it down to simulate the MCU sending data. Connect a 5V supply with CC mode set at 100mA to the +5V that was jumpered to IOREF (J8 pin 2) and 0V (J7 pin 2).
+
+NOTE: IOREF J7 pin 4 is not connected 
 
 Hold down the shutdown switch while running the CheckDTR firmware to set TX_DE and RX_DE high.
 
 Check  that the input current is cycling between 56mA and 33mA. At 56mA the TX driver is driving the TX pair with half load and DTR driver is driving the DTR pair with a half load, while ony the TX pair is driven at 33mA. 
 
 ```
-{  "DTR_TX_HLF_LD_mA":[56.0,],
-    "TX_HLF_LD_mA":[33.0,] }
+{  "DTR_TX_HLF_LD_mA":[56.0,56.9,],
+    "TX_HLF_LD_mA":[33.0,33.7,] }
 ```
 
 
 ## Differential Loopback with TX Driver
 
-Same as Differential Bias test with a plug in a RJ45 loopback connector to connect the TX differential pair to the RX differential pair and the input current. The TX driver is now driving a differential pair with 50 Ohms on it, which is the normal load. Verify that RX has 0V on it now.
+Plug a header (or jumper) onto the +5V pin so that IOREF is jumpered to +5V. Plug a CAT5 RJ45 stub with 100 Ohm RX, TX and DTR pair terminations. Connect TX pin to 0V to pull it down to simulate the MCU sending data. Connect a 5V supply with CC mode set at 100mA to the +5V that was jumpered to IOREF (J8 pin 2) and 0V (J7 pin 2).
+
+NOTE: IOREF J7 pin 4 is not connected
+
+Connect a RJ45 loopback connector to allow the TX differential pair to drive RX differential pair and measure the input current. The TX driver is now driving 50 Ohms, which is the normal load. Verify that RX has 0V on it now.
 
 ```
-{  "DTR_HLF_LD_TX_FL_LD_mA":[72.4,],
-    "TX_FL_LD_mA":[49.1,] }
+{  "DTR_HLF_LD_TX_FL_LD_mA":[72.4,73.9,],
+    "TX_FL_LD_mA":[49.1,50.7,] }
 ```
 
 Turn off power.
@@ -141,7 +148,7 @@ Continuing from previous test, now disconnect TX from ground and Connect it to I
 
 Bias PI3V3 (J1 pin 1) with IOREF (The Pi will power this with 3.3V but it will work with the 5V on IOREF for testing).
 
-Connect PI_TX (J1 pin 8) to 0V to cause the RX driver to drive the RX pair. 
+Connect PI_TX (J1 pin 8) to 0V (J1 pin 6) to cause the RX driver to drive the RX pair. 
 
 ![ItemsUsedForTest9](./16197_ItemsUsedForTest[9].jpg "RPUpi Items Used For Test 9")
 
@@ -150,11 +157,11 @@ Power on 5V supply at 100mA. Hold down the shutdown switch while running the Che
 Measure the supply current when RX is driven and when a DTR half load is added.
 
 ```
-{  "DTR_HLF_LD_RX_FL_LD_mA":[83.3,],
-    "RX_FL_LD_mA":[60.0,] }
+{  "DTR_HLF_LD_RX_FL_LD_mA":[83.3,88.0,],
+    "RX_FL_LD_mA":[60.0,65.0,] }
 ```
 
-Disconnect the PI3V3 (J1 pin 1) bias. Disconnect the PI_TX also. Turn off power.
+Turn off power. Disconnect everything.
 
 
 ## Bias VIN and Check +5V_2PI from SMPS
@@ -162,8 +169,8 @@ Disconnect the PI3V3 (J1 pin 1) bias. Disconnect the PI_TX also. Turn off power.
 Apply a 30mA current limited (CC mode) supply set at 12.8V to the VIN (J7 pin 1) and 0V (J7 pin 3) header pins. Measure the SMPS providing +5V_2PI (J1 pin 2). Check that the input current is for no load. Turn off power.
 
 ```
-{  "VIN@NOLD_mA":[0.2,],
-    +5V2PI_V":[4.97,] }
+{  "VIN@NOLD_mA":[0.2,0.2,],
+    +5V2PI_V":[4.97,4.99,] }
 ```
 
 ## Host Lockout
@@ -232,24 +239,22 @@ Terminal ready
 {"rxBuffer":[{"data":"0x6"},{"data":"0x8"}]}
 ```
 
-NOTE for ^3, this is when ^2 was was found to not have power on U3, so the MCU UART on RPUno was not able to talk to the RPUftdi UART (a hack was done to power U3 see schooling for more info).
-
-Connect a battery to RPUno and power the PV input at 20V with CC 180mA. Measure the analog values.
+Measure the analog values. The charge data is accumulated from the time the RPUno started.
 
 ```
 /1/analog? 2,3,6,7
-{"CHRG_A":"0.027","DISCHRG_A":"0.000","PV_V":"19.98","PWR_V":"13.54"}
+{"CHRG_A":"0.060","DISCHRG_A":"0.000","PV_V":"20.02","PWR_V":"14.32"}
 /1/charge?
-{"CHRG_mAHr":"0.62","DCHRG_mAHr":"0.00","RMNG_mAHr":"0.00","ACCUM_Sec":"90.14"}
+{"CHRG_mAHr":"5.31","DCHRG_mAHr":"0.00","RMNG_mAHr":"0.00","ACCUM_Sec":"311.94"}
 ```
 
 Turn off power to PV input.
 
 ```
 /1/analog? 2,3,6,7
-{"CHRG_A":"0.001","DISCHRG_A":"0.019","PV_V":"0.39","PWR_V":"13.48"}
+{"CHRG_A":"0.000","DISCHRG_A":"0.027","PV_V":"0.36","PWR_V":"13.94"}
 /1/charge?
-{"CHRG_mAHr":"0.95","DCHRG_mAHr":"0.08","RMNG_mAHr":"0.00","ACCUM_Sec":"163.58"}
+{"CHRG_mAHr":"8.55","DCHRG_mAHr":"0.21","RMNG_mAHr":"0.00","ACCUM_Sec":"551.38"}
 ```
 
 Disconnect the Battery.
@@ -258,49 +263,141 @@ Disconnect the Battery.
 
 Plug in a Pi Zero without an SD card. Connect a battery to RPUno and power the PV input at 20V with CC 180mA.
 
+The Pi Zero takes about 15mA for a second and then 23mA without an SD card. Verify the Pi's 3V3 output.
+
+```
+{"Pi3V3_V":[3.28,]}
+```
+
+Measure the analog values (from Ubuntu and RPUftid connection).
+
+```
+picocom -b 38400 /dev/ttyUSB0
+...
+Terminal ready
+/1/analog? 2,3,6,7
+{"CHRG_A":"0.092","DISCHRG_A":"0.000","PV_V":"19.87","PWR_V":"14.37"}
+```
+
+Turn off power to PV input.
+
+```
+/1/analog? 2,3,6,7
+{"CHRG_A":"0.000","DISCHRG_A":"0.042","PV_V":"0.42","PWR_V":"13.58"}
+```
+
+Turn off the VIN pin
+
+``
+/1/vin DOWN
+{"VIN":"CCSHUTDOWN"}
+{"VIN":"I2CHAULT"}
+{"VIN":"ATHAULTCURR"}
+{"VIN":"DELAY"}
+{"VIN":"WEARLEVELINGCLEAR"}
+{"VIN":"DOWN"}`
+/1/analog? 2,3,6,7
+{"CHRG_A":"0.000","DISCHRG_A":"0.027","PV_V":"0.42","PWR_V":"13.41"}
+```
+
+The Pi Zero is using about 15mA from the battery (which is converted to 5V befor going to the Pi Zero).
+
+
+## Boot Headless Pi Zero
+
+Clear the lockout bit to alow the Pi Zero to use RS-422 as a host (e.g. from the Ubuntu PC connected to the RPUftdi).
+
+```
+picocom -b 38400 /dev/ttyUSB0
+...
+Terminal ready
+/1/iaddr 41
+{"address":"0x29"}
+/1/ibuff 7,0
+{"txBuffer[2]":[{"data":"0x7"},{"data":"0x0"}]}
+/1/iread? 2
+{"rxBuffer":[{"data":"0x7"},{"data":"0x0"}]}
+```
+
+Connect a 12V SLA AGM battery to an RPUno. Plug a Pi Zero into the RPUpi board. Plug an SD card setup with Raspbian and setup these headless [Linux] settings (e.g. pi-bench). Power the RPUno's PV input with a source at 180mA constant current and 20V. Wait for the green LED on the Pi Zero to be uninterrupted.
+
+[Linux]: ./linux.md
+
+```
+ssh pi-bench.local
+```
+
+Enable the [RTS/CTS] functions with this program that was in the [Linux] settins.
+
+[RTS/CTS]: https://github.com/epccs/RPUpi/tree/master/RPiRtsCts
+
+```
+sudo ./bin/rpirtscts on
+Pi Zero Rev 1.3 with 40 pin GPIO header detected
+Enabling CTS0 and RTS0 on GPIOs 16 and 17
+picocom -b 38400 /dev/ttyAMA0
+...
+Terminal ready
+/0/id?
+{"id":{"name":"I2Cdebug^1","desc":"RPUno Board /w atmega328p and LT3652","avr-gcc":"4.9"}}
+/1/id?
+{"id":{"name":"PwrMgt","desc":"RPUno Board /w atmega328p and LT3652","avr-gcc":"4.9"}}
+```
+
+OMG it is working, the bus manager on both the RPUpi and RPUftdi are blinking, so the Pi Zero has pulled down its nRTS just like the FTDI pulls down its nDTR, that has taken some time to reach this.
+
 Measure the analog values.
 
-
-    
-NOTE: The Pi Zero takes about 15mA for a second and then 23mA without an SD card. Verify the Pi's 3V3 output.
-
 ```
-{ "I50115_V":[4.96,],
-  "FrstSecVIN_mA":[15.2,],
-  "WithoutSDcardVIN_mA":[22.6,],
-  "Pi3V3_V":[3.28,]}
+/1/analog? 2,3,6,7
+{"CHRG_A":"0.088","DISCHRG_A":"0.000","PV_V":"16.91","PWR_V":"14.06"}
 ```
 
-
-## Boot Pi Zero
-
-Clear the lockout bit to alow the Pi Zero to use RS-422 as a host.
+Turn off power to PV input.
 
 ```
-/1/buffer 7,0
-/1/read? 2
+/1/analog? 2,3,6,7
+{"CHRG_A":"0.000","DISCHRG_A":"0.113","PV_V":"0.10","PWR_V":"13.79"}
+{"CHRG_A":"0.000","DISCHRG_A":"0.096","PV_V":"0.36","PWR_V":"13.71"}
+{"CHRG_A":"0.000","DISCHRG_A":"0.096","PV_V":"0.31","PWR_V":"13.60"}
+{"CHRG_A":"0.000","DISCHRG_A":"0.190","PV_V":"0.39","PWR_V":"13.59"}
+/1/charge?
+{"CHRG_mAHr":"463.09","DCHRG_mAHr":"6.77","RMNG_mAHr":"0.00","ACCUM_Sec":"24562.52"}
+{"CHRG_mAHr":"463.09","DCHRG_mAHr":"8.35","RMNG_mAHr":"0.00","ACCUM_Sec":"24622.52"}
+{"CHRG_mAHr":"463.09","DCHRG_mAHr":"9.96","RMNG_mAHr":"0.00","ACCUM_Sec":"24682.54"}
+```
+
+exit picocom and Shutdown in 60 sec
+
+```
+Ctrl-a and Ctrl-x
+Thanks for using picocom
+sudo shutdown -h 1
+exit
+```
+
+wait for shutdown to finish, e.g. wait for the green LED on the Pi Zero to be off uninterrupted. Use picocom on Ubuntu to restart the Pi.
+
+```
+picocom -b 38400 /dev/ttyUSB0
+...
+Terminal ready
+/1/vin DOWN
+{"VIN":"CCSHUTDOWN"}
+{"VIN":"I2CHAULT"}
+{"VIN":"ATHAULTCURR"}
+{"VIN":"DELAY"}
+{"VIN":"WEARLEVELINGCLEAR"}
+{"VIN":"DOWN"}
+/1/in
+/1/vin UP
+{"VIN":"UP"}
+Ctrl-a and Ctrl-x
+Thanks for using picocom
+# wait for Pi led to be uninterrupted
+ssh pi-bench.local
 ```
 
 
-Apply a 12.4V current limited source at about 250mA to VIN (J7 pin 1) and 0V (J7 pin 3). Use SD card with shutdown-sw.py script. Watch VIN current durring bootup. Wait for idling current then press the shutdown switch and measure VIN current after shutdown.
 
-```
-        TODO:  some data from the unit(s)
-            { "MaxAtBoot_mA":[83.0,],
-               "IdlingAftrBoot_mA":[40,],
-               "ShutdownAftrIdling_mA":[10.6,]}
-```
 
-## With Pi Zero and Wi-Fi
-
-Use SD card with [network] setup and measure VIN current with and without power management enabled. Note my testing shows the WiFi drops the network after a day or so with power managment enabled. 
-    
-[network]: ./linux.md
-
-```
-        TODO:  some data from the unit(s)
-            { "MaxWthWiFiAtBoot_mA":[122,],
-              "IdlingWthWiFiAftrBoot_mA":[63,],
-              "IdlingWthWiFiNoPwrMgtAfterBoot_mA":[85,]
-              "ShutdownWthWiFiAftrIdling_mA":[11,]}
-```

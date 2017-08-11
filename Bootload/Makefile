@@ -26,20 +26,8 @@ fuse:
 read: 
 	avrdude -v -p atmega328p -c stk500v1 -P /dev/ttyACM0 -b 19200 -U lock:r:0x3F:m -U lfuse:r:0xFF:m -U hfuse:r:0xD6:m -U efuse:r:0xFD:m
 
-
-
-# note this is the old setting I used befor switching to the crystal.
-# 8MHz internal
-# BOOTRST programmed so boot reset vector is enabled (in case a bootloader is added)
-# 2v7 B.O.D. Enabled       note extended fuse value 0x05 is same as 0xFD since bits 3 thru 7 are hardware locked
-
-## http://eleccelerator.com/fusecalc/fusecalc.php?chip=atmega328p&LOW=E2&HIGH=DE&EXTENDED=05&LOCKBIT=3F
-## ArduinoISP acts as a stk500v1 programing device 
-fuse_old: 
-	avrdude -v -p atmega328p -c stk500v1 -P /dev/ttyACM0 -b 19200 -e -U lock:w:0x3f:m -U lfuse:w:0xE2:m -U hfuse:w:0xDE:m -U efuse:w:0xFD:m
-
-## Use “-” as the file name, to write to stdout
-read_old: 
-	avrdude -v -p atmega328p -c stk500v1 -P /dev/ttyACM0 -b 19200 -U lfuse:r:-:h -U hfuse:r:-:h -U efuse:r:-:h
+## set fuse like they are from factory (I use this to read the input current from salvaged parts) , i.e. 8MHz internal, B.O.D. disabled.
+oem: 
+	avrdude -v -p atmega328p -c stk500v1 -P /dev/ttyACM0 -b 19200 -e -U lock:w:0x3f:m -U lfuse:w:0x62:m -U hfuse:w:0xD9:m -U efuse:w:0xFF:m
 
  

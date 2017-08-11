@@ -21,7 +21,7 @@
     along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
 
-#define GPIO_BASE (0x20200000)
+#define GPIO_OFFSET (0x200000)
 #define BLOCK_SIZE (4*1024)
 #define GFPSEL3 (3)
 #define GPIO3031mask 0x0000003f /* GPIO 30 for CTS0 and 31 for RTS0 */
@@ -31,7 +31,7 @@
 #define GPIO_header_26 0x00
 #define GPIO_header_40 0x01
 
-#define VERSION "1.2"
+#define VERSION "1.5"
 
 #include <stdio.h>
 #include <stdlib.h>
@@ -41,54 +41,84 @@
 #include <errno.h>
 #include <string.h>
 
+unsigned gpio_base()
+{ /* adapted from bcm_host.c */
+	unsigned address = ~0;
+	FILE *fp = fopen("/proc/device-tree/soc/ranges", "rb");
+	if (fp) {
+		unsigned char buf[4];
+		fseek(fp, 4, SEEK_SET);
+		if (fread(buf, 1, sizeof buf, fp) == sizeof buf)
+			address = buf[0] << 24 | buf[1] << 16 | buf[2] << 8 | buf[3] << 0;
+		fclose(fp);
+	}
+	return (address == ~0 ? 0x20000000 : address) + GPIO_OFFSET;
+}
+
 int rpi_version() {
 	int result = -1;
 	char string[256];
-	FILE *fp = fopen("/proc/cmdline", "r");
+	FILE *fp = fopen("/proc/cpuinfo", "r");
 	if (fp) {
 		while (fscanf(fp, "%255s", string) == 1)
-            // %*d in scanf will ignore the 8 or 9 (e.g. RPi 2 B has bcm2709.boardrev) and read the value at %i into the integer variable "result"
-			if (sscanf(string, "bcm270%*d.boardrev=%i", &result))
+			if (strcmp(string, "Revision") == 0)
+				break;
+		while (fscanf(fp, "%255s", string) == 1)
+			if (sscanf(string, "%x", &result) == 1)
 				break;
 		fclose(fp);
 	}
 	if (result < 0) {
-		fprintf(stderr, "can't parse /proc/cmdline\n");
+		fprintf(stderr, "can't parse /proc/cpuinfo\n");
 		exit(EXIT_FAILURE);
-	}
+	} else
+		result &= ~(1 << 24 | 1 << 25); // clear warranty bits
 	return result;
 }
 
 int rpi_gpio_header_type() {
-	int header_type = GPIO_header_40;
-	switch (rpi_version()) { /* Adapted from http://www.raspberrypi-spy.co.uk/2012/09/checking-your-raspberry-pi-board-version/ */
-	case 0x000002: printf("Model B Rev 1.0 with 26 pin GPIO header detected\n"); header_type = GPIO_header_26; break;
-	case 0x000003: printf("Model B Rev 1.0+ with 26 pin GPIO header detected\n"); header_type = GPIO_header_26; break;
-	case 0x000004: printf("Model B Rev 2.0 with 26 pin GPIO header detected\n"); header_type = GPIO_header_26; break;
-	case 0x000005: printf("Model B Rev 2.0 with 26 pin GPIO header detected\n"); header_type = GPIO_header_26; break;
-	case 0x000006: printf("Model B Rev 2.0 with 26 pin GPIO header detected\n"); header_type = GPIO_header_26; break;
-	case 0x000007: printf("Model A with 26 pin GPIO header detected\n"); header_type = GPIO_header_26; break;
-	case 0x000008: printf("Model A with 26 pin GPIO header detected\n"); header_type = GPIO_header_26; break;
-	case 0x000009: printf("Model A with 26 pin GPIO header detected\n"); header_type = GPIO_header_26; break;
-	case 0x00000d: printf("Model B Rev 2.0 with 26 pin GPIO header detected\n"); header_type = GPIO_header_26; break;
-	case 0x00000e: printf("Model B Rev 2.0 with 26 pin GPIO header detected\n"); header_type = GPIO_header_26; break;
-	case 0x00000f: printf("Model B Rev 2.0 with 26 pin GPIO header detected\n"); header_type = GPIO_header_26; break;
-	case 0x000010: printf("Model B+ Rev 1.0 with 40 pin GPIO header detected\n"); break;
-	case 0x000014:
-	case 0x000011: printf("Compute Module is not supported\n"); exit(EXIT_FAILURE);
-	case 0x000015:
-	case 0x000012: printf("Model A+ Rev 1.1 with 40 pin GPIO header detected\n"); break;
-	case 0x000013: printf("Model B+ Rev 1.2 with 40 pin GPIO header detected\n"); break;
-	case 0xa01040: printf("Pi 2 Model B Rev 1.0 with 40 pin GPIO header detected\n"); break;
-	case 0xa01041:
-	case 0xa21041: printf("Pi 2 Model B Rev 1.1 with 40 pin GPIO header detected\n"); break;
-	case 0x900092: printf("Pi Zero Rev 1.2 with 40 pin GPIO header detected\n"); break;
-	case 0x900093: printf("Pi Zero Rev 1.3 with 40 pin GPIO header detected\n"); break;
-	case 0xa22082:
-	case 0xa02082: printf("Pi 3 Model B Rev 1.2 with 40 pin GPIO header detected\n"); break;
-	default: printf("Unknown Raspberry Pi - assuming 40 pin GPIO header\n");
+	switch (rpi_version()) { /* Adapted from http://elinux.org/RPi_HardwareHistory */
+	case 0x000002: // Model B Rev 1.0
+	case 0x000003: // Model B Rev 1.0+
+	case 0x000004: // Model B Rev 2.0
+	case 0x000005: // Model B Rev 2.0
+	case 0x000006: // Model B Rev 2.0
+	case 0x000007: // Model A
+	case 0x000008: // Model A
+	case 0x000009: // Model A
+	case 0x00000d: // Model B Rev 2.0
+	case 0x00000e: // Model B Rev 2.0
+	case 0x00000f: // Model B Rev 2.0
+		printf("26-pin GPIO header detected\n");
+		return GPIO_header_26;
+	case 0x000011: // Compute Module 1
+	case 0x000014: // Compute Module 1
+	case 0xa020a0: // Compute Module 3
+		fprintf(stderr, "compute module not supported\n");
+		exit(EXIT_FAILURE);
+	case 0x000010: // Model B+ Rev 1.0
+	case 0x000012: // Model A+ Rev 1.1
+	case 0x000013: // Model B+ Rev 1.2
+	case 0x000015: // Model A+ Rev 1.1
+	case 0x900021: // Model A+ Rev 1.1
+	case 0x900032: // Model B+ Rev 1.2
+	case 0x900092: // Pi Zero Rev 1.2
+	case 0x900093: // Pi Zero Rev 1.3
+	case 0x9000c1: // Pi Zero W
+	case 0x920093: // Pi Zero Rev 1.3
+	case 0xa01040: // Pi 2 Model B Rev 1.0
+	case 0xa01041: // Pi 2 Model B Rev 1.1
+	case 0xa02082: // Pi 3 Model B Rev 1.2
+	case 0xa21041: // Pi 2 Model B Rev 1.1
+	case 0xa22042: // Pi 2 Model B Rev 1.2
+	case 0xa22082: // Pi 3 Model B Rev 1.2
+	case 0xa32082: // Pi 3 Model B Rev 1.2
+		printf("40-pin GPIO header detected\n");
+		return GPIO_header_40;
+	default:
+		printf("assuming 40-pin GPIO header\n");
+		return GPIO_header_40;
 	}
-	return (header_type);
 }
 
 
@@ -100,7 +130,7 @@ void set_rts_cts(int enable) {
 		exit(EXIT_FAILURE);
 	}
 	
-	void *gpio_map = mmap(NULL, BLOCK_SIZE, PROT_READ|PROT_WRITE, MAP_SHARED, fd, GPIO_BASE);
+	void *gpio_map = mmap(NULL, BLOCK_SIZE, PROT_READ|PROT_WRITE, MAP_SHARED, fd, gpio_base());
 	close(fd);
 	if (gpio_map == MAP_FAILED) {
 		fprintf(stderr, "mmap error (%s)\n", strerror(errno));
@@ -112,14 +142,13 @@ void set_rts_cts(int enable) {
 	if (rpi_gpio_header_type() == GPIO_header_40) { /* newer 40 pin GPIO header */
 		gfpsel = GFPSEL1;
 		gpiomask = GPIO1617mask;
-        enable ? printf("Enabling ") : printf("Disabling ");
+		enable ? printf("Enabling ") : printf("Disabling ");
 		printf("CTS0 and RTS0 on GPIOs 16 and 17\n");
-        
 	}
 	else { /* 26 pin GPIO header */
 		gfpsel = GFPSEL3;
 		gpiomask = GPIO3031mask;
-        enable ? printf("Enabling ") : printf("Disabling ");
+		enable ? printf("Enabling ") : printf("Disabling ");
 		printf("CTS0 and RTS0 on GPIOs 30 and 31\n");
 	}
 	
