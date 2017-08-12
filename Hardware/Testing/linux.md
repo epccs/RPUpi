@@ -33,22 +33,30 @@ On Ubuntu 17.04 I needed to install libgconf-2-4 to allow etcher to run. Etcher 
 
 ```
 sudo apt-get install libgconf-2-4
-...
+```
 
 
 ## Headless Setup
 
 After [Etcher] has put the Raspbian image onto the SD card I mount it to the Ubuntu system. The easiest way to do this is just to unplug the card and plug it back in. It will have a boot area and the system folders (e.g. /etc, /home...) which we can change.
 
-First configure the WiFi (e.g. Edit the /etc/network/interfaces) for your network, I show some of my Network Setup bellow.
+First configure the WiFi (e.g. Edit the /etc/wpa_supplicant/wpa_supplicant.conf) for your network, I show some of my [Network Setup](#network-setup) bellow.
 
-Next add an empty ssh file to the boot area. I do this with the touch command from the  Ubuntu computer I used to setup the SD card.
+Next add an empty ssh file to the boot area. I do this with the touch command from a consol on the Ubuntu computer I used to setup the SD card.
 
 ```
-touch ssh
+# on Ubuntu 17.04 the SD card automaticly mounts when pluged in at /media/username
+cd /media/rsutherland
+ls
+# it shows: 673b8ab6-6426-474b-87d3-71bff0fcebc3  boot
+# for the card I just did Ubuntu called the root mount 673b8ab6-6426-474b-87d3-71bff0fcebc3
+# so to setup the Wi-Fi I can edit
+sudo nano /media/rsutherland/673b8ab6-6426-474b-87d3-71bff0fcebc3/etc/wpa_supplicant/wpa_supplicant.conf
+# to tell the startup system to run the SSH server I add an empty file to the boot mount (which has its expected name)  
+touch /media/rsutherland/boot/ssh
 ```
 
-On my network I can then ssh pi@raspberrypi.local with the default password "raspberry", I then change the password as well as the hostname.
+Put it in the Pi and boot... On my network I can then ssh pi@raspberrypi.local with the default password "raspberry", I then change the password as well as the hostname.
 
 ```
 ssh pi@raspberrypi.local
@@ -56,19 +64,12 @@ ssh pi@raspberrypi.local
 user: pi
 password: raspberry
 
-# a comment (like in bash or python) so you know typing it is a waste of effort.
 # change password
 passwd
 
-# check for updates
-# last year rpi-update was faster than apt-get update
-# but on 8/9/17 it was not very fast and I fear it is the wrong way to get updates
-# resync packages
-sudo apt-get update
-# install the newest version of packages
-sudo apt-get upgrade
-
-# Use this tool to setup (e.g. set the hostname: pi-bench, pi3, console login). 
+# Use the raspi-config tool to setup e.g. set the hostname: pi1, pi-bench, pi3.
+# set boot options: choose to boot into a CLI (e.g. text console) for headless systems (mount SD on Ubuntu to change network)
+# also turn off the login shell to the serial port, and enable the serial port hardware (e.g. /dev/ttyAMA0).
 sudo raspi-config
 
 # I put the same username on Windows and other Linux machines for use with ssh, Samba and ilk.
@@ -80,17 +81,70 @@ sudo adduser rsutherland
 sudo visudo
 rsutherland  ALL=(ALL) NOPASSWD: ALL
 
-# always shutdown befor turning off the power
+# check for updates
+# last year rpi-update was faster than apt-get update
+# but on 8/9/17 rpi-update was not very fast and I fear it is the wrong way to get updates
+# resync packages
+sudo apt-get update
+# install the newest version of packages
+sudo apt-get upgrade
+
+# restart, I like to have a chance to close ssh and see that the system is going down for a reboot.
+sudo shutdown -r 1
+# output: Shutdown scheduled for Sat 2017-08-12 04:28:25 UTC, use 'shutdown -c' to cancel.
+# output: Broadcast message from root@pi-bench (Sat 2017-08-12 04:27:25 UTC):
+# output: The system is going down for reboot at Sat 2017-08-12 04:28:25 UTC!
+exit
+logout
+Connection to pi-bench.local closed.
+# back to the system I started from
+```
+
+After reboot add some scripts for RPUpi [Shutdown] and [RPiRtsCts].
+
+[Shutdown]: ../../Shutdown
+[RPiRtsCts]: ../../RPiRtsCts
+
+```
+ssh pi-bench.local
+
+# since I am loging in from rsutherland on another machine ssh will try to use that user name.
+mkdir bin
+mkdir Samba
+sudo apt-get install git
+cd Samba
+git clone git://github.com/epccs/RPUpi.git
+cd RPUpi/RPiRtsCts
+make
+cp rpirtscts ~/bin/rpirtscts
+make clean
+cd ~
+chmod ugo+x ~/bin/rpirtscts
+cd ~/bin
+wget https://raw.githubusercontent.com/epccs/RPUpi/master/Shutdown/shutdown-sw.py
+chmod ugo+x shutdown-sw.py
+sudo nano /etc/rc.local
+```
+
+Follow these rc.local [recommendations].
+
+[recommendations]: https://www.raspberrypi.org/documentation/linux/usage/rc-local.md
+
+```
+python /home/rsutherland/bin/shutdown-sw.py &
+/home/rsutherland/bin/rpirtscts on &
+exit 0
+```
+
+Always shutdown befor turning off the power. 
+
+```
 sudo shutdown -h now
 ```
 
 After a hault the Pi starts to reboot, but early in the GPU stages it starts to monitor BCM3 for a low which when seen will cause it to continue booting and [wake] up. Note that BCM3 is an I2C line and has a 1.8k pull-up. 
 
 [wake]: https://www.raspberrypi.org/forums/viewtopic.php?p=733677#p733677
-
-Add [Shutdown] also.
-
-[Shutdown]: ../../Shutdown
 
 
 ## Network setup 
@@ -172,7 +226,7 @@ ssh conversion.local
 
 ## Samba
 
-Samba is for windows file sharing
+Samba is for Windows file sharing.
 
 ```
 sudo apt-get update
@@ -206,11 +260,11 @@ sudo service smbd restart
 #Check for errors
 testparm
 
-# my user name (rsutherland) on Windows can map 
-# to the share on the Pi Zero (computer name is raspberrypi)
-\\raspberrypi\Samba
+# my user name (rsutherland) on Windows can now map 
+# to the share on the Pi Zero (computer name is pi-bench)
+\\pi-bench\Samba
 ```
-Note the Pi also shows the user home folders so it has a setting that Ubuntu did not... do I care... no.
+Note the Pi also shows the user home folders so it has a setting that Ubuntu did not, I will ignor it.
 
 
 ## Python 3
@@ -223,14 +277,14 @@ sudo apt-get install python3
 
 ## Serial 
 
-I want to use the serial port to interface over my RS-422 bus. So, select Interfacing Options => Serial and check that it is not used for a login.
+Use raspi-config to turn off the login shell to the serial port, and enable the serial port hardware (e.g. /dev/ttyAMA0).
 
 ```
 ssh pi-bench.local
 sudo raspi-config
 ```
 
-Disable the boot console (raspi-config does this).
+Disable the boot console (raspi-config does this now).
 
 ```
 # Pi Zero
@@ -241,7 +295,7 @@ sudo systemctl stop serial-getty@ttyS0.service
 sudo systemctl disable serial-getty@ttyS0.service
 ```
 
-Remove the console from /boot/cmdline.txt (raspi-config does this), which looks like:
+Remove the console from /boot/cmdline.txt (raspi-config does this now), which looks like:
 
 ```
 dwc_otg.lpm_enable=0 console=serial0,115200 console=tty1 root=/dev/mmcblk0p2 rootfstype=ext4 elevator=deadline fsck.repair=yes root wait
@@ -253,7 +307,7 @@ Change it to:
 dwc_otg.lpm_enable=0 console=tty1 root=/dev/mmcblk0p2 rootfstype=ext4 elevator=deadline fsck.repair=yes root wait
 ```
 
-I want to use /dev/ttyAMA0 since I think it has nRTS and nCTS functions. So I need to disable bluetooth.
+I want to use /dev/ttyAMA0 since it has nRTS and nCTS functions. On a Pi Zero W the bluetooth needs to be disabled.
 
 ```
 # Pi Zero
@@ -262,31 +316,20 @@ I want to use /dev/ttyAMA0 since I think it has nRTS and nCTS functions. So I ne
 systemctl disable bluetooth.service
 ```
 
-The UART needs enabled for the kernel. E.g. set enable_uart in /boot/config.txt then reboot (raspi-config seems to have done this).
+The UART needs enabled for the kernel. E.g. set enable_uart in /boot/config.txt then reboot (I don't have a Pi Zero W yet, does raspi-config do this?).
 
 ```
 dtoverlay=pi3-disable-bt
 enable_uart=1
 ```
 
-Turn on RST/CTS using a program built with the Pi toolchain (is there another way?)
+RST/CTS should be setup with the [RPiRtsCts] pogram built with the Pi toolchain durring [Headless Setup](#headless-setup) (is there another way?)
 
 ```
-sudo apt-get install git
-# I like to put my git repos in a samba share
-[mkdir Samba]
-[cd Samba]
-git clone git://github.com/epccs/RPUpi.git
-cd RPUpi/RPiRtsCts
-make
-cp rpirtscts ~/bin/rpirtscts
-make clean
-cd ~
-chmod ugo+x ~/bin/rpirtscts
 sudo ./bin/rpirtscts on
 ```
 
-I use picocom to connect with the serial devices. Make sure the user (rsutherland is for myself) is in the dialout group.
+Use picocom to connect with the serial devices. Make sure the user (rsutherland is for myself) is in the dialout group.
 
 ```
 sudo apt-get install picocom
@@ -295,15 +338,37 @@ sudo usermod -a -G dialout rsutherland
 picocom -b 38400 /dev/ttyAMA0
 ```
 
+If the RPUpi bus manger is loaded with [Remote] firmware, it needs to send a valid bootload address or there is a long timeout (30 second). 
+
+[Remote]: https://github.com/epccs/RPUadpt/tree/master/Remote
+
+On the controller board under the RPUpi, I am working on [PwrMgt] firmware. 
+
+[PwrMgt]: https://github.com/epccs/RPUno/tree/master/PwrMgt
+
+```
+/1/id?
+{"id":{"name":"PwrMgt","desc":"RPUno Board /w atmega328p and LT3652","avr-gcc":"4.9"}}
+/1/iaddr 41
+{"address":"0x29"}
+# i2c command 3 will set the bootload address that is sent when DTR/RTS toggles on the bus manager with Remote firmware
+/1/ibuff 3,49
+{"txBuffer[2]":[{"data":"0x3"},{"data":"0x31"}]}
+/1/iread? 2
+{"rxBuffer":[{"data":"0x3"},{"data":"0x31"}]}
+# i2c command 7 will clear the lockout bit on the bus manager with Remote firmware
+/1/ibuff 7,0
+{"txBuffer[2]":[{"data":"0x7"},{"data":"0x0"}]}
+/1/iread? 2
+# this will cause a the bus manage to see the nRTS active and start a bootload cycle.
+# after the delay I can use the RS-422 again.
+```
+
 
 ## Packages used for the AVR toolchain
 
 ```
-sudo apt-get install gcc-avr
-sudo apt-get install binutils-avr
-sudo apt-get install gdb-avr
-sudo apt-get install avr-libc
-sudo apt-get install avrdude
+sudo apt-get install gcc-avr binutils-avr gdb-avr avr-libc avrdude
 ```
 
 ## Avrdude
@@ -327,7 +392,7 @@ The BOOT_PORT needs to change from /dev/ttyUSB0 to /dev/ttyAMA0. Probably the ea
 
 The option -c arduino (programmer-id) means an optiboot programmer is going to be the target. I have put the optiboot bootloader on the ATmega328p in RPUno.
 
-Remember to enable CTS/RST befor using Avrdude.
+Remember to enable CTS/RST befor using Avrdude see the [Headless Setup](#headless-setup).
 
 ```
 sudo ./bin/rpirtscts on
@@ -347,7 +412,7 @@ Why not use the GPIO of the Pi Zero for things like flow meter pulse timing. Exp
 
 The Sitara has some bare metal processors on the chip to provide a place for code that needs continuous loops (e.g. not time slices). This is good but the Sitara metal processors (PRU) are not so easy to use like an AVR and there is compelling reasons to believe that big complex chips like the Sitara are more likely to suffer CMOS latch-up which would then cascade into the PRU. 
 
-One of my areas of interest is event capture (e.g. eCAP on BBB) but all evidence shows it is not supported with any operating system. The Sitara may be programed as a bare metal device to access the enhanced capture module, but then I still need an SBC running Linux. If Linux could be setup to ignore the eCAP hardware so the PRU can control it then serious questions about security would be raised. Linux needs to use the MMU to protect the systems memory space, but if the PRU can access that space it is the same as unprotected.
+One of my areas of interest is event capture (e.g. eCAP on BBB) but all evidence shows it is not supported with any operating system. The Sitara may be programed as a bare metal device to access the enhanced capture module, but then I still need an SBC running Linux. If Linux could be setup to ignore the eCAP hardware so the PRU can control it then serious questions about security would be raised. Linux needs to use the Sitara MMU to protect the systems memory space, but if the PRU can access that space it is the same as unprotected.
 
 
 ## WiFi Dropout
