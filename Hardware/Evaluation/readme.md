@@ -98,7 +98,9 @@ TBD
 
 ## ^3 Bootload Remote AVR
 
-The hostname of the the Pi Zero is pi3, it was the third Pi Zero I have setup, I did not think about how confusing that would be. The default bootload address on the multi-drop RS-422 is '0', and I have not changed it, I keep the [i2c-debug] firmware on an ATmega328p board under an RPUftdi on the bench at that address, so I will just upload that program. 
+![Bootload Remote AVR](./16197^3,PiZeroUsedToBootloadATmega328pUnderRPUftdi^4.jpg "Bootload Remote AVR")
+
+The hostname of the Pi Zero is pi3, it was the third Pi Zero I have setup (it is a bad hostname). The default bootload address on the RPUftdi (e.g. my multi-drop RS-422 board) is '0', and I have not changed it, I keep the [i2c-debug] firmware on an ATmega328p board under the RPUftdi for use on my test bench, so I will just upload that same program compiled from the Pi Zero. 
 
 [i2c-debug]: https://github.com/epccs/RPUno/tree/master/i2c-debug
 
@@ -246,7 +248,6 @@ Terminal ready
 
 Thanks for using picocom
 rsutherland@pi3:~/Samba/RPUno/i2c-debug $ 
-
 ```
 
 So this seems to have worked. The Pi cross compiler for AVR is older than the one on Ubuntu 16.04.

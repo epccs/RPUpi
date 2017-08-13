@@ -29,7 +29,7 @@ Download [Etcher] (note, I have only used this on Ubuntu)
         
 [Etcher]: https://etcher.io/
         
-On Ubuntu 17.04 I needed to install libgconf-2-4 to allow etcher to run. Etcher (in the zip) is an application image, it does not install anything it just needs premision to run.
+On Ubuntu 17.04 I needed to install libgconf-2-4 to allow etcher to run. Etcher (in the zip) is an application image, it does not install anything it just needs permission to run.
 
 ```
 sudo apt-get install libgconf-2-4
@@ -42,7 +42,7 @@ After [Etcher] has put the Raspbian image onto the SD card I mount it to the Ubu
 
 First configure the WiFi (e.g. Edit the /etc/wpa_supplicant/wpa_supplicant.conf) for your network, I show some of my [Network Setup](#network-setup) bellow.
 
-Next add an empty ssh file to the boot area. I do this with the touch command from a consol on the Ubuntu computer I used to setup the SD card.
+Next add an empty ssh file to the boot area. I do this with the touch command from a console on the Ubuntu computer I used to setup the SD card.
 
 ```
 # on Ubuntu 17.04 the SD card automaticly mounts when pluged in at /media/username
@@ -59,6 +59,8 @@ touch /media/rsutherland/boot/ssh
 Put it in the Pi and boot... On my network I can then ssh pi@raspberrypi.local with the default password "raspberry", I then change the password as well as the hostname.
 
 ```
+# remove the old host key
+[ssh-keygen -f "/home/rsutherland/.ssh/known_hosts" -R raspberrypi.local]
 ssh pi@raspberrypi.local
 
 user: pi
@@ -68,8 +70,8 @@ password: raspberry
 passwd
 
 # Use the raspi-config tool to setup e.g. set the hostname: pi1, pi-bench, pi3.
-# set boot options: choose to boot into a CLI (e.g. text console) for headless systems (mount SD on Ubuntu to change network)
-# also turn off the login shell to the serial port, and enable the serial port hardware (e.g. /dev/ttyAMA0).
+# set Boot Options: choose to boot into a CLI (e.g. text console) for headless systems (mount SD on Ubuntu to change network)
+# set Interfaceing Options: Serial: turn off the login shell to the serial port, and enable the serial port hardware (e.g. /dev/ttyAMA0).
 sudo raspi-config
 
 # I put the same username on Windows and other Linux machines for use with ssh, Samba and ilk.
@@ -102,8 +104,8 @@ Connection to pi-bench.local closed.
 
 After reboot add some scripts for RPUpi [Shutdown] and [RPiRtsCts].
 
-[Shutdown]: ../../Shutdown
-[RPiRtsCts]: ../../RPiRtsCts
+[Shutdown]: https://github.com/epccs/RPUpi/tree/master/Shutdown
+[RPiRtsCts]: https://github.com/epccs/RPUpi/tree/master/RPiRtsCts
 
 ```
 ssh pi-bench.local
@@ -142,12 +144,14 @@ Always shutdown befor turning off the power.
 sudo shutdown -h now
 ```
 
-After a hault the Pi starts to reboot, but early in the GPU stages it starts to monitor BCM3 for a low which when seen will cause it to continue booting and [wake] up. Note that BCM3 is an I2C line and has a 1.8k pull-up. 
+After a hault the Pi starts to reboot, but early in the cycle it starts to monitor BCM3 for a low which when seen will cause it to continue booting and [wake] up. Note that BCM3 is an I2C line and has a 1.8k pull-up. 
 
 [wake]: https://www.raspberrypi.org/forums/viewtopic.php?p=733677#p733677
 
 
 ## Network setup 
+
+It is your computer and your network, this is just an example.
 
 ```
 # scan, if you want to see other networks to connect
@@ -195,8 +199,10 @@ sudo ifup wlan0
 
 ## SSH
 
+SSH has to be installed by default on a headless machine.
+
 ```
-#check (it has to be installed by default or the headless install will not work)
+#check (it has to be installed by default or the headless setup will not work)
 dpkg -l openssh-server
 openssh-server          1:6.7p1-5+deb8u2 armhf 
 
@@ -211,10 +217,12 @@ sudo nano /etc/ssh/sshd_config
 cd bin
 wget https://raw.githubusercontent.com/epccs/RPUpi/master/Hardware/Testing/mkeys
 chmod u+x mkeys
-# note if you have a private key (e.g. id_dsa or id_rsa file) and you want to use it then place it in the .ssh folder now
+# note if you have a private key (e.g. id_dsa or id_rsa file) 
+# and you want to use it then place it in the .ssh folder now
 ~/bin/mkeys localhost
-# that should have built the public (and if missing a new private) key and added the public key to the authorized file 
-# now try to log in (it should not ask for a password)
+# that should have built the public (and if missing a new private) key 
+# and added the public key to the authorized file 
+# now try to log in, and it should not ask for a password since it used keys
 ssh localhost
 # if that works one of the putty tools can convert the private key for use on Windows.
 # mkeys can also place the public key on the authorized file of other Linux machines, e.g. conversion is a 
@@ -239,12 +247,9 @@ mkdir /home/rsutherland/Samba
 sudo nano /etc/samba/smb.conf
 ```
 
-Add to file after the comment, the workgroup does not need changed.
+Add the share to the /etc/samba/smb.conf file.
 
 ```
-#===== Global Settings ==========
-workgroup = WORKGROUP
-
 # add this to the very end of the file
 [Samba]
 path = /home/rsutherland/Samba
@@ -264,7 +269,8 @@ testparm
 # to the share on the Pi Zero (computer name is pi-bench)
 \\pi-bench\Samba
 ```
-Note the Pi also shows the user home folders so it has a setting that Ubuntu did not, I will ignor it.
+
+Note the Pi also shows the user home folders but Ubuntu did not, I will ignor those.
 
 
 ## Python 3
@@ -280,7 +286,6 @@ sudo apt-get install python3
 Use raspi-config to turn off the login shell to the serial port, and enable the serial port hardware (e.g. /dev/ttyAMA0).
 
 ```
-ssh pi-bench.local
 sudo raspi-config
 ```
 
@@ -351,7 +356,7 @@ On the controller board under the RPUpi, I am working on [PwrMgt] firmware.
 {"id":{"name":"PwrMgt","desc":"RPUno Board /w atmega328p and LT3652","avr-gcc":"4.9"}}
 /1/iaddr 41
 {"address":"0x29"}
-# i2c command 3 will set the bootload address that is sent when DTR/RTS toggles on the bus manager with Remote firmware
+# i2c command 3 will set the bootload address that is sent when DTR/RTS goes active to the bus manager with Remote firmware
 /1/ibuff 3,49
 {"txBuffer[2]":[{"data":"0x3"},{"data":"0x31"}]}
 /1/iread? 2
@@ -360,8 +365,8 @@ On the controller board under the RPUpi, I am working on [PwrMgt] firmware.
 /1/ibuff 7,0
 {"txBuffer[2]":[{"data":"0x7"},{"data":"0x0"}]}
 /1/iread? 2
-# this will cause a the bus manage to see the nRTS active and start a bootload cycle.
-# after the delay I can use the RS-422 again.
+# this will cause the bus manage to see the nRTS active and start the bootload cycle.
+# after a delay I can use the RS-422 again.
 ```
 
 
@@ -392,7 +397,9 @@ The BOOT_PORT needs to change from /dev/ttyUSB0 to /dev/ttyAMA0. Probably the ea
 
 The option -c arduino (programmer-id) means an optiboot programmer is going to be the target. I have put the optiboot bootloader on the ATmega328p in RPUno.
 
-Remember to enable CTS/RST befor using Avrdude see the [Headless Setup](#headless-setup).
+Remember to enable CTS/RST before using Avrdude see the [Headless Setup].
+
+[Headless Setup]: https://github.com/epccs/RPUpi/blob/master/Hardware/Testing/linux.md#headless-setup
 
 ```
 sudo ./bin/rpirtscts on
@@ -417,7 +424,9 @@ One of my areas of interest is event capture (e.g. eCAP on BBB) but all evidence
 
 ## WiFi Dropout
 
-I am using a Realtek <https://www.adafruit.com/products/814>
+I am using a [Realtek].
+
+[Realtek]: https://www.adafruit.com/products/814
 
 Check if the rtl8188cus driver has minimum power management enabled (e.g. returns a 1) 
 

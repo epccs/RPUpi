@@ -288,7 +288,7 @@ Turn off power to PV input.
 
 Turn off the VIN pin
 
-``
+```
 /1/vin DOWN
 {"VIN":"CCSHUTDOWN"}
 {"VIN":"I2CHAULT"}
