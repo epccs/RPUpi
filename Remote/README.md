@@ -42,6 +42,8 @@ In bootload mode, the RPU bus manager connects the local MCU node to the RPU bus
 
 In lockout mode, if the host is foreign both the local MCU node and Host are disconnected from the bus, otherwise, the host remains connected.
 
+To enter the sneaky mode no one can have used the bus since the node was powered on. When host DTR/RTS goes active the bus manager will connect the local controller and the host without a DTR pair broadcast (i.e. sneaky). This allows the host to set a bootload address to broadcast and turn off the lockout status bit. The bootload address is broadcast immediately when the lockout bit is cleared, which activates the bus (e.g. disabling sneaky mode for others).
+
 
 ## I2C/TWI Slave
 

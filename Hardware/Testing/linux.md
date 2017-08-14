@@ -141,7 +141,7 @@ exit 0
 Always shutdown befor turning off the power. 
 
 ```
-sudo shutdown -h now
+sudo shutdown -h 1
 ```
 
 After a hault the Pi starts to reboot, but early in the cycle it starts to monitor BCM3 for a low which when seen will cause it to continue booting and [wake] up. Note that BCM3 is an I2C line and has a 1.8k pull-up. 
@@ -369,6 +369,8 @@ On the controller board under the RPUpi, I am working on [PwrMgt] firmware.
 # after a delay I can use the RS-422 again.
 ```
 
+I am not that sure if the Remote firmware should work like that. The fact that the Pi can set its bus manager lockout bit through the local controller board feels wrong (the Pi is not locked out very well is it), but until I have a chance to play with an ATmega328pb that is how it will work I guess. UPDATE: once the RPUpi (Remote) has seen an address on the DTR pair (e.g. form the RPUftdi with Hoste2Remote) it seems to be properly locked out. 
+
 
 ## Packages used for the AVR toolchain
 
@@ -450,7 +452,7 @@ options 8192cu rtw_power_mgnt=0 rtw_enusbss=1 rtw_ips_mode=1
 restart
 
 ```
-sudo shutdown -r now
+sudo shutdown -r 1
 ```
 
 
