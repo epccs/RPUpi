@@ -387,7 +387,7 @@ Avrdude is a programming tool for AVR microcontrollers, it is used to place the 
 git clone git://github.com/epccs/RPUno.git
 ```
 
-Generally, avrdude is setup to run with rules in a Makefile. The following is what the rules for the [Adc] firmware Makefile need to do.
+Generally, avrdude is setup to run with rules in a Makefile. The following is what the rules for the [Adc] firmware Makefile looks like after the variables are solved.
 
 [Adc]: https://github.com/epccs/RPUno/tree/master/Adc
 
@@ -395,7 +395,7 @@ Generally, avrdude is setup to run with rules in a Makefile. The following is wh
 avrdude -v -p atmega328p -c arduino -P /dev/ttyAMA0 -b 115200 -U flash:w:Adc.hex
 ```
 
-The BOOT_PORT needs to change from /dev/ttyUSB0 to /dev/ttyAMA0. Probably the easy thing to do is add a new rule to bootload from a Pi host (TBD).
+The BOOT_PORT is detected for /dev/ttyUSB0 (RPUftdi with Ubuntu) or /dev/ttyAMA0 (RPUpi with Raspbian on a Pi Zero) in the Makefile.
 
 The option -c arduino (programmer-id) means an optiboot programmer is going to be the target. I have put the optiboot bootloader on the ATmega328p in RPUno.
 
