@@ -7,12 +7,60 @@ This shows the setup and methods used for evaluation of RPUpi.
 
 # Table Of Contents:
 
+7. ^3 SPI Interface
 6. ^3 Power Data
 5. ^3 Bootload Remote AVR
 4. ^2 Clearance IDE Connector For ICSP Tool
 3. ^2 Clearance Between Pi and Plugable
 2. ^1 Vertical Mounting
 1. ^0 Mounting
+
+
+## ^3 SPI Interface
+
+Firmware [SpiSlv] is used to enable the SPI port on a RPUno (ATmega328p).
+
+[SpiSlv]: https://github.com/epccs/RPUno/tree/master/SpiSlv
+
+After loading the firmware on an RPUno and enabling the AVR's SPI I next need the Raspberry Pi [SPI] hardware setup. Raspian needs its interface master driver enabled (e.g. [raspi-config]).
+
+[SPI]: https://www.raspberrypi.org/documentation/hardware/raspberrypi/spi/README.md
+[raspi-config]: https://www.raspberrypi.org/documentation/configuration/raspi-config.md
+
+Raspibin has an spi group setup in /etc/udev/rules.d/99-com.rules. So I can add my user name to that group for the system to allow me to use the interface.
+
+``` 
+sudo usermod -a -G spi rsutherland
+# logout for the change to take
+``` 
+
+Next I compile and run spidev_test.c on the Pi with:
+
+``` 
+wget https://raw.githubusercontent.com/raspberrypi/linux/rpi-3.10.y/Documentation/spi/spidev_test.c
+gcc -o spidev_test spidev_test.c
+# run with
+./spidev_test -s 100000 -D /dev/spidev0.0
+./spidev_test -s 500000 -D /dev/spidev0.0
+./spidev_test -s 1000000 -D /dev/spidev0.0
+./spidev_test -s 2000000 -D /dev/spidev0.0
+
+spi mode: 0
+bits per word: 8
+max speed: 500000 Hz (500 KHz)
+
+0D FF FF FF FF FF
+FF 40 00 00 00 00
+95 FF FF FF FF FF
+FF FF FF FF FF FF
+FF FF FF FF FF FF
+FF DE AD BE EF BA
+AD F0
+``` 
+
+Note: The output is offset a byte since it was sent back from the AVR. I see errors at 1MHz and 2MHz. The RPUpi^3 has a 74LVC07 buffer that pulls down through a 10kOhm resistor on SCK and MOSI. The circuit between that resistor and the AVR has some capacitance which will limit the speed (if there is a need for higher speed it may be possible to swap in a 1k resistor).
+
+![SPI Evaluation](./16197^3,SpiEvaluation.jpg "SPI Evaluation")
 
 
 ## ^3 Power Data

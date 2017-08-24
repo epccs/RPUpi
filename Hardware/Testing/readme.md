@@ -20,6 +20,7 @@ This is a list of Test preformed on each RPUpi after assembly.
 11. Host Lockout
 12. Pi Zero without SD card
 13. Boot Headless Pi Zero
+14. SPI 
 
 
 ## Basics
@@ -49,8 +50,8 @@ Check continuity between pin and pad by measuring the reverse body diode drop fr
 Apply a 30mA current limited (CC mode) supply set at 5V to the +5V (J7 pin 4) and 0V (J7 pin 2) header pins. Check that the the linear regulator has 3.3V (J9 pin 2). Check that the input current is for the blank MCU. Turn off power.
 
 ```
-{  "I_IN_BLANKMCU_mA":[2.1,1.8,],
-    "LDO_V":[3.302,3.282,] }
+{  "I_IN_BLANKMCU_mA":[2.1,1.8,2.2,2.2,],
+    "LDO_V":[3.302,3.282,3.276,3.292,] }
 ```
 
 
@@ -81,7 +82,7 @@ Note: There is not a bootloader, it just sets fuses.
 Disconnect the ICSP tool and measure the input current for 12Mhz crystal at 3.3V. It takes a long time to settel.
 
 ```
-{  "I_IN_MCU_12MHZ_LP-CRYSTAL_mA":[4.9,5.1,]}
+{  "I_IN_MCU_12MHZ_LP-CRYSTAL_mA":[4.9,5.1,5.0,5.1,]}
 ```
 
 
@@ -89,7 +90,7 @@ Disconnect the ICSP tool and measure the input current for 12Mhz crystal at 3.3V
 
 Plug a header (or jumper) onto the +5V pin so that IOREF is jumpered to +5V. Connect TX pin to IOREF to pull it up (the RPUno normaly does his). Plug a CAT5 RJ45 stub with 100 Ohm RX, TX and DTR pair terminations. Connect a 5V supply with CC mode set at 50mA to the +5V that was jumpered to IOREF (J8 pin 2) and  0V (J7 pin 2). Connect the ICSP tool (J9).
 
-NOTE: IOREF J7 pin 4 is not connected 
+NOTE: IOREF J7 pin 4 is not connected so use J8 pin 2
 
 Use the command line to select the CheckDTR source working directory. Run the makefile rule used to load CheckDTR firmware that verifies DTR control is working:
 
@@ -103,8 +104,8 @@ The program loops through the test. It blinks the red LED to show which test num
 As the firmware loops the input current can be measured, it should have two distinct levels, one when the DTR pair is driven low and one when the DTR pair is not driven. The blinking LED leaves the DMM unsettled. Turn off power.
 
 ```
-{  "DTR_HLF_LD_mA":[33.4,33.8,],
-    "DTR_NO_LD_mA":[10.0,10.5,] }
+{  "DTR_HLF_LD_mA":[33.4,33.8,33.6,33.7,],
+    "DTR_NO_LD_mA":[10.0,10.5,10.5,10.5,] }
 ```
 
 Note: the ICSP tool is pluged in and has some pullups with the level shift. 
@@ -121,8 +122,8 @@ Hold down the shutdown switch while running the CheckDTR firmware to set TX_DE a
 Check  that the input current is cycling between 56mA and 33mA. At 56mA the TX driver is driving the TX pair with half load and DTR driver is driving the DTR pair with a half load, while ony the TX pair is driven at 33mA. 
 
 ```
-{  "DTR_TX_HLF_LD_mA":[56.0,56.9,],
-    "TX_HLF_LD_mA":[33.0,33.7,] }
+{  "DTR_TX_HLF_LD_mA":[56.0,56.9,57.0,56.8,],
+    "TX_HLF_LD_mA":[33.0,33.7,33.7,33.7,] }
 ```
 
 
@@ -135,8 +136,8 @@ NOTE: IOREF J7 pin 4 is not connected
 Connect a RJ45 loopback connector to allow the TX differential pair to drive RX differential pair and measure the input current. The TX driver is now driving 50 Ohms, which is the normal load. Verify that RX has 0V on it now.
 
 ```
-{  "DTR_HLF_LD_TX_FL_LD_mA":[72.4,73.9,],
-    "TX_FL_LD_mA":[49.1,50.7,] }
+{  "DTR_HLF_LD_TX_FL_LD_mA":[72.4,73.9,74.0,74.3,],
+    "TX_FL_LD_mA":[49.1,50.7,50.9,51.0,] }
 ```
 
 Turn off power.
@@ -157,8 +158,8 @@ Power on 5V supply at 100mA. Hold down the shutdown switch while running the Che
 Measure the supply current when RX is driven and when a DTR half load is added.
 
 ```
-{  "DTR_HLF_LD_RX_FL_LD_mA":[83.3,88.0,],
-    "RX_FL_LD_mA":[60.0,65.0,] }
+{  "DTR_HLF_LD_RX_FL_LD_mA":[83.3,88.0,88.3,88.0,],
+    "RX_FL_LD_mA":[60.0,65.0,65.1,65.0,] }
 ```
 
 Turn off power. Disconnect everything.
@@ -169,8 +170,8 @@ Turn off power. Disconnect everything.
 Apply a 30mA current limited (CC mode) supply set at 12.8V to the VIN (J7 pin 1) and 0V (J7 pin 3) header pins. Measure the SMPS providing +5V_2PI (J1 pin 2). Check that the input current is for no load. Turn off power.
 
 ```
-{  "VIN@NOLD_mA":[0.2,0.2,],
-    +5V2PI_V":[4.97,4.99,] }
+{  "VIN@NOLD_mA":[0.2,0.2,0.2,0.2,],
+    +5V2PI_V":[4.97,4.99,5.00,5.00,] }
 ```
 
 ## Host Lockout
@@ -255,6 +256,7 @@ Turn off power to PV input.
 {"CHRG_A":"0.000","DISCHRG_A":"0.027","PV_V":"0.36","PWR_V":"13.94"}
 /1/charge?
 {"CHRG_mAHr":"8.55","DCHRG_mAHr":"0.21","RMNG_mAHr":"0.00","ACCUM_Sec":"551.38"}
+Ctrl-a and Ctrl-x
 ```
 
 Disconnect the Battery.
@@ -263,11 +265,9 @@ Disconnect the Battery.
 
 Plug in a Pi Zero without an SD card. Connect a battery to RPUno and power the PV input at 20V with CC 180mA.
 
-The Pi Zero takes about 15mA for a second and then 23mA without an SD card. Verify the Pi's 3V3 output.
+The Pi Zero takes about 15mA for a second and then 23mA without an SD card. Verify the Pi's zero used for test has a 3V3 output.
 
-```
-{"Pi3V3_V":[3.28,]}
-```
+Note: pi-bench is 3.309V,
 
 Measure the analog values (from Ubuntu and RPUftid connection).
 
@@ -305,20 +305,6 @@ The Pi Zero is using about 15mA from the battery (which is converted to 5V befor
 
 ## Boot Headless Pi Zero
 
-Clear the lockout bit to alow the Pi Zero to use RS-422 as a host (e.g. from the Ubuntu PC connected to the RPUftdi).
-
-```
-picocom -b 38400 /dev/ttyUSB0
-...
-Terminal ready
-/1/iaddr 41
-{"address":"0x29"}
-/1/ibuff 7,0
-{"txBuffer[2]":[{"data":"0x7"},{"data":"0x0"}]}
-/1/iread? 2
-{"rxBuffer":[{"data":"0x7"},{"data":"0x0"}]}
-```
-
 Connect a 12V SLA AGM battery to an RPUno. Plug a Pi Zero into the RPUpi board. Plug an SD card setup with Raspbian and setup these headless [Linux] settings (e.g. pi-bench). Power the RPUno's PV input with a source at 180mA constant current and 20V. Wait for the green LED on the Pi Zero to be uninterrupted.
 
 [Linux]: ./linux.md
@@ -327,7 +313,7 @@ Connect a 12V SLA AGM battery to an RPUno. Plug a Pi Zero into the RPUpi board. 
 ssh pi-bench.local
 ```
 
-Enable the [RTS/CTS] functions with this program that was in the [Linux] settins.
+The [RTS/CTS] functions should enable if these [Linux] settins have been used (e.g. pi-bench).
 
 [RTS/CTS]: https://github.com/epccs/RPUpi/tree/master/RPiRtsCts
 
@@ -335,18 +321,27 @@ Enable the [RTS/CTS] functions with this program that was in the [Linux] settins
 sudo ./bin/rpirtscts on
 Pi Zero Rev 1.3 with 40 pin GPIO header detected
 Enabling CTS0 and RTS0 on GPIOs 16 and 17
+```
+
+Clear the lockout bit to alow the Pi Zero to use RS-422 as a host (e.g. from the Pi Zero in sneaky mode).
+
+```
 picocom -b 38400 /dev/ttyAMA0
 ...
 Terminal ready
-/0/id?
-{"id":{"name":"I2Cdebug^1","desc":"RPUno Board /w atmega328p and LT3652","avr-gcc":"4.9"}}
-/1/id?
-{"id":{"name":"PwrMgt","desc":"RPUno Board /w atmega328p and LT3652","avr-gcc":"4.9"}}
+/1/iaddr 41
+{"address":"0x29"}
+/1/ibuff 3,49
+{"txBuffer[2]":[{"data":"0x3"},{"data":"0x31"}]}
+/1/iread? 2
+{"rxBuffer":[{"data":"0x3"},{"data":"0x31"}]}
+/1/ibuff 7,0
+{"txBuffer[2]":[{"data":"0x7"},{"data":"0x0"}]}
+/1/iread? 2
+# RS-422 ASCII character glitch may show now since the RPUno has just been reset
 ```
 
-OMG it is working, the bus manager on both the RPUpi and RPUftdi are blinking, so the Pi Zero has pulled down its nRTS just like the FTDI pulls down its nDTR, that has taken some time to reach this.
-
-Measure the analog values.
+After the UUT bus managers resets the RPUno it is mounted on wait for the RS-422 to start working (ending sheaky mode causes a reset that may show as an ASCII character), measure the analog values.
 
 ```
 /1/analog? 2,3,6,7
@@ -367,16 +362,76 @@ Turn off power to PV input.
 {"CHRG_mAHr":"463.09","DCHRG_mAHr":"9.96","RMNG_mAHr":"0.00","ACCUM_Sec":"24682.54"}
 ```
 
-exit picocom and Shutdown in 60 sec
+exit picocom
 
 ```
 Ctrl-a and Ctrl-x
 Thanks for using picocom
-sudo shutdown -h 1
+```
+
+
+## SPI
+
+Now install [SpiSlv] on the RPUno under the UUT (note bus manager was setup to broadcast its own bootload address in the previous test).
+
+[SpiSlv]: https://github.com/epccs/RPUno/tree/master/SpiSlv
+
+```
+cd ~RPUno/SpiSlv
+make bootload
+```
+
+Enable the AVR SPI interface and exit picocom
+
+```
+picocom -b 38400 /dev/ttyAMA0
+...
+Terminal ready
+/1/spi UP
+{"SPI":"UP"}
+Ctrl-a and Ctrl-x
+Thanks for using picocom
+```
+
+Run spidev_test (see [SpiSlv]) on the Pi Zero:
+
+``` 
+./spidev_test -s 500000 -D /dev/spidev0.0
+
+spi mode: 0
+bits per word: 8
+max speed: 500000 Hz (500 KHz)
+
+00 FF FF FF FF FF
+FF 40 00 00 00 00
+95 FF FF FF FF FF
+FF FF FF FF FF FF
+FF FF FF FF FF FF
+FF DE AD BE EF BA
+AD F0
+
+./spidev_test -s 500000 -D /dev/spidev0.0
+
+spi mode: 0
+bits per word: 8
+max speed: 500000 Hz (500 KHz)
+
+0D FF FF FF FF FF
+FF 40 00 00 00 00
+95 FF FF FF FF FF
+FF FF FF FF FF FF
+FF FF FF FF FF FF
+FF DE AD BE EF BA
+AD F0
+``` 
+
+Note the SPI output is offset a byte since it was sent back from the AVR. Close SSH.
+
+```
 exit
 ```
 
-wait for shutdown to finish, e.g. wait for the green LED on the Pi Zero to be off uninterrupted. Use picocom on Ubuntu to restart the Pi.
+Press the shutdown button and wait for the green LED on the Pi Zero to be off uninterrupted. For referance another host (e.g. from a RPUftdi or another RPUpi) can take the RS-422 bus now and be used to restart this Pi Zero (it needs [PwrMgt] on the RPUno). 
 
 ```
 picocom -b 38400 /dev/ttyUSB0
@@ -397,7 +452,3 @@ Thanks for using picocom
 # wait for Pi led to be uninterrupted
 ssh pi-bench.local
 ```
-
-
-
-

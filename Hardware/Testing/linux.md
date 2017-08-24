@@ -1,6 +1,6 @@
 # Description
 
-This is a list of notes regarding Linux things for RPUpi.
+This is a list of notes regarding Raspbin (Linux) things for RPUpi.
 
 
 # Table Of Contents:
@@ -14,7 +14,7 @@ This is a list of notes regarding Linux things for RPUpi.
 7. [Serial](#serial)
 8. [Packages used for the AVR toolchain](#packages-used-for-the-avr-toolchain)
 9. [Avrdude](#avrdude)
-10. [GPIO, I2C, and SPI](#gpio-i2c-and-spi)
+10. [SPI and I2C](#spi-and-i2c)
 11. [WiFi Dropout](#wiFi-dropout)
 12. [Package Updates](#package-updates)
 
@@ -29,7 +29,7 @@ Download [Etcher] (note, I have only used this on Ubuntu)
         
 [Etcher]: https://etcher.io/
         
-On Ubuntu 17.04 I needed to install libgconf-2-4 to allow etcher to run. Etcher (in the zip) is an application image, it does not install anything it just needs permission to run.
+On Ubuntu 17.04 I needed to install libgconf-2-4 to allow etcher to run. Etcher (in the zip) is an application image it does not install anything it just needs permission to run.
 
 ```
 sudo apt-get install libgconf-2-4
@@ -369,7 +369,7 @@ On the controller board under the RPUpi, I am working on [PwrMgt] firmware.
 # after a delay I can use the RS-422 again.
 ```
 
-I am not that sure if the Remote firmware should work like that. The fact that the Pi can set its bus manager lockout bit through the local controller board feels wrong (the Pi is not locked out very well is it), but until I have a chance to play with an ATmega328pb that is how it will work I guess. UPDATE: once the RPUpi (Remote) has seen an address on the DTR pair (e.g. form the RPUftdi with Hoste2Remote) it seems to be properly locked out. 
+This is sneaky mode operation on the Remote firmware. In sneaky mode the Pi Zero can set its bus manager lockout bit through the local controller board, it only works after the bus manager is powered up and while the bus has never been made active.
 
 
 ## Packages used for the AVR toolchain
@@ -410,18 +410,47 @@ Enabling CTS0 and RTS0 on GPIOs 16 and 17
 ```
 
 
-## GPIO, I2C, and SPI
+## SPI and I2C
 
-<https://learn.adafruit.com/adafruits-raspberry-pi-lesson-4-gpio-setup>
+Load an [RPUno] (ATmega328p) with [SpiSlv] firmware and use its command line to enable the AVR's SPI so we can test the interface between the Raspberry Pi [SPI] hardware and the AVR. Raspian needs its SPI master driver enabled with [raspi-config].
 
-Why not use the GPIO of the Pi Zero for things like flow meter pulse timing. Explaining such things is complicated, Ken Shirriff provides some references to the GPIO abstraction available on BeagleBone (it is similar to the Pi). Ken goes a little deeper than most, so this may help explain why some things need to be done in metal rather than trying to fit them into a time division multiplexing system.
+[RPUno]: https://github.com/epccs/RPUno/
+[SpiSlv]: https://github.com/epccs/RPUno/tree/master/SpiSlv
+[SPI]: https://www.raspberrypi.org/documentation/hardware/raspberrypi/spi/README.md
+[raspi-config]: https://www.raspberrypi.org/documentation/configuration/raspi-config.md
 
-<http://hackaday.com/2016/08/19/ken-shirriff-demystifies-beaglebone-io/>
-<http://www.righto.com/2016/08/the-beaglebones-io-pins-inside-software.html>
+Raspibin has an spi group setup in /etc/udev/rules.d/99-com.rules. I can add my user name to the spi group for the system to allow me to use the device.
 
-The Sitara has some bare metal processors on the chip to provide a place for code that needs continuous loops (e.g. not time slices). This is good but the Sitara metal processors (PRU) are not so easy to use like an AVR and there is compelling reasons to believe that big complex chips like the Sitara are more likely to suffer CMOS latch-up which would then cascade into the PRU. 
+``` 
+sudo usermod -a -G spi rsutherland
+# logout for the change to take
+``` 
 
-One of my areas of interest is event capture (e.g. eCAP on BBB) but all evidence shows it is not supported with any operating system. The Sitara may be programed as a bare metal device to access the enhanced capture module, but then I still need an SBC running Linux. If Linux could be setup to ignore the eCAP hardware so the PRU can control it then serious questions about security would be raised. Linux needs to use the Sitara MMU to protect the systems memory space, but if the PRU can access that space it is the same as unprotected.
+Compile spidev_test.c on the Pi with:
+
+``` 
+wget https://raw.githubusercontent.com/raspberrypi/linux/rpi-3.10.y/Documentation/spi/spidev_test.c
+gcc -o spidev_test spidev_test.c
+# run with
+./spidev_test -s 500000 -D /dev/spidev0.0
+./spidev_test -s 500000 -D /dev/spidev0.0
+
+spi mode: 0
+bits per word: 8
+max speed: 500000 Hz (500 KHz)
+
+0D FF FF FF FF FF
+FF 40 00 00 00 00
+95 FF FF FF FF FF
+FF FF FF FF FF FF
+FF FF FF FF FF FF
+FF DE AD BE EF BA
+AD F0
+``` 
+
+Note: The output is offset a byte since it was held in the AVR and then echoed back durring the next transfer. 
+
+I2C is enabled with [raspi-config] and has a i2c group to allow its use, but I do not have the ATmega328pb toolchain going.
 
 
 ## WiFi Dropout
