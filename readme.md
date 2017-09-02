@@ -6,11 +6,9 @@ From <https://github.com/epccs/RPUpi>
 
 Shield used to connect a Pi Zero (or W) host to a multidrop RS-422 (RPU_BUS) and an [RPUno] or [Irrigate7]. The multidrop bus can connect additional [RPUno] or [Irrigate7] with [RPUadpt] shields.
 
-[HackADay](https://hackaday.io/project/16424-rpupi)
-
 [Forum](http://rpubus.org/bb/viewforum.php?f=8)
 
-[OSHpark](https://oshpark.com/shared_projects/KWIJgjF8)
+[HackADay](https://hackaday.io/project/16424-rpupi-a-shield-for-pi-zero-and-rs-422-over-cat5)
 
 [RPUno]: https://github.com/epccs/RPUno
 [Irrigate7]: https://github.com/epccs/Irrigate7
@@ -18,6 +16,8 @@ Shield used to connect a Pi Zero (or W) host to a multidrop RS-422 (RPU_BUS) and
 [RPUftdi]: https://github.com/epccs/RPUftdi
 
 ## Status
+
+Available through [Tindie](https://www.tindie.com/products/ron-sutherland/rpupi-a-shield-for-pi-zero-and-rs-422-over-cat5/)
 
 ![Status](./Hardware/status_icon.png "Status")
 

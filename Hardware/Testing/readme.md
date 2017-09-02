@@ -25,7 +25,7 @@ This is a list of Test preformed on each RPUpi after assembly.
 
 ## Basics
 
-These tests are for an assembled RPUpi board 16197^2 which may be referred to as a Unit Under Test (UUT). If the UUT fails and can be reworked then do so, otherwise it needs to be scraped. 
+These tests are for an assembled RPUpi board 16197^3 which may be referred to as a Unit Under Test (UUT). If the UUT fails and can be reworked then do so, otherwise it needs to be scraped. 
 
 **Warning: never use a soldering iron to rework ceramic capacitors due to the thermal shock.**
     
@@ -63,7 +63,7 @@ Install Git and AVR toolchain on Ubuntu (16.04, on an old computer try https://w
 sudo apt-get install git gcc-avr binutils-avr gdb-avr avr-libc avrdude
 ```
 
-Clone the RPUadpt repository.
+Clone the RPUpi repository.
 
 ```
 cd ~
@@ -79,7 +79,7 @@ make fuse
 
 Note: There is not a bootloader, it just sets fuses.
 
-Disconnect the ICSP tool and measure the input current for 12Mhz crystal at 3.3V. It takes a long time to settel.
+Disconnect the ICSP tool and measure the input current for 12Mhz crystal at 3.3V. It takes a long time to settle.
 
 ```
 {  "I_IN_MCU_12MHZ_LP-CRYSTAL_mA":[4.9,5.1,5.0,5.1,]}
@@ -101,7 +101,7 @@ make isp
 
 The program loops through the test. It blinks the red LED to show which test number is setup. If it keeps repeating a test then that test has failed.
 
-As the firmware loops the input current can be measured, it should have two distinct levels, one when the DTR pair is driven low and one when the DTR pair is not driven. The blinking LED leaves the DMM unsettled. Turn off power.
+As the firmware loops, the input current can be measured, it should have two distinct levels, one when the DTR pair is driven low and one when the DTR pair is not driven. The blinking LED leaves the DMM unsettled. Turn off the power.
 
 ```
 {  "DTR_HLF_LD_mA":[33.4,33.8,33.6,33.7,],
