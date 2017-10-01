@@ -151,7 +151,9 @@ After a hault the Pi starts to reboot, but early in the cycle it starts to monit
 
 ## Network setup 
 
-It is your computer and your network, this is just an example.
+It is your computer and your network, this is just an example. See [Wireless CLI Setup] for more.
+
+[Wireless CLI Setup]: https://www.raspberrypi.org/documentation/configuration/wireless/wireless-cli.md
 
 ```
 # scan, if you want to see other networks to connect
@@ -178,14 +180,15 @@ network={
  ssid="EPCCS2"
  psk="yourkeynotmynetworkey"
  key_mgmt=WPA-PSK
+ priority=1
 }
 ```
 
 Now restart the network
 
 ```
-sudo ifdown wlan0
-sudo ifup wlan0
+# ifdown will kill the ssh session so make sure to start the network before issuing the command.
+sudo ifdown wlan0; sudo ifup wlan0
 
 # the avahi-daemon (installed by default) allows computers on the LAN to be found 
 # by hostname (e.g. Zeroconf or Bonjour, Ubuntu 16.04 has it, but it does not work on 14.04 for me)
