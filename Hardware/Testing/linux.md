@@ -495,6 +495,9 @@ sudo shutdown -r 1
 sudo apt-get update
 # upgrade + handles dependencies
 sudo apt-get dist-upgrade
+# update the firmware (e.g. WiFi and other devices that are not part of Linux)
+sudo apt-get install rpi-update
+sudo rpi-update
 # remove stale dependencies
 sudo apt-get autoremove
 sudo apt-get clean
