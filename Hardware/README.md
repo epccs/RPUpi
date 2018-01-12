@@ -119,6 +119,12 @@ Your [Raspberry Pi] is your computer, you are the expert because I surely am jus
 
 [Raspberry Pi]: https://www.raspberrypi.org/forums/
 
+## Simplified Serial
+
+To allow a hardware UART on a Pi Single Board Computer to interface with an AVR UART the following connections can be used. Notice that the AVR is powered by 3.3V.
+
+![Pi2AVR](./Documents/Pi2AVR.png "Pi to AVR")
+
 ## ICSP
 
 [ArduinoISP] sketch on an [Uno] with a SPI level converter is the [ICSP] tool I use to program the bus manager with the [Host2Remote] firmware. I then plug the RPUpi into an [RPUno] board and load my application firmware (e.g. [Solenoid] is used with a [K3] board). The RPUpi's Pi Zero host can communicate through RS-422 with other RPUno boards that have an [RPUadpt] pluged onto them. The additional boards will need the [Remote] firmware on there bus manager and have the rpu_bus address set in EEPROM.
