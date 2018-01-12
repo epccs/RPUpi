@@ -2212,24 +2212,22 @@ NOTE: WiFi is needed see https://www.kickstarter.com/projects/1991736672/iot-hat
 <part name="R3" library="R-C" deviceset="R" device="0805" value="10K"/>
 <part name="J1" library="U-Pi" deviceset="RPI-ZERO" device="90" value="Pi_40PIN"/>
 <part name="C6" library="C-C" deviceset="C" device="C0603A" value=".1uF"/>
+<part name="GND1" library="Plane" deviceset="0V" device=""/>
 </parts>
 <sheets>
 <sheet>
 <plain>
 <text x="78.232" y="-14.224" size="1.778" layer="98">ISP</text>
 <text x="40.64" y="87.122" size="2.54" layer="98">AVR </text>
-<wire x1="114.808" y1="40.386" x2="106.934" y2="40.386" width="0.4064" layer="98"/>
-<wire x1="106.934" y1="40.386" x2="107.95" y2="41.148" width="0.4064" layer="98"/>
-<wire x1="106.934" y1="40.386" x2="107.95" y2="39.624" width="0.4064" layer="98"/>
 <text x="30.734" y="1.778" size="1.778" layer="98">* 328PB-AU PINOUT IS NOT 
 SAME AS 328P-AU </text>
 <text x="13.462" y="-6.604" size="1.778" layer="98">12MHZ CRYSTAL:
 ECS-120-20-3X-TR</text>
-<wire x1="116.84" y1="43.18" x2="160.02" y2="43.18" width="0.1524" layer="98" style="shortdash"/>
-<wire x1="160.02" y1="17.78" x2="116.84" y2="17.78" width="0.1524" layer="98" style="shortdash"/>
+<wire x1="111.76" y1="43.18" x2="160.02" y2="43.18" width="0.1524" layer="98" style="shortdash"/>
+<wire x1="160.02" y1="17.78" x2="111.76" y2="17.78" width="0.1524" layer="98" style="shortdash"/>
 <wire x1="160.02" y1="43.18" x2="160.02" y2="17.78" width="0.1524" layer="98" style="shortdash"/>
 <text x="130.302" y="39.624" size="2.54" layer="98">PI SHUTDOWN</text>
-<wire x1="116.84" y1="43.18" x2="116.84" y2="17.78" width="0.1524" layer="98" style="shortdash"/>
+<wire x1="111.76" y1="43.18" x2="111.76" y2="17.78" width="0.1524" layer="98" style="shortdash"/>
 <text x="33.782" y="16.256" size="1.778" layer="98">*</text>
 <text x="82.804" y="54.61" size="1.778" layer="98">0</text>
 <text x="82.55" y="48.514" size="1.778" layer="98">1</text>
@@ -2237,6 +2235,7 @@ ECS-120-20-3X-TR</text>
 <text x="82.804" y="15.494" size="1.778" layer="98">13</text>
 <text x="83.058" y="23.622" size="1.778" layer="98">11</text>
 <text x="183.642" y="77.724" size="2.54" layer="98">PI ZERO [W], PI2, PI3</text>
+<text x="87.63" y="31.496" size="1.778" layer="98">SET WEAK PULL-UP</text>
 </plain>
 <instances>
 <instance part="J9" gate="G$1" x="76.2" y="-20.32"/>
@@ -2254,11 +2253,12 @@ ECS-120-20-3X-TR</text>
 <instance part="C4" gate="G$1" x="25.4" y="35.56"/>
 <instance part="C5" gate="G$1" x="35.56" y="33.02"/>
 <instance part="S2" gate="S" x="137.16" y="25.4"/>
-<instance part="R2" gate="G$1" x="109.22" y="30.48" rot="R180"/>
+<instance part="R2" gate="G$1" x="119.38" y="30.48" rot="R180"/>
 <instance part="GND19" gate="1" x="149.86" y="22.86"/>
 <instance part="R3" gate="G$1" x="134.62" y="35.56" rot="R180"/>
 <instance part="J1" gate="G$1" x="200.66" y="38.1"/>
 <instance part="C6" gate="G$1" x="160.02" y="55.88" rot="R90"/>
+<instance part="GND1" gate="1" x="172.72" y="15.24"/>
 </instances>
 <busses>
 </busses>
@@ -2335,6 +2335,12 @@ ECS-120-20-3X-TR</text>
 <pinref part="S2" gate="S" pin="4"/>
 <wire x1="142.24" y1="22.86" x2="142.24" y2="25.4" width="0.1524" layer="91"/>
 <junction x="142.24" y="25.4"/>
+</segment>
+<segment>
+<pinref part="GND1" gate="1" pin="0V"/>
+<wire x1="172.72" y1="17.78" x2="172.72" y2="20.32" width="0.1524" layer="91"/>
+<pinref part="J1" gate="G$1" pin="GND@3"/>
+<wire x1="172.72" y1="20.32" x2="177.8" y2="20.32" width="0.1524" layer="91"/>
 </segment>
 </net>
 <net name="MGR_AREF" class="0">
@@ -2434,25 +2440,25 @@ ECS-120-20-3X-TR</text>
 <net name="IO8" class="0">
 <segment>
 <pinref part="U7" gate="G$1" pin="(ICP1)PB0"/>
-<wire x1="104.14" y1="30.48" x2="78.74" y2="30.48" width="0.1524" layer="91"/>
+<wire x1="114.3" y1="30.48" x2="78.74" y2="30.48" width="0.1524" layer="91"/>
 <pinref part="R2" gate="G$1" pin="2"/>
 </segment>
 </net>
 <net name="N$7" class="0">
 <segment>
 <pinref part="R3" gate="G$1" pin="2"/>
-<wire x1="129.54" y1="35.56" x2="124.46" y2="35.56" width="0.1524" layer="91"/>
-<wire x1="124.46" y1="35.56" x2="124.46" y2="30.48" width="0.1524" layer="91"/>
+<wire x1="129.54" y1="35.56" x2="127" y2="35.56" width="0.1524" layer="91"/>
+<wire x1="127" y1="35.56" x2="127" y2="30.48" width="0.1524" layer="91"/>
 <pinref part="S2" gate="S" pin="2"/>
-<wire x1="124.46" y1="30.48" x2="124.46" y2="25.4" width="0.1524" layer="91"/>
-<wire x1="124.46" y1="25.4" x2="124.46" y2="22.86" width="0.1524" layer="91"/>
-<wire x1="124.46" y1="22.86" x2="132.08" y2="22.86" width="0.1524" layer="91"/>
+<wire x1="127" y1="30.48" x2="127" y2="25.4" width="0.1524" layer="91"/>
+<wire x1="127" y1="25.4" x2="127" y2="22.86" width="0.1524" layer="91"/>
+<wire x1="127" y1="22.86" x2="132.08" y2="22.86" width="0.1524" layer="91"/>
 <pinref part="S2" gate="S" pin="1"/>
-<wire x1="132.08" y1="25.4" x2="124.46" y2="25.4" width="0.1524" layer="91"/>
-<junction x="124.46" y="25.4"/>
+<wire x1="132.08" y1="25.4" x2="127" y2="25.4" width="0.1524" layer="91"/>
+<junction x="127" y="25.4"/>
 <pinref part="R2" gate="G$1" pin="1"/>
-<wire x1="114.3" y1="30.48" x2="124.46" y2="30.48" width="0.1524" layer="91"/>
-<junction x="124.46" y="30.48"/>
+<wire x1="124.46" y1="30.48" x2="127" y2="30.48" width="0.1524" layer="91"/>
+<junction x="127" y="30.48"/>
 </segment>
 </net>
 <net name="N$1" class="0">
