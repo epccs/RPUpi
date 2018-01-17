@@ -125,6 +125,10 @@ To allow a hardware UART on a Pi Single Board Computer to interface with an AVR 
 
 ![Pi2AVR](./Documents/Pi2AVR.png "Pi to AVR")
 
+Now lets set things up to allow use with a 5V AVR and the ability to turn the SBC off (IOFF) without it pulling down on the serial port lines.
+
+![Pi2AVR_wIOFF](./Documents/Pi2AVR_wIOFF.png "Pi to AVR with IOFF")
+
 ## ICSP
 
 [ArduinoISP] sketch on an [Uno] with a SPI level converter is the [ICSP] tool I use to program the bus manager with the [Host2Remote] firmware. I then plug the RPUpi into an [RPUno] board and load my application firmware (e.g. [Solenoid] is used with a [K3] board). The RPUpi's Pi Zero host can communicate through RS-422 with other RPUno boards that have an [RPUadpt] pluged onto them. The additional boards will need the [Remote] firmware on there bus manager and have the rpu_bus address set in EEPROM.

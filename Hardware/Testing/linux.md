@@ -381,6 +381,13 @@ This is sneaky mode operation on the Remote firmware. In sneaky mode the Pi Zero
 sudo apt-get install gcc-avr binutils-avr gdb-avr avr-libc avrdude
 ```
 
+Copy the avr includes to the Samba share so I can look at them from Windows.
+
+```
+#  c(o)p(y) -r(ecursive) <target> <optional name>
+cp -s /usr/lib/avr/include /home/rsutherland/Samba/lib/avr/include
+```
+
 ## Avrdude
 
 Avrdude is a programming tool for AVR microcontrollers, it is used to place the binary image into the controller and set a verity of hardware options (fuses). Let's look at the RPUno files to see how it works. Adc is an interactive command line program that works over the RS-422 serial (which is the purpose of RPUpi) linking the Pi UART to the AVR UART, it shows a way to read analog channels from the ATmega328p on the RPUno from the Pi. 
