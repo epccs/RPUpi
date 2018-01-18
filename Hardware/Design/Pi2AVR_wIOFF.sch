@@ -2384,13 +2384,13 @@ referance TI's SOIC package, but pads are little larger and rounded</description
 <part name="D1" library="D-GP" deviceset="D" device="SOD123" value="T4"/>
 <part name="GND31" library="Plane" deviceset="0V" device=""/>
 <part name="U1" library="U-AVR" deviceset="ATMEGA328PB-AU" device="" value="ATMEGA328PB-AU"/>
-<part name="Y1" library="Y-XTL" deviceset="CSM" device="-3X" value="12MHz"/>
+<part name="Y1" library="Y-XTL" deviceset="CSM" device="-3X" value="16MHz"/>
 <part name="C4" library="C-C" deviceset="C" device="C0603A" value="22pF"/>
 <part name="C5" library="C-C" deviceset="C" device="C0603A" value="22pF"/>
 <part name="S2" library="S-Tactile" deviceset="KSA" device="0M311" value="KSA0M311"/>
-<part name="R20" library="R-C" deviceset="R" device="0805" value="10k"/>
+<part name="R9" library="R-C" deviceset="R" device="0805" value="10k"/>
 <part name="GND19" library="Plane" deviceset="0V" device=""/>
-<part name="R21" library="R-C" deviceset="R" device="0805" value="10K"/>
+<part name="R10" library="R-C" deviceset="R" device="0805" value="10K"/>
 <part name="J1" library="U-Pi" deviceset="RPI-ZERO" device="90" value="Pi_40PIN"/>
 <part name="C6" library="C-C" deviceset="C" device="C0603A" value=".1uF"/>
 <part name="GND1" library="Plane" deviceset="0V" device=""/>
@@ -2400,13 +2400,13 @@ referance TI's SOIC package, but pads are little larger and rounded</description
 <part name="P+1" library="Plane" deviceset="+5V" device=""/>
 <part name="P+2" library="Plane" deviceset="+5V" device=""/>
 <part name="P+3" library="Plane" deviceset="+5V" device=""/>
-<part name="R2" library="R-C" deviceset="R" device="0805" value="4.99K"/>
-<part name="R3" library="R-C" deviceset="R" device="0805" value="2.2K"/>
-<part name="R4" library="R-C" deviceset="R" device="0805" value="3.3K"/>
+<part name="R4" library="R-C" deviceset="R" device="0805" value="OPEN"/>
+<part name="R6" library="R-C" deviceset="R" device="0805" value="2.2K"/>
+<part name="R8" library="R-C" deviceset="R" device="0805" value="3.3K"/>
 <part name="R5" library="R-C" deviceset="R" device="0805" value="182"/>
-<part name="R6" library="R-C" deviceset="R" device="0805" value="220"/>
-<part name="R7" library="R-C" deviceset="R" device="0805" value="1k"/>
-<part name="R8" library="R-C" deviceset="R" device="0805" value="1k"/>
+<part name="R7" library="R-C" deviceset="R" device="0805" value="220"/>
+<part name="R3" library="R-C" deviceset="R" device="0805" value="1k"/>
+<part name="R2" library="R-C" deviceset="R" device="0805" value="1k"/>
 </parts>
 <sheets>
 <sheet>
@@ -2415,8 +2415,8 @@ referance TI's SOIC package, but pads are little larger and rounded</description
 <text x="48.26" y="87.122" size="2.54" layer="98">AVR </text>
 <text x="30.734" y="1.778" size="1.778" layer="98">* 328PB-AU PINOUT IS NOT 
 SAME AS 328P-AU </text>
-<text x="13.462" y="-6.604" size="1.778" layer="98">12MHZ CRYSTAL:
-ECS-120-20-3X-TR</text>
+<text x="13.462" y="-6.604" size="1.778" layer="98">16MHZ CRYSTAL:
+ECS-160-20-3X-TR</text>
 <wire x1="165.1" y1="5.08" x2="228.6" y2="5.08" width="0.1524" layer="98" style="shortdash"/>
 <wire x1="228.6" y1="-25.4" x2="165.1" y2="-25.4" width="0.1524" layer="98" style="shortdash"/>
 <wire x1="228.6" y1="5.08" x2="228.6" y2="-25.4" width="0.1524" layer="98" style="shortdash"/>
@@ -2431,7 +2431,8 @@ ECS-120-20-3X-TR</text>
 <text x="130.302" y="1.016" size="1.778" layer="98">IOFF: HI-Z WITH
 PI POWER OFF</text>
 <text x="150.622" y="76.708" size="1.778" layer="98">3.3V PULL UP</text>
-<text x="71.882" y="91.948" size="1.778" layer="98">5V PULL UP</text>
+<text x="70.104" y="90.678" size="1.778" layer="98">5K PULL UP
+IF NO USB</text>
 <text x="104.14" y="90.678" size="1.778" layer="98">PLAY SAFE?
 AVR ABS MAX PIN CURR
 IS 40mA</text>
@@ -2459,9 +2460,9 @@ https://github.com/epccs/RPUpi/tree/master/RPiRtsCts</text>
 <instance part="C4" gate="G$1" x="25.4" y="35.56"/>
 <instance part="C5" gate="G$1" x="35.56" y="33.02"/>
 <instance part="S2" gate="S" x="190.5" y="-12.7"/>
-<instance part="R20" gate="G$1" x="172.72" y="-2.54" rot="R180"/>
+<instance part="R9" gate="G$1" x="172.72" y="-2.54" rot="R180"/>
 <instance part="GND19" gate="1" x="203.2" y="-15.24"/>
-<instance part="R21" gate="G$1" x="187.96" y="-2.54" rot="R180"/>
+<instance part="R10" gate="G$1" x="187.96" y="-2.54" rot="R180"/>
 <instance part="J1" gate="G$1" x="200.66" y="38.1"/>
 <instance part="C6" gate="G$1" x="106.68" y="33.02" rot="R90"/>
 <instance part="GND1" gate="1" x="172.72" y="15.24"/>
@@ -2477,13 +2478,13 @@ https://github.com/epccs/RPUpi/tree/master/RPiRtsCts</text>
 <instance part="P+1" gate="1" x="17.78" y="78.74"/>
 <instance part="P+2" gate="1" x="66.04" y="91.44"/>
 <instance part="P+3" gate="1" x="114.3" y="50.8"/>
-<instance part="R2" gate="G$1" x="73.66" y="86.36" rot="R180"/>
-<instance part="R3" gate="G$1" x="114.3" y="40.64" rot="R270"/>
-<instance part="R4" gate="G$1" x="154.94" y="71.12" rot="R180"/>
+<instance part="R4" gate="G$1" x="73.66" y="86.36" rot="R180"/>
+<instance part="R6" gate="G$1" x="114.3" y="40.64" rot="R270"/>
+<instance part="R8" gate="G$1" x="154.94" y="71.12" rot="R180"/>
 <instance part="R5" gate="G$1" x="109.22" y="86.36" rot="R180"/>
-<instance part="R6" gate="G$1" x="127" y="71.12" rot="R180"/>
-<instance part="R7" gate="G$1" x="68.58" y="104.14"/>
-<instance part="R8" gate="G$1" x="58.42" y="99.06"/>
+<instance part="R7" gate="G$1" x="127" y="71.12" rot="R180"/>
+<instance part="R3" gate="G$1" x="68.58" y="104.14"/>
+<instance part="R2" gate="G$1" x="58.42" y="99.06"/>
 </instances>
 <busses>
 </busses>
@@ -2661,7 +2662,7 @@ https://github.com/epccs/RPUpi/tree/master/RPiRtsCts</text>
 </net>
 <net name="N$7" class="0">
 <segment>
-<pinref part="R21" gate="G$1" pin="2"/>
+<pinref part="R10" gate="G$1" pin="2"/>
 <wire x1="182.88" y1="-2.54" x2="180.34" y2="-2.54" width="0.1524" layer="91"/>
 <pinref part="S2" gate="S" pin="2"/>
 <wire x1="180.34" y1="-2.54" x2="180.34" y2="-12.7" width="0.1524" layer="91"/>
@@ -2670,14 +2671,14 @@ https://github.com/epccs/RPUpi/tree/master/RPiRtsCts</text>
 <pinref part="S2" gate="S" pin="1"/>
 <wire x1="185.42" y1="-12.7" x2="180.34" y2="-12.7" width="0.1524" layer="91"/>
 <junction x="180.34" y="-12.7"/>
-<pinref part="R20" gate="G$1" pin="1"/>
+<pinref part="R9" gate="G$1" pin="1"/>
 <wire x1="177.8" y1="-2.54" x2="180.34" y2="-2.54" width="0.1524" layer="91"/>
 <junction x="180.34" y="-2.54"/>
 </segment>
 </net>
 <net name="N$1" class="0">
 <segment>
-<pinref part="R21" gate="G$1" pin="1"/>
+<pinref part="R10" gate="G$1" pin="1"/>
 <wire x1="193.04" y1="-2.54" x2="215.9" y2="-2.54" width="0.1524" layer="91"/>
 <wire x1="215.9" y1="-2.54" x2="215.9" y2="10.16" width="0.1524" layer="91"/>
 <wire x1="215.9" y1="10.16" x2="165.1" y2="10.16" width="0.1524" layer="91"/>
@@ -2704,9 +2705,9 @@ https://github.com/epccs/RPUpi/tree/master/RPiRtsCts</text>
 <wire x1="238.76" y1="58.42" x2="226.06" y2="58.42" width="0.1524" layer="91"/>
 <label x="188.468" y="84.328" size="1.778" layer="91"/>
 <wire x1="147.32" y1="71.12" x2="147.32" y2="83.82" width="0.1524" layer="91"/>
-<pinref part="R4" gate="G$1" pin="2"/>
+<pinref part="R8" gate="G$1" pin="2"/>
 <wire x1="147.32" y1="71.12" x2="149.86" y2="71.12" width="0.1524" layer="91"/>
-<pinref part="R6" gate="G$1" pin="1"/>
+<pinref part="R7" gate="G$1" pin="1"/>
 <wire x1="132.08" y1="71.12" x2="147.32" y2="71.12" width="0.1524" layer="91"/>
 <junction x="147.32" y="71.12"/>
 </segment>
@@ -2748,7 +2749,7 @@ https://github.com/epccs/RPUpi/tree/master/RPiRtsCts</text>
 <wire x1="147.32" y1="-10.16" x2="147.32" y2="-2.54" width="0.1524" layer="91"/>
 <pinref part="U2" gate="P" pin="VCC"/>
 <wire x1="147.32" y1="-2.54" x2="134.62" y2="-2.54" width="0.1524" layer="91"/>
-<pinref part="R20" gate="G$1" pin="2"/>
+<pinref part="R9" gate="G$1" pin="2"/>
 <wire x1="167.64" y1="-2.54" x2="162.56" y2="-2.54" width="0.1524" layer="91"/>
 <pinref part="J1" gate="G$1" pin="3V3@1"/>
 <wire x1="162.56" y1="-2.54" x2="162.56" y2="68.58" width="0.1524" layer="91"/>
@@ -2756,7 +2757,7 @@ https://github.com/epccs/RPUpi/tree/master/RPiRtsCts</text>
 <wire x1="147.32" y1="-2.54" x2="162.56" y2="-2.54" width="0.1524" layer="91"/>
 <junction x="147.32" y="-2.54"/>
 <junction x="162.56" y="-2.54"/>
-<pinref part="R4" gate="G$1" pin="1"/>
+<pinref part="R8" gate="G$1" pin="1"/>
 <wire x1="160.02" y1="71.12" x2="162.56" y2="71.12" width="0.1524" layer="91"/>
 <wire x1="162.56" y1="71.12" x2="162.56" y2="68.58" width="0.1524" layer="91"/>
 <junction x="162.56" y="68.58"/>
@@ -2768,13 +2769,13 @@ https://github.com/epccs/RPUpi/tree/master/RPiRtsCts</text>
 <pinref part="U1" gate="G$1" pin="(RXD)PD0"/>
 <wire x1="78.74" y1="53.34" x2="88.9" y2="53.34" width="0.1524" layer="91"/>
 <wire x1="88.9" y1="53.34" x2="88.9" y2="86.36" width="0.1524" layer="91"/>
-<pinref part="R2" gate="G$1" pin="1"/>
+<pinref part="R4" gate="G$1" pin="1"/>
 <wire x1="78.74" y1="86.36" x2="88.9" y2="86.36" width="0.1524" layer="91"/>
 <pinref part="R5" gate="G$1" pin="2"/>
 <wire x1="104.14" y1="86.36" x2="88.9" y2="86.36" width="0.1524" layer="91"/>
 <junction x="88.9" y="86.36"/>
 <wire x1="88.9" y1="86.36" x2="88.9" y2="99.06" width="0.1524" layer="91"/>
-<pinref part="R8" gate="G$1" pin="2"/>
+<pinref part="R2" gate="G$1" pin="2"/>
 <wire x1="88.9" y1="99.06" x2="63.5" y2="99.06" width="0.1524" layer="91"/>
 </segment>
 </net>
@@ -2806,11 +2807,11 @@ https://github.com/epccs/RPUpi/tree/master/RPiRtsCts</text>
 <segment>
 <pinref part="P+2" gate="1" pin="+5V"/>
 <wire x1="66.04" y1="88.9" x2="66.04" y2="86.36" width="0.1524" layer="91"/>
-<pinref part="R2" gate="G$1" pin="2"/>
+<pinref part="R4" gate="G$1" pin="2"/>
 <wire x1="66.04" y1="86.36" x2="68.58" y2="86.36" width="0.1524" layer="91"/>
 </segment>
 <segment>
-<pinref part="R3" gate="G$1" pin="1"/>
+<pinref part="R6" gate="G$1" pin="1"/>
 <pinref part="P+3" gate="1" pin="+5V"/>
 <wire x1="114.3" y1="45.72" x2="114.3" y2="48.26" width="0.1524" layer="91"/>
 </segment>
@@ -2820,7 +2821,7 @@ https://github.com/epccs/RPUpi/tree/master/RPiRtsCts</text>
 <pinref part="U2" gate="C" pin="O"/>
 <pinref part="C6" gate="G$1" pin="2"/>
 <wire x1="121.92" y1="33.02" x2="114.3" y2="33.02" width="0.1524" layer="91"/>
-<pinref part="R3" gate="G$1" pin="2"/>
+<pinref part="R6" gate="G$1" pin="2"/>
 <wire x1="114.3" y1="33.02" x2="111.76" y2="33.02" width="0.1524" layer="91"/>
 <wire x1="114.3" y1="35.56" x2="114.3" y2="33.02" width="0.1524" layer="91"/>
 <junction x="114.3" y="33.02"/>
@@ -2836,7 +2837,7 @@ https://github.com/epccs/RPUpi/tree/master/RPiRtsCts</text>
 <label x="93.98" y="72.39" size="1.778" layer="91"/>
 <wire x1="91.44" y1="71.12" x2="91.44" y2="104.14" width="0.1524" layer="91"/>
 <junction x="91.44" y="71.12"/>
-<pinref part="R7" gate="G$1" pin="2"/>
+<pinref part="R3" gate="G$1" pin="2"/>
 <wire x1="91.44" y1="104.14" x2="73.66" y2="104.14" width="0.1524" layer="91"/>
 </segment>
 </net>
@@ -2850,20 +2851,20 @@ https://github.com/epccs/RPUpi/tree/master/RPiRtsCts</text>
 <net name="N$4" class="0">
 <segment>
 <pinref part="U2" gate="B" pin="O"/>
-<pinref part="R6" gate="G$1" pin="2"/>
+<pinref part="R7" gate="G$1" pin="2"/>
 <wire x1="121.92" y1="71.12" x2="119.38" y2="71.12" width="0.1524" layer="91"/>
 </segment>
 </net>
 <net name="USB_UART_RX" class="0">
 <segment>
-<pinref part="R7" gate="G$1" pin="1"/>
+<pinref part="R3" gate="G$1" pin="1"/>
 <wire x1="63.5" y1="104.14" x2="35.56" y2="104.14" width="0.1524" layer="91"/>
 <label x="35.56" y="104.14" size="1.778" layer="91" rot="R180" xref="yes"/>
 </segment>
 </net>
 <net name="USB_UART_TX" class="0">
 <segment>
-<pinref part="R8" gate="G$1" pin="1"/>
+<pinref part="R2" gate="G$1" pin="1"/>
 <wire x1="53.34" y1="99.06" x2="35.56" y2="99.06" width="0.1524" layer="91"/>
 <label x="35.56" y="99.06" size="1.778" layer="91" rot="R180" xref="yes"/>
 </segment>
