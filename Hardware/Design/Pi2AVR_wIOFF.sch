@@ -2394,7 +2394,7 @@ referance TI's SOIC package, but pads are little larger and rounded</description
 <part name="J1" library="U-Pi" deviceset="RPI-ZERO" device="90" value="Pi_40PIN"/>
 <part name="C6" library="C-C" deviceset="C" device="C0603A" value=".1uF"/>
 <part name="GND1" library="Plane" deviceset="0V" device=""/>
-<part name="U2" library="U-7400" deviceset="74*07" device="D" value="74LVC07"/>
+<part name="U2" library="U-7400" deviceset="74*07" device="D" value="74LVC07A"/>
 <part name="C7" library="C-C" deviceset="C" device="C0603A" value=".1uF"/>
 <part name="GND2" library="Plane" deviceset="0V" device=""/>
 <part name="P+1" library="Plane" deviceset="+5V" device=""/>

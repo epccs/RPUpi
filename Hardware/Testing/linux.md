@@ -388,6 +388,36 @@ Copy the avr includes to the Samba share so I can look at them from Windows.
 cp -s /usr/lib/avr/include /home/rsutherland/Samba/lib/avr/include
 ```
 
+Setup intelliSense with Visual Studio Code (this is not fully working for me)
+
+c_cpp_properties.json in the.vscode folder
+
+```
+{
+    "configurations": [
+        {
+            "name": "Arduino",
+            "includePath": [
+                "${workspaceRoot}"
+            ],
+            "defines": [],
+            "intelliSenseMode": "clang-x64",
+            "browse": {
+                "path": [
+                    "Y:/lib/avr/nclude",
+                    "../${workspaceRoot}",
+                    "${workspaceRoot}"
+                ],
+                "limitSymbolsToIncludedHeaders": true,
+                "databaseFilename": ""
+            }
+        }
+    ],
+    "version": 3
+}
+```
+
+
 ## Avrdude
 
 Avrdude is a programming tool for AVR microcontrollers, it is used to place the binary image into the controller and set a verity of hardware options (fuses). Let's look at the RPUno files to see how it works. Adc is an interactive command line program that works over the RS-422 serial (which is the purpose of RPUpi) linking the Pi UART to the AVR UART, it shows a way to read analog channels from the ATmega328p on the RPUno from the Pi. 
