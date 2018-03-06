@@ -29,11 +29,13 @@ Download [Etcher] (note, I have only used this on Ubuntu)
         
 [Etcher]: https://etcher.io/
         
-On Ubuntu 17.04 I needed to install libgconf-2-4 to allow etcher to run. Etcher (in the zip) is an application image it does not install anything it just needs permission to run.
+On Ubuntu 17.04 I installed libgconf-2-4 to allow etcher to run, I updated to 17.10 and still have libgconf-2-4 but not sure it is needed. Etcher is an application image so it does not install anything it just needs permission to run.
 
 ```
 sudo apt-get install libgconf-2-4
 ```
+
+To update Etcher I just delete the old application image and the .desktop file it made, search for etcher to find them.
 
 
 ## Headless Setup
@@ -45,22 +47,25 @@ First configure the WiFi (e.g. Edit the /etc/wpa_supplicant/wpa_supplicant.conf)
 Next add an empty ssh file to the boot area. I do this with the touch command from a console on the Ubuntu computer I used to setup the SD card.
 
 ```
-# on Ubuntu 17.04 the SD card automaticly mounts when pluged in at /media/username
+# on Ubuntu 17.10 the SD card automaticly mounts when pluged in at /media/username
 cd /media/rsutherland
 ls
-# it shows: 673b8ab6-6426-474b-87d3-71bff0fcebc3  boot
-# for the card I just did Ubuntu called the root mount 673b8ab6-6426-474b-87d3-71bff0fcebc3
-# so to setup the Wi-Fi I can edit
-sudo nano /media/rsutherland/673b8ab6-6426-474b-87d3-71bff0fcebc3/etc/wpa_supplicant/wpa_supplicant.conf
-# to tell the startup system to run the SSH server I add an empty file to the boot mount (which has its expected name)  
+# stretch mounts: rootfs boot
+# Etcher set my past jessie rootfs to mount as 673b8ab6-6426-474b-87d3-71bff0fcebc3
+# To setup the Wi-Fi I can edit wpa_supplicant (see network-setup) in rootfs
+sudo nano /media/rsutherland/rootfs/etc/wpa_supplicant/wpa_supplicant.conf
+# to tell the startup system to run the SSH server I add an empty file in the boot mount
 touch /media/rsutherland/boot/ssh
 ```
 
 Put it in the Pi and boot... On my network I can then ssh pi@raspberrypi.local with the default password "raspberry", I then change the password as well as the hostname.
 
 ```
-# remove the old host key
+# Well fish, I need to remove the old host and IP from the past setup 
 [ssh-keygen -f "/home/rsutherland/.ssh/known_hosts" -R raspberrypi.local]
+[ssh-keygen -f "/home/rsutherland/.ssh/known_hosts" -R pi1.local]
+[ssh-keygen -f "/home/rsutherland/.ssh/known_hosts" -R 192.168.4.5]
+
 ssh pi@raspberrypi.local
 
 user: pi
@@ -98,7 +103,7 @@ sudo shutdown -r 1
 # output: The system is going down for reboot at Sat 2017-08-12 04:28:25 UTC!
 exit
 logout
-Connection to pi-bench.local closed.
+Connection to pi1.local closed.
 # back to the system I started from
 ```
 
@@ -108,13 +113,15 @@ After reboot add some scripts for RPUpi [Shutdown] and [RPiRtsCts].
 [RPiRtsCts]: https://github.com/epccs/RPUpi/tree/master/RPiRtsCts
 
 ```
-ssh pi-bench.local
+ssh pi1.local
 
 # since I am loging in from rsutherland on another machine ssh will try to use that user name.
 mkdir bin
 mkdir Samba
 sudo apt-get install git
 cd Samba
+mkdir git
+cd git
 git clone git://github.com/epccs/RPUpi.git
 cd RPUpi/RPiRtsCts
 make
@@ -177,10 +184,24 @@ ctrl_interface=DIR=/var/run/wpa_supplicant GROUP=netdev
 update_config=1
 
 network={
- ssid="EPCCS2"
+ ssid="EPCCS4"
  psk="yourkeynotmynetworkey"
  key_mgmt=WPA-PSK
  priority=1
+}
+
+network={
+ ssid="EPCCS3"
+ psk="yourkeynotmynetworkey"
+ key_mgmt=WPA-PSK
+ priority=2
+}
+
+network={
+ ssid="EPCCS2"
+ psk="yourkeynotmynetworkey"
+ key_mgmt=WPA-PSK
+ priority=3
 }
 ```
 
@@ -222,6 +243,8 @@ wget https://raw.githubusercontent.com/epccs/RPUpi/master/Hardware/Testing/mkeys
 chmod u+x mkeys
 # note if you have a private key (e.g. id_dsa or id_rsa file) 
 # and you want to use it then place it in the .ssh folder now
+[scp rsutherland@leek.local:.ssh/id_dsa .ssh/id_dsa]
+[scp rsutherland@leek.local:.ssh/id_rsa .ssh/id_rsa]
 ~/bin/mkeys localhost
 # that should have built the public (and if missing a new private) key 
 # and added the public key to the authorized file 
@@ -269,8 +292,8 @@ sudo service smbd restart
 testparm
 
 # my user name (rsutherland) on Windows can now map 
-# to the share on the Pi Zero (computer name is pi-bench)
-\\pi-bench\Samba
+# to the share on the Pi Zero (computer name is pi1)
+\\pi1\Samba
 ```
 
 Note the Pi also shows the user home folders but Ubuntu did not, I will ignor those.
@@ -278,7 +301,7 @@ Note the Pi also shows the user home folders but Ubuntu did not, I will ignor th
 
 ## Python 3
 
-On Raspbian Lite only Python 2 is installed but I will use Python 3, so it needs added.
+On Raspbian Lite jessie only Python 2 is installed but I will use Python 3 (stretch has python3), so it needs added.
 
 ```
 sudo apt-get install python3
@@ -423,13 +446,13 @@ c_cpp_properties.json in the.vscode folder
 Avrdude is a programming tool for AVR microcontrollers, it is used to place the binary image into the controller and set a verity of hardware options (fuses). Let's look at the RPUno files to see how it works. Adc is an interactive command line program that works over the RS-422 serial (which is the purpose of RPUpi) linking the Pi UART to the AVR UART, it shows a way to read analog channels from the ATmega328p on the RPUno from the Pi. 
 
 ```
-[cd Samba]
-git clone git://github.com/epccs/RPUno.git
+[cd Samba/git]
+git clone git://github.com/epccs/RPUlux.git
 ```
 
-Generally, avrdude is setup to run with rules in a Makefile. The following is what the rules for the [Adc] firmware Makefile looks like after the variables are solved.
+I setup avrdude to run with rules in a Makefile. The following is what the rules for the [Adc] firmware Makefile looks like after the variables are solved.
 
-[Adc]: https://github.com/epccs/RPUno/tree/master/Adc
+[Adc]: https://github.com/epccs/RPUlux/tree/master/Adc
 
 ```
 avrdude -v -p atmega328p -c arduino -P /dev/ttyAMA0 -b 115200 -U flash:w:Adc.hex
