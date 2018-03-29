@@ -73,9 +73,9 @@ Scan for the I2C slave address of the RPUftdi shield and address I2C.
 ``` 
 /0/id?
 {"id":{"name":"I2Cdebug","desc":"RPUno Board /w atmega328p and LT3652","avr-gcc":"4.9"}}
-/0/scan?
+/0/iscan?
 {"scan":[{"addr":"0x29"}]}
-/0/address 41
+/0/iaddr 41
 {"address":"0x29"}
 ```
 
@@ -84,48 +84,31 @@ Scan for the I2C slave address of the RPUftdi shield and address I2C.
 The local RPU address can be read.
 
 ``` 
-/1/address 41
+/1/iaddr 41
 {"address":"0x29"}
-/1/buffer 0,255
+/1/ibuff 0,255
 {"txBuffer":[{"data":"0x0"},{"data":"0xFF"}]}
-/1/read? 2
+/1/iread? 2
 {"rxBuffer":[{"data":"0x0"},{"data":"0x31"}]}
 ``` 
 
 
 ## Set the bootload address with i2c-debug
 
-Set the byte that is sent when DTR/RTS toggles ('2' is 0x32 or 50). Note RPUpi has 3V3 logic inputs for a host.
+Set the byte that is sent when DTR/RTS toggles ('2' is 0x32 or 50).
 
 ```
-/1/address 41
+/1/iaddr 41
 {"address":"0x29"}
-/1/buffer 3,50
+/1/ibuff 3,50
 {"txBuffer":[{"data":"0x3"},{"data":"0x32"}]}
-/1/read? 2
+/1/iread? 2
 {"rxBuffer":[{"data":"0x3"},{"data":"0x32"}]}
 ``` 
 
 exit picocom with C-a, C-x. 
 
-Connect with picocom again. 
-
-``` 
-picocom -b 38400 /dev/ttyUSB0
-``` 
-
-This will set nRTS active on the RPUpi shield which should send 0x32 on the DTR pair. The RPUpi shield should blink slow to indicate lockout, while the shield with address '2' blinks fast to indicate bootloader mode. The lockout should timeout after LOCKOUT_DELAY that can be adjusted in firmware.
-
-Now connect to i2c-debug on an RPUno with the shield that has address '2'. The RPUno can read the address.
-
-``` 
-/2/address 41
-{"address":"0x29"}
-/2/buffer 0,255
-{"txBuffer":[{"data":"0x0"},{"data":"0xFF"}]}
-/2/read? 2
-{"rxBuffer":[{"data":"0x0"},{"data":"0x32"}]}
-``` 
+See bellow for how to Clear Host Lockout Status and then use the Pi Zero as a host that can bootload controler boards.
 
 
 ## Set RPU_BUS address with i2c-debug
@@ -133,11 +116,11 @@ Now connect to i2c-debug on an RPUno with the shield that has address '2'. The R
 Using an RPUno and an RPUftdi shield, connect another RPUno with i2c-debug firmware to the RPUadpt shield that needs its address set. The default RPU_BUS address can be changed from '1' to any other value. 
 
 ``` 
-/1/address 41
+/1/iaddr 41
 {"address":"0x29"}
-/1/buffer 1,50
+/1/ibuff 1,50
 {"txBuffer":[{"data":"0x1"},{"data":"0x32"}]}
-/1/read? 2
+/1/iread? 2
 {"rxBuffer":[{"data":"0x1"},{"data":"0x32"}]}
 ``` 
 
@@ -153,11 +136,11 @@ The example programs read the address durring setup, so they will need a reset.
 To hault the host send the I2C shutdown command 5 (first byte), with data 1 (second byte) which sets shutdown_started, clears shutdown_detected and pulls down the SHUTDOWN (ICP1) pin. The shutdown_started flag is also used to stop blinking of the LED_BUILTIN to reduce power usage noise so that the host power usage can be clearly seen.
 
 ``` 
-/1/address 41
+/1/iaddr 41
 {"address":"0x29"}
-/1/buffer 5,1
+/1/ibuff 5,1
 {"txBuffer":[{"data":"0x5"},{"data":"0x1"}]}
-/1/read? 2
+/1/iread? 2
 {"rxBuffer":[{"data":"0x5"},{"data":"0x1"}]}
 ``` 
 
@@ -169,21 +152,80 @@ Above used an RPUftdi shield, connected to an RPUpi shield at address '1'. The s
 To check if host got a hault command or if the shutdown button got pressed send the I2C shutdown command 4 (first byte), with place holder data (second byte). This clears shutdown_detected flag that was used to keep the LED_BUILTIN from blinking.
 
 ``` 
-/1/address 41
+/1/iaddr 41
 {"address":"0x29"}
-/1/buffer 4,255
+/1/ibuff 4,255
 {"txBuffer":[{"data":"0x4"},{"data":"0xFF"}]}
-/1/read? 2
+/1/iread? 2
 {"rxBuffer":[{"data":"0x4"},{"data":"0x1"}]}
-/1/buffer 4,255
+/1/ibuff 4,255
 {"txBuffer":[{"data":"0x4"},{"data":"0xFF"}]}
-/1/read? 2
+/1/iread? 2
 {"rxBuffer":[{"data":"0x4"},{"data":"0x0"}]}
 ``` 
 
 Above used an RPUftdi shield, connected to an RPUpi shield at address '1'. The shields were each mounted on an RPUno loaded with i2c-debug firmware.
 
 Second value in rxBuffer has shutdown_detected value (0 or 1). It is cleared when reading.
+
+
+## Clear Host Lockout Status
+
+Connect with picocom (this requires sneaky mode, which assumes no host has used the bus). 
+
+``` 
+picocom -b 38400 /dev/ttyAMA0
+```
+
+Check that the lockout bit is set by reading the status_byt. The HOST_LOCKOUT_STATUS bit is 3 at this time. Note Pi Zero is on RPUpi with addres '2' (50 or 0x32).
+
+``` 
+/2/iaddr 41
+{"address":"0x29"}
+/2/ibuff 6,0
+{"txBuffer":[{"data":"0x6"},{"data":"0x0"}]}
+/2/iread? 2
+{"rxBuffer":[{"data":"0x6"},{"data":"0x8"}]}
+``` 
+
+Clear the status_byt to unlock the host (e.g. allow it to bootload on the bus). At this time the only bit that will clear is the HOST_LOCKOUT_STATUS bit.
+
+``` 
+/2/iaddr 41
+{"address":"0x29"}
+/2/ibuff 7,0
+{"txBuffer":[{"data":"0x7"},{"data":"0x0"}]}
+/2/iread? 2
+{"rxBuffer":[{"data":"0x7"},{"data":"0x0"}]}
+``` 
+
+At this time the heuristics for this are unpleasant, the Pi Zero ends up having to use sneaky mode to enable its status as a host. It may also need to set the bootload address to itself if address 0x30 is not on the bus.
+
+```
+/2/iaddr 41
+{"address":"0x29"}
+/2/ibuff 3,50
+{"txBuffer":[{"data":"0x3"},{"data":"0x32"}]}
+/2/iread? 2
+{"rxBuffer":[{"data":"0x3"},{"data":"0x32"}]}
+``` 
+
+exit picocom with C-a, C-x.
+
+Connect with picocom again. 
+
+``` 
+picocom -b 38400 /dev/ttyAMA0
+``` 
+
+This will set nRTS active on the RPUpi shield which should send 0x32 on the DTR pair. The RPUpi with address '2' blinks fast to indicate bootloader mode.
+
+Now check that the shield that has address '2'. The control board can read the address over I2C.
+
+``` 
+/2/id?
+{"id":{"name":"I2Cdebug^1","desc":"RPUlux (17323^0) Board /w atmega328p","avr-gcc":"5.4.0"}}
+``` 
 
 
 ## Notes
