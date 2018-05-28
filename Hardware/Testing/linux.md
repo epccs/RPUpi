@@ -17,6 +17,7 @@ This is a list of notes regarding Raspbin (Linux) things for RPUpi.
 10. [SPI and I2C](#spi-and-i2c)
 11. [WiFi Dropout](#wiFi-dropout)
 12. [Package Updates](#package-updates)
+13. [Editor](#editor)
 
 
 ## Prepare SD Card
@@ -411,35 +412,46 @@ Copy the avr includes to the Samba share so I can look at them from Windows.
 cp -s /usr/lib/avr/include /home/rsutherland/Samba/lib/avr/include
 ```
 
-Setup intelliSense with Visual Studio Code (this is not fully working for me)
+Setup intelliSense with Visual Studio Code 
 
-c_cpp_properties.json in the.vscode folder
+I use a samba share so VSC can see the includes on my Win 10 machine. Then copy avr-libc includes from /usr/lib/avr/include, and gcc-avr includes from /usr/lib/gcc/avr/5.4.0/include.
+
+c_cpp_properties.json in the .vscode folder.
 
 ```
 {
     "configurations": [
         {
-            "name": "Arduino",
+            "name": "AVR",
             "includePath": [
-                "${workspaceRoot}"
+                "${workspaceRoot}",
+                "Y:/lib/avr-libc/include",
+                "Y:/lib/gcc-avr/5.4.0/include"
             ],
             "defines": [],
             "intelliSenseMode": "clang-x64",
             "browse": {
                 "path": [
-                    "Y:/lib/avr/nclude",
-                    "../${workspaceRoot}",
                     "${workspaceRoot}"
                 ],
                 "limitSymbolsToIncludedHeaders": true,
                 "databaseFilename": ""
-            }
+            },
+            "cStandard": "c11",
+            "cppStandard": "c++17"
         }
     ],
     "version": 3
 }
 ```
 
+I do not see a way to show VSC how to deal with macros passed from the Makefile (e.g. BAUD, MCU...) so I just turn off the suspected compile error detection with settings.json in the .vscode folder.
+
+```
+{
+    "C_Cpp.errorSquiggles": "Disabled"
+}
+```
 
 ## Avrdude
 
@@ -562,3 +574,28 @@ sudo rpi-update
 sudo apt-get autoremove
 sudo apt-get clean
 ```
+
+
+## Editor
+
+An editor that will take care of the tab character and no trailing spaces in a Makefile is helpful. I am using [Visual Studio Code] most of the time, but for small changes it is a little heavy. SciTE is an editor I also use, it has a SciTEUser.properties file that I set as follows:
+
+[Visual Studio Code]: https://code.visualstudio.com/
+
+```
+tabbar.multiline=1
+#toolbar.visible=1
+
+statusbar.visible=1
+
+# use space indentation for everything, but the makefile magic bellow
+#tabsize=4
+#indent.size=4
+use.tabs=0
+
+# when the Makefile pattern matches use tab
+indent.size.$(file.patterns.make)=4
+tab.size.$(file.patterns.make)=4
+use.tabs.$(file.patterns.make)=1
+```
+
