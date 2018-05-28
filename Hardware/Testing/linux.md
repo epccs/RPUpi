@@ -192,7 +192,7 @@ network={
 }
 
 network={
- ssid="EPCCS3"
+ ssid="epccs3"
  psk="yourkeynotmynetworkey"
  key_mgmt=WPA-PSK
  priority=2
