@@ -30,33 +30,32 @@ Download [Etcher] (note, I have only used this on Ubuntu)
         
 [Etcher]: https://etcher.io/
         
-On Ubuntu 17.04 I installed libgconf-2-4 to allow etcher to run, I updated to 17.10 and still have libgconf-2-4 but not sure it is needed. Etcher is an application image so it does not install anything it just needs permission to run.
+Using Ubuntu 18.04 (on 17.04 I installed libgconf-2-4 to allow etcher to run). Etcher is an application image so it does not install anything it just needs permission to run.
 
 ```
 sudo apt-get install libgconf-2-4
 ```
 
-To update Etcher I just delete the old application image and the .desktop file it made, search for etcher to find them.
+To update Etcher I just delete the old application image.
 
 
 ## Headless Setup
 
-After [Etcher] has put the Raspbian image onto the SD card I mount it to the Ubuntu system. The easiest way to do this is just to unplug the card and plug it back in. It will have a boot area and the system folders (e.g. /etc, /home...) which we can change.
+After [Etcher] has put the Raspbian image onto the SD card I mount it to the Ubuntu system. The easiest way to do this is just to unplug the card and plug it back in. It will have a boot partition and a system partition (e.g. /etc, /home...) which we can change.
 
 First configure the WiFi (e.g. Edit the /etc/wpa_supplicant/wpa_supplicant.conf) for your network, I show some of my [Network Setup](#network-setup) bellow.
 
 Next add an empty ssh file to the boot area. I do this with the touch command from a console on the Ubuntu computer I used to setup the SD card.
 
 ```
-# on Ubuntu 17.10 the SD card automaticly mounts when pluged in at /media/username
+# on Ubuntu 18.04 the SD card automaticly mounts when pluged in at /media/username
 cd /media/rsutherland
 ls
 # stretch mounts: rootfs boot
-# Etcher set my past jessie rootfs to mount as 673b8ab6-6426-474b-87d3-71bff0fcebc3
 # To setup the Wi-Fi I can edit wpa_supplicant (see network-setup) in rootfs
 sudo nano /media/rsutherland/rootfs/etc/wpa_supplicant/wpa_supplicant.conf
 # to tell the startup system to run the SSH server I add an empty file in the boot mount
-touch /media/rsutherland/boot/ssh
+sudo touch /media/rsutherland/boot/ssh
 ```
 
 Put it in the Pi and boot... On my network I can then ssh pi@raspberrypi.local with the default password "raspberry", I then change the password as well as the hostname.
@@ -64,6 +63,7 @@ Put it in the Pi and boot... On my network I can then ssh pi@raspberrypi.local w
 ```
 # Well fish, I need to remove the old host and IP from the past setup 
 [ssh-keygen -f "/home/rsutherland/.ssh/known_hosts" -R raspberrypi.local]
+[ssh-keygen -f "/home/rsutherland/.ssh/known_hosts" -R 192.168.0.21]
 [ssh-keygen -f "/home/rsutherland/.ssh/known_hosts" -R pi1.local]
 [ssh-keygen -f "/home/rsutherland/.ssh/known_hosts" -R 192.168.4.5]
 
@@ -77,6 +77,7 @@ passwd
 
 # Use the raspi-config tool to setup e.g. set the hostname: pi1, pi-bench, pi3.
 # set Boot Options: choose to boot into a CLI (e.g. text console) for headless systems (mount SD on Ubuntu to change network)
+# set local en_US.UTF-8
 # set Interfaceing Options: Serial: turn off the login shell to the serial port, and enable the serial port hardware (e.g. /dev/ttyAMA0).
 sudo raspi-config
 
@@ -123,7 +124,7 @@ sudo apt-get install git
 cd Samba
 mkdir git
 cd git
-git clone git://github.com/epccs/RPUpi.git
+git clone https://github.com/epccs/RPUpi
 cd RPUpi/RPiRtsCts
 make
 cp rpirtscts ~/bin/rpirtscts
@@ -169,10 +170,10 @@ sudo iwlist wlan0 scan
 
 # My WyFi Authentication Method is WPA2-Personal with AES type WEP encryption
 # I edit the SD card from another machine e.g. using nano
-sudo nano /etc/wpa_supplicant/wpa_supplicant.conf
+sudo nano /media/rsutherland/rootfs/etc/wpa_supplicant/wpa_supplicant.conf
 ```
 
-Edit the /etc/wpa_supplicant/wpa_supplicant.conf file with the following.
+On Ubuntu the SD card mounts at /media/username. This is how I want to edit the /etc/wpa_supplicant/wpa_supplicant.conf file.
 
 ```
 #country=GB
@@ -302,7 +303,7 @@ Note the Pi also shows the user home folders but Ubuntu did not, I will ignor th
 
 ## Python 3
 
-On Raspbian Lite jessie only Python 2 is installed but I will use Python 3 (stretch has python3), so it needs added.
+Raspian stretch has Python 3 so this is not needed.
 
 ```
 sudo apt-get install python3
@@ -316,44 +317,11 @@ Use raspi-config to turn off the login shell to the serial port, and enable the 
 sudo raspi-config
 ```
 
-Disable the boot console (raspi-config does this now).
+Use raspi-config to disable the boot console.
 
-```
-# Pi Zero
-sudo systemctl stop serial-getty@ttyAMA0.service
-sudo systemctl disable serial-getty@ttyAMA0.service
-# Pi Zero W
-sudo systemctl stop serial-getty@ttyS0.service
-sudo systemctl disable serial-getty@ttyS0.service
-```
+I want to use /dev/ttyAMA0 since it has nRTS and nCTS functions. 
 
-Remove the console from /boot/cmdline.txt (raspi-config does this now), which looks like:
-
-```
-dwc_otg.lpm_enable=0 console=serial0,115200 console=tty1 root=/dev/mmcblk0p2 rootfstype=ext4 elevator=deadline fsck.repair=yes root wait
-```
-
-Change it to:
-
-```
-dwc_otg.lpm_enable=0 console=tty1 root=/dev/mmcblk0p2 rootfstype=ext4 elevator=deadline fsck.repair=yes root wait
-```
-
-I want to use /dev/ttyAMA0 since it has nRTS and nCTS functions. On a Pi Zero W the bluetooth needs to be disabled.
-
-```
-# Pi Zero
-# has no bluetooth
-# Pi Zero W
-systemctl disable bluetooth.service
-```
-
-The UART needs enabled for the kernel. E.g. set enable_uart in /boot/config.txt then reboot (I don't have a Pi Zero W yet, does raspi-config do this?).
-
-```
-dtoverlay=pi3-disable-bt
-enable_uart=1
-```
+On a Pi Zero W the bluetooth is using the /dev/ttyAMA0 serial so it needs to be disabled, but I don't have a Zero W so am not sure what needs done.
 
 RST/CTS should be setup with the [RPiRtsCts] pogram built with the Pi toolchain durring [Headless Setup](#headless-setup) (is there another way?)
 

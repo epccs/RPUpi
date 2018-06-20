@@ -1,10 +1,21 @@
 # Makefile 
 # Used to set fues, the RPUpi which does not have a bootloader at this time 
-TARGET = Bootload
+TARGET = RPUpi_fuse
 LIBDIR = ../lib
 OBJECTS = 
 
-## I use an ArduinoISP example sketch form Arduino.cc IDE 1.6.7+ loaded in an Arduino.org Uno (it is clear as mud right) that shows as /dev/ttyACMx
+#  http://eleccelerator.com/fusecalc/fusecalc.php?chip=atmega328p&LOW=FF&HIGH=D6&EXTENDED=05&LOCKBIT=3F
+LOW_FUSE = 0xFF
+HIGH_FUSE = 0xD6
+# the efuse uses the lower three bits, so some tools read it as 0x05.
+EXTENDED_FUSE = 0xFD
+# lockbit uses the lower five bits
+# on avrdude -v <= 6.2 the -c stk500v1 tool returns "0" for unused bits 
+#UNLOCK_FUSE = 0x3F
+#LOCK_FUSE = 0x2F
+# on avrdude -v >= 6.3 the -c stk500v1 tool works like the other tools
+UNLOCK_FUSE = 0xFF
+LOCK_FUSE = 0xEF
 
 all:
 
@@ -21,13 +32,13 @@ $(TARGET):
 ## http://eleccelerator.com/fusecalc/fusecalc.php?chip=atmega328p&LOW=FF&HIGH=D6&EXTENDED=05&LOCKBIT=3F
 ## stk500v1 is for Arduino as ISP (e.g. it is an example in the Arduino.cc IDE 1.6.7+)
 fuse: 
-	avrdude -v -p atmega328p -c stk500v1 -P /dev/ttyACM0 -b 19200 -e -U lock:w:0x3F:m -U lfuse:w:0xFF:m -U hfuse:w:0xD6:m -U efuse:w:0xFD:m
+	avrdude -v -p atmega328p -c stk500v1 -P /dev/ttyACM0 -b 19200 -e -U lock:w:$(UNLOCK_FUSE):m -U lfuse:w:$(LOW_FUSE):m -U hfuse:w:$(HIGH_FUSE):m -U efuse:w:$(EXTENDED_FUSE):m
 
 read: 
-	avrdude -v -p atmega328p -c stk500v1 -P /dev/ttyACM0 -b 19200 -U lock:r:0x3F:m -U lfuse:r:0xFF:m -U hfuse:r:0xD6:m -U efuse:r:0xFD:m
+	avrdude -v -p atmega328p -c stk500v1 -P /dev/ttyACM0 -b 19200 -U lock:r:-:h -U lfuse:r:-:h -U hfuse:r:-:h -U efuse:r:-:h
 
-## set fuse like they are from factory (I use this to read the input current from salvaged parts) , i.e. 8MHz internal, B.O.D. disabled.
+## set fuse like they are from factory, i.e. 8MHz internal, B.O.D. disabled.
 oem: 
-	avrdude -v -p atmega328p -c stk500v1 -P /dev/ttyACM0 -b 19200 -e -U lock:w:0x3f:m -U lfuse:w:0x62:m -U hfuse:w:0xD9:m -U efuse:w:0xFF:m
+	avrdude -v -p atmega328p -c stk500v1 -P /dev/ttyACM0 -b 19200 -e -U lock:w:$(UNLOCK_FUSE):m -U lfuse:w:0x62:m -U hfuse:w:0xD9:m -U efuse:w:0xF7:m
 
  
