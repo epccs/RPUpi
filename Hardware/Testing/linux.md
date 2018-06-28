@@ -64,6 +64,7 @@ Put it in the Pi and boot... On my network I can then ssh pi@raspberrypi.local w
 # Well fish, I need to remove the old host and IP from the past setup 
 [ssh-keygen -f "/home/rsutherland/.ssh/known_hosts" -R raspberrypi.local]
 [ssh-keygen -f "/home/rsutherland/.ssh/known_hosts" -R 192.168.0.21]
+[ssh-keygen -f "/home/rsutherland/.ssh/known_hosts" -R 192.168.0.22]
 [ssh-keygen -f "/home/rsutherland/.ssh/known_hosts" -R pi1.local]
 [ssh-keygen -f "/home/rsutherland/.ssh/known_hosts" -R 192.168.4.5]
 
@@ -181,7 +182,7 @@ On Ubuntu the SD card mounts at /media/username. This is how I want to edit the 
 #update_config=1
 
 # bellow are the settings I used
-country=US
+#country=US
 ctrl_interface=DIR=/var/run/wpa_supplicant GROUP=netdev
 update_config=1
 
@@ -493,7 +494,33 @@ AD F0
 
 Note: The output is offset a byte since it was held in the AVR and then echoed back durring the next transfer. 
 
-I2C is enabled with [raspi-config] and has a i2c group to allow its use, but I do not have the ATmega328pb toolchain going.
+I2C is enabled with [raspi-config] and has a i2c group to allow its use. At the moment the ATmega328pb toolchain is only on [RPUadpt].
+
+[RPUadpt]: https://github.com/epccs/RPUadpt/
+
+``` 
+sudo apt-get install i2c-tools python3-smbus
+sudo usermod -a -G i2c rsutherland
+# logout for the change to take
+i2cdetect 1
+WARNING! This program can confuse your I2C bus, cause data loss and worse!
+I will probe file /dev/i2c-1.
+I will probe address range 0x03-0x77.
+Continue? [Y/n] Y
+     0  1  2  3  4  5  6  7  8  9  a  b  c  d  e  f
+00:          -- -- -- -- -- -- -- -- -- -- -- -- --
+10: -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- --
+20: -- -- -- -- -- -- -- -- -- -- 2a -- -- -- -- --
+30: -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- --
+40: -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- --
+50: -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- --
+60: -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- --
+70: -- -- -- -- -- -- -- --
+``` 
+
+The devices at 2a is a ATmega328pb on [RPUadpt] ^6 running [BlinkLED].
+
+[BlinkLED]: https://github.com/epccs/RPUadpt/tree/master/BlinkLED
 
 
 ## WiFi Dropout
