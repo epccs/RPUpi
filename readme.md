@@ -6,7 +6,7 @@ From <https://github.com/epccs/RPUpi>
 
 Shield used to connect a Pi Zero (or W) host to a multidrop serial (RPU_BUS) and an [RPUno], [RPUlux] or [Irrigate7]. The multidrop bus can connect additional [RPUno] or [Irrigate7] with [RPUadpt] shields.
 
-[Forum](http://rpubus.org/bb/viewforum.php?f=8)
+[Forum](https://rpubus.org/bb/viewforum.php?f=8)
 
 [HackADay](https://hackaday.io/project/16424-rpupi-a-shield-for-pi-zero-and-rs-422-over-cat5)
 
@@ -56,8 +56,8 @@ sudo apt-get install git gcc-avr binutils-avr gdb-avr avr-libc avrdude
 git clone https://github.com/epccs/RPUpi
 ```
 
-* [gcc-avr](http://packages.ubuntu.com/search?keywords=gcc-avr)
-* [binutils-avr](http://packages.ubuntu.com/search?keywords=binutils-avr)
-* [gdb-avr](http://packages.ubuntu.com/search?keywords=gdb-avr)
-* [avr-libc](http://packages.ubuntu.com/search?keywords=avr-libc)
-* [avrdude](http://packages.ubuntu.com/search?keywords=avrdude)
+* [gcc-avr](https://packages.ubuntu.com/search?keywords=gcc-avr)
+* [binutils-avr](https://packages.ubuntu.com/search?keywords=binutils-avr)
+* [gdb-avr](https://packages.ubuntu.com/search?keywords=gdb-avr)
+* [avr-libc](https://packages.ubuntu.com/search?keywords=avr-libc)
+* [avrdude](https://packages.ubuntu.com/search?keywords=avrdude)

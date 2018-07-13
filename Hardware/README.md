@@ -192,7 +192,7 @@ A future update may include an ATmega328pb that has an extra I2C interface that 
 
 Card [corruption] seems to happen when the SD card is doing wear leveling operations at the time power is removed. It may be possible with this setup to push the shutdown button and have that run a script that before halting tells the node to wait for a while and then make sure the current draw from the battery is stabilized before turning off VIN or disconnecting the battery. The idea is that wear leveling will draw current somewhat randomly until all the page updates are done. The BCM2835 will be halted, and looping (it is checking one of the I2C pins) and using a steady current draw. So when the current draw is stable the wear leveling should be done and safe to disconnect power.
 
-[corruption]: http://hackaday.com/2016/08/03/single-board-revolution-preventing-flash-memory-corruption/
+[corruption]: https://hackaday.com/2016/08/03/single-board-revolution-preventing-flash-memory-corruption/
 
 [Panasonic] has some robust SD cards available from Digi-key that should help when they are needed.
 
@@ -213,7 +213,7 @@ Programming the devices on the serial interface is less about security and more 
 
 A Yun [worm].
 
-[worm]: http://hackaday.com/2016/11/11/arduworm-a-malware-for-your-arduino-yun/
+[worm]: https://hackaday.com/2016/11/11/arduworm-a-malware-for-your-arduino-yun/
 
 One lesson I see is to not expose the raw serial hardware on a network (i.e. minimize the exposed surface). I don't setup the Pi Zero to expose its serial interface to the network so the mistakes on my AVR software should not be a security problem. If I setup SSH on the Pi Zero wrong then I have a problem.
 
