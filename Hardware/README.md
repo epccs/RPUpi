@@ -2,28 +2,31 @@
 
 ## Overview
 
-This board connects a Pi Zero [W] (your computer is not provided with this board) to a multi-drop RS-422 bus and a [RPUno] or [Irrigate7] board. 
+This board connects a Pi Zero [W] to a multi-drop serial bus and a control board with a target (e.g. [RPUno], [RPUlux], [RPUicp], [Irrigate7]). 
 
 [RPUno]: https://github.com/epccs/RPUno
+[RPUlux]: https://github.com/epccs/RPUlux
+[RPUicp]: https://github.com/epccs/RPUicp
 [Irrigate7]: https://github.com/epccs/Irrigate7
 
 ## Inputs/Outputs/Functions
 
 ```
         Pi Zero power is from a 5V SMPS regulator powered by the Vin pin
-        Pi Zero UART connects to RS-422 pairs (e.g. Pi Tx to RPU_BUS Rx)
-        RS-422 pairs daisy-chain to other RPUadpt boards
-        RPUno UART connects to RS-422 pairs (e.g. 328p Rx to RPU_BUS Rx)
-        An out of band management pair is also available
-        SPI is available between Pi Zero and local RPUno
+        Pi Zero UART connects crossover style to the rpubus pairs
+        rpubus pairs daisy-chain to other RPUpi or RPUadpt shields
+        The UART's from multiple targets may connect to the rpubus pairs 
+        An out of band management pair is used to control host to target (P2P) connection.
+        SPI is available between SBC and the local target.
 ```
 
 ## Uses
 
 ```
-        Use solar power (e.g. 20W PV needed) from a [RPUno] to run a Pi Zero
-        Pi with Linux, ssh, Python, and AVR toolchain is a compelling platform.
-        Allows (locally compiled) updates without exposing serial ports to a network.
+        Raspberry Pi with a Raspian Linux instance is a compelling platform.
+        Accessing the machine instance with SSH is prefered.
+        Serving files with Samba is availalbe, but not prefered.
+        The machine instance has a physical serial link (rpubus ) to the bare metal targets.
 ```
 
 ## Notice
@@ -31,12 +34,8 @@ This board connects a Pi Zero [W] (your computer is not provided with this board
 ```
         If the Pi Zero bootloads its local board (the one under the RPUpi) then 
         the VIN power from the local board must not turn off after a reset 
-        (at time of writing the defaut setup should work). 
-        
-        I advise acquiring a Pi Zero, setting it up on your own network and 
-        learn how to setup and use the network, ssh, AVR toolchain, and 
-        the serial port (e.g. /dev/ttyAMA0 with RTS/CTS enabled). 
-```
+        (he defaut setup has been tested and works). 
+ ```
 
 
 # Table Of Contents
@@ -52,6 +51,19 @@ This board connects a Pi Zero [W] (your computer is not provided with this board
 ![Status](./status_icon.png "RPUpi Status")
 
 ```
+        ^4  Done: Design,
+            WIP: Layout,
+            Todo: BOM, Review*, Order Boards, Assembly, Testing, Evaluation.
+            *during review the Design may change without changing the revision.
+            IOREF is for I2C and UART
+            SPI_IOREF is for SPI only
+            Add SPI nSS so the Raspery Pi CE10 can use it, (it was tested with RPUadpt^6)
+            remove ADC6.
+            Use TI's 5V THVD1500, wich cost less and has better specs.
+            Run Manager at 5V to match trancever's.
+            Remove 3V3 regulator, which is no longer needed.
+            Change Q1..Q3 to use K1N. 
+
         ^3  Done: Design, Layout, BOM, Review*, Order Boards, Assembly, Testing,
             WIP: Evaluation.
             Todo: 
@@ -168,25 +180,26 @@ The Pi Zero serial lines (Rx, Tx, nRTS, and nCTS) are interfaced through a 74LVC
 
 When the Pi's handshake lines are enabled picocom and avrdude work like an RPUftdi from a Ubuntu computer which sets nDTR and nRTS which allows the bus manager to bradcast a bootload address that in the case of avrdude allows programming the AVR's serial bootloader and in the case of picocom means waiting for the bootloader to timeout. 
 
-## RS-422 Management
+## Full Duplex Serial Management
 
-The shield has a bus manager, though the example firmware is ongoing. It has access to enable/disable each transceiver receiver and/or driver. This means that each (or all) node(s) can be isolated from the serial bus (both host and/or MCU), the implications are significant. The original intent was to allow boot loading with a point to point full duplex mode (e.g. optiboot/xboot and avrdude need this). The reason Arduino Uno is so amazing is that it allows boot loading a new executable binary image even when the bare metal application is severely goofed up, I am trying to retain the nearly bulitproof upload. 
+The shield has a bus manager, though the example firmware is ongoing. It has access to enable/disable each transceiver receiver and/or driver. This means that each (or all) node(s) can be isolated from the serial bus (both host or target), the implications are significant. The original intent was to allow boot loading with a point to point full duplex mode (e.g. target with optiboot/xboot and the host running avrdude). The reason Arduino Uno is so amazing is that it allows boot loading a new executable binary image over a severely goofed up the bare metal application, the rpubus tries to retain the nearly bulletproof upload. 
 
 ## Transceiver (RS-485)
 
-The transceivers have a built-in fail-safe bias, which is a little complicated to explain, but it makes an undriven bus (e.g. the failed condition) a defined true or high state. That is if I turn off all the transceiver's driving the bus (only one should drive the bus at any given time), it is guaranteed to be in a defined state (e.g. the true state). I have setup the transceivers to automaticly turn off the driver while the UART output is a true (e.g. HIGH is its default value). That further means the driver will automatically drive the bus only when data is sent (e.g. drives when a zero or LOW bit is transmitted), so nothing needs to be done in software to turn off the bus. The bus manager can be controled over I2C to enable/disable the transceiver's receiver and/or driver (requires your firmware on the bus manager to do so, this is only hardware).
+The transceivers have a built-in fail-safe bias, which is a little complicated to explain, but it makes an undriven bus (e.g. 0V or the failed condition) a defined true or high state. That is if I turn off the transceiver driving the bus (only one should drive the bus at any time), it is guaranteed to be in a defined state (e.g. HIGH). I have set up the transceivers to automatically turn off the driver while the UART output is a true (and HIGH is its default value). That means the driver will automatically drive the bus only when data is sent, so nothing needs to be done in software to turn on or off the transceivers. The bus manager (control over I2C) may override the transceiver with its disable.
 
 ## SPI
 
 The Pi Zero SPI lines (MOSI, SCK, MISO) are interfaced through a 74LVC07A buffer which is powered from the Pi's 3V3 power. When the Pi Zero is powered off the IOFF feature of the buffer will turn off (or hi-z) it's open collector output which will allow a pull-up (IOREF from the MCU board) to set the value on SCK and the MOSI line or allow the shield MCU to control them (though they have a pull up). 
 
-Known issues: RPUno and Irrigate7 map the SPI lines to pluggable connectors for digital control so make sure those pluggable connectors are free if SPI is to be used.
+Known issues: RPUno has its SPI lines run to user connectors for digital control so make sure those are free if SPI is to be used.
 
 ## I2C
 
-The Pi I2C port is not connected to the onboard bus manager. The Pi has 1.8k pull-ups to 3.3V, and when the shield powers down VIN it will pull down the I2C lines as the Pi can no longer sustain its 3.3V supply. 
+The Raspery Pi I2C port is not actualy I2C, it is SMBus. The Pi has 1.8k pull-ups to 3.3V, and when the shield powers down VIN it will pull down the I2C lines as the Pi can no longer sustain its 3.3V supply. 
 
-A future update may include an ATmega328pb that has an extra I2C interface that could be used as an independent channel between the Pi Zero and the manager without locking up the MCU to the manager when the Pi Zero is powered down (Note: I am not working on this, it is just an idea with some of the hardware in place). 
+On RPUpi^4 the ATmega328pb will duplicate what has been tested on RPUadpt^6. Which is to say the I2C1 interface has been setup to respond to some SMBus messages.
+
 
 ## SD
 
@@ -194,33 +207,15 @@ Card [corruption] seems to happen when the SD card is doing wear leveling operat
 
 [corruption]: https://hackaday.com/2016/08/03/single-board-revolution-preventing-flash-memory-corruption/
 
-[Panasonic] has some robust SD cards available from Digi-key that should help when they are needed.
-
-[Panasonic]: https://www.digikey.com/product-detail/en/panasonic-electronic-components/RP-SMTT32DA1/P122039-ND/6596411
-
-## Agile
-
-I'm not an Agile developer but when developing software or hardware the only thing that seems to get results is to make the first attempt at something, and then start fixing the broken stuff. Then add new stuff to push it in the desired direction. Keep iterating by fixing, and adding (and sometimes change direction when needed). It will never be truly finished, but at some point, things start to click and reveal if it is useful or useless (haha...  RPUpi has taken four iterations just to see the first bootload of an AVR from a Pi Zero over RS-422). 
-
 
 ## Security
 
-Hardware with connectivity is easy to do presently but most of it ends up in the landfill quickly. The problem is that connectivity is like an exposed surface and is difficult to maintain. A device with RS-232 has a very limited connectivity surface. Only the serial interface can be used to control the device and it is connected to a computer (e.g. Pi Zero) that the user maintains. RS-422 connectivity is similar to RS-232 but the differential pairs can run over a 1km, and to multiple devices. 
-
-Serial software is typically done to control a UART for RS-232 and does not know how to control the differential transceiver used for RS-422. This problem can be compensated for if the transceiver includes hardware for failsafe biasing, which basically means the differential lines have a defined state when not driven. When failsafe is used the transceiver can also enable its transmitter automatically when the UART goes LOW. That results in the ability of software done for RS-232 to also work over RS-422. Connecting multiple devices over RS-422 to a single computer reduces the users maintenance work load (which is one place all things IoT fail for me). 
-
-Programming the devices on the serial interface is less about security and more about keeping things useful. I like how an AVR with a serial bootloader does this. It uploads programs that have full hardware control since they are an executable binary image compiled from C (or C++). This allows me direct access to the machine registers which maximizes what I can do with the controller. Understand that hardware of this nature has no safety guards since the uploaded machine code has full register level access. I would suggest only using boards with sufficient documentation and have the necessary hardware safety guards.
-
-A Yun [worm].
-
-[worm]: https://hackaday.com/2016/11/11/arduworm-a-malware-for-your-arduino-yun/
-
-One lesson I see is to not expose the raw serial hardware on a network (i.e. minimize the exposed surface). I don't setup the Pi Zero to expose its serial interface to the network so the mistakes on my AVR software should not be a security problem. If I setup SSH on the Pi Zero wrong then I have a problem.
+One lesson I understand is to only bootload bare metal over secure links.
 
 
 ## Compiling
 
-To prevent heap memory fragmentation on the AVR I use C and avoid the malloc functions. This means only the stack and static memory is used. Compiling with C++ can mix heap and stack memory usage in complicated ways I don't understand (and have had problems with). On the Pi, C++ is fine since Linux can manage the heap, but bare metal does nothing for heap memory management it just makes a fragmented mess.  Anyway, I tend to use Python on the Pi, so my C++ is not good enough to know when I am using the heap.
+To prevent heap usage and its fragmentation on the AVR I use C and avoid the malloc function. This means only the stack and static memory is used. Compiling with C++ would mix the heap and stack in the tiny dynamic memory space where collisions of the two systems result in memory corruption that cannot be detected. On hardware like a Raspberry Pi, C++ is fine since Linux can manage the heap and stack memory systems with hardware found in the memory management unit (which the bare metal lacks).
 
 The AVR has a single clock domain (for the most part), so the GPIO, peripherals and flash memory operate in a predictable and repeatable way. That is to say, an AVR will pull an instruction from flash and use it to fiddle with an output in a predictable consistent way, however a fast machine may need to wait for instructions and will experience timing variations from the instruction cashing system as well as other clock domain transitions that cause timing variability in devices that run with multiple clock domains (e.g. MCU at higher speeds have to pre-fetch instructions from flash which runs in a slower clock domain, and write to GPIO in yet another slow clock domain).
 

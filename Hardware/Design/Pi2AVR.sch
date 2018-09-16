@@ -2201,7 +2201,7 @@ NOTE: WiFi is needed see https://www.kickstarter.com/projects/1991736672/iot-hat
 <part name="R1" library="R-C" deviceset="R" device="0805" value="10K"/>
 <part name="D1" library="D-GP" deviceset="D" device="SOD123" value="T4"/>
 <part name="GND31" library="Plane" deviceset="0V" device=""/>
-<part name="U7" library="U-AVR" deviceset="ATMEGA328PB-AU" device="" value="ATMEGA328PB-AU"/>
+<part name="U7" library="U-AVR" deviceset="ATMEGA328PB-AU" device="" value="ATMEGA328PB-A"/>
 <part name="+3V1" library="Plane" deviceset="+3V3" device=""/>
 <part name="Y1" library="Y-XTL" deviceset="CSM" device="-3X" value="12MHz"/>
 <part name="C4" library="C-C" deviceset="C" device="C0603A" value="22pF"/>
@@ -2219,8 +2219,8 @@ NOTE: WiFi is needed see https://www.kickstarter.com/projects/1991736672/iot-hat
 <plain>
 <text x="64.516" y="-12.954" size="1.778" layer="98">ISP</text>
 <text x="48.26" y="87.122" size="2.54" layer="98">AVR </text>
-<text x="30.734" y="1.778" size="1.778" layer="98">* 328PB-AU PINOUT IS NOT 
-SAME AS 328P-AU </text>
+<text x="30.734" y="1.778" size="1.778" layer="98">* 328PB-A PINOUT IS NOT 
+SAME AS 328P-A</text>
 <text x="13.462" y="-6.604" size="1.778" layer="98">12MHZ CRYSTAL:
 ECS-120-20-3X-TR</text>
 <wire x1="165.1" y1="5.08" x2="228.6" y2="5.08" width="0.1524" layer="98" style="shortdash"/>

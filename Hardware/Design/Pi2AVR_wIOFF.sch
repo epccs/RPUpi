@@ -2383,7 +2383,7 @@ referance TI's SOIC package, but pads are little larger and rounded</description
 <part name="R1" library="R-C" deviceset="R" device="0805" value="10K"/>
 <part name="D1" library="D-GP" deviceset="D" device="SOD123" value="T4"/>
 <part name="GND31" library="Plane" deviceset="0V" device=""/>
-<part name="U1" library="U-AVR" deviceset="ATMEGA328PB-AU" device="" value="ATMEGA328PB-AU"/>
+<part name="U1" library="U-AVR" deviceset="ATMEGA328PB-AU" device="" value="ATMEGA328PB-A"/>
 <part name="Y1" library="Y-XTL" deviceset="CSM" device="-3X" value="16MHz"/>
 <part name="C4" library="C-C" deviceset="C" device="C0603A" value="22pF"/>
 <part name="C5" library="C-C" deviceset="C" device="C0603A" value="22pF"/>
@@ -2413,8 +2413,8 @@ referance TI's SOIC package, but pads are little larger and rounded</description
 <plain>
 <text x="64.516" y="-12.954" size="1.778" layer="98">ISP</text>
 <text x="48.26" y="87.122" size="2.54" layer="98">AVR </text>
-<text x="30.734" y="1.778" size="1.778" layer="98">* 328PB-AU PINOUT IS NOT 
-SAME AS 328P-AU </text>
+<text x="30.734" y="1.778" size="1.778" layer="98">* 328PB-A PINOUT IS NOT 
+SAME AS 328P-A</text>
 <text x="13.462" y="-6.604" size="1.778" layer="98">16MHZ CRYSTAL:
 ECS-160-20-3X-TR</text>
 <wire x1="165.1" y1="5.08" x2="228.6" y2="5.08" width="0.1524" layer="98" style="shortdash"/>
@@ -2703,7 +2703,7 @@ https://github.com/epccs/RPUpi/tree/master/RPiRtsCts</text>
 <wire x1="238.76" y1="83.82" x2="238.76" y2="58.42" width="0.1524" layer="91"/>
 <pinref part="J1" gate="G$1" pin="RXD/BCM15"/>
 <wire x1="238.76" y1="58.42" x2="226.06" y2="58.42" width="0.1524" layer="91"/>
-<label x="188.468" y="84.328" size="1.778" layer="91"/>
+<label x="137.922" y="71.882" size="1.778" layer="91"/>
 <wire x1="147.32" y1="71.12" x2="147.32" y2="83.82" width="0.1524" layer="91"/>
 <pinref part="R8" gate="G$1" pin="2"/>
 <wire x1="147.32" y1="71.12" x2="149.86" y2="71.12" width="0.1524" layer="91"/>
