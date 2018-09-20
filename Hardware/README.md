@@ -51,9 +51,9 @@ This board connects a Pi Zero [W] to a multi-drop serial bus and a control board
 ![Status](./status_icon.png "RPUpi Status")
 
 ```
-        ^4  Done: Design,
-            WIP: Layout,
-            Todo: BOM, Review*, Order Boards, Assembly, Testing, Evaluation.
+        ^4  Done: Design, Layout,
+            WIP: BOM,
+            Todo: Review*, Order Boards, Assembly, Testing, Evaluation.
             *during review the Design may change without changing the revision.
             IOREF is for I2C and UART
             SPI_IOREF is for SPI only
