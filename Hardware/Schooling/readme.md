@@ -4,14 +4,22 @@ Some lessons I learned doing RPUpi.
 
 # Table Of Contents:
 
-8. ^2 Protect I2C With 182 Ohm 
-7. ^2 RS-422 Buffer needs Power
-6. ^1 Serial When Powered Down
-5. ^1 Pi Zero Placement
-4. ^1 Open SCK and MOSI
-3. ^1 Pi Tx Pull-Up
-2. ^1 I2C
+1. ^3 Connect nSS to SBC CE10
+1. ^2 Protect I2C With 182 Ohm 
+1. ^2 RS-422 Buffer needs Power
+1. ^1 Serial When Powered Down
+1. ^1 Pi Zero Placement
+1. ^1 Open SCK and MOSI
+1. ^1 Pi Tx Pull-Up
+1. ^1 I2C
 1. ^0 U3 Placed Backward
+
+
+## ^3 Connect nSS to SBC CE10
+
+When SPI uses chip enable it tells the slave to start a transaction, and the slave can align the data to the start.
+
+This was tested with RPUadpt^6, and needs added to the next revision.
 
 
 ## ^2 Protect I2C With 182 Ohm

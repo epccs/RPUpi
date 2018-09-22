@@ -51,9 +51,9 @@ This board connects a Pi Zero [W] to a multi-drop serial bus and a control board
 ![Status](./status_icon.png "RPUpi Status")
 
 ```
-        ^4  Done: Design, Layout,
-            WIP: BOM,
-            Todo: Review*, Order Boards, Assembly, Testing, Evaluation.
+        ^4  Done: Design, Layout, BOM,
+            WIP: Review*,
+            Todo: Order Boards, Assembly, Testing, Evaluation.
             *during review the Design may change without changing the revision.
             IOREF is for I2C and UART
             SPI_IOREF is for SPI only
@@ -127,23 +127,23 @@ Import the [BOM](./Design/16197,BOM.csv) into LibreOffice Calc (or Excel) with s
 
 # How To Use
 
-Your [Raspberry Pi] is your computer, you are the expert because I surely am just barely at the noob level. Don't buy this board and expect that I can help with your computer, I can't, I can barely keep my garden alive. So far I have got SSH to work and the AVR toolchain and was able to bootload an ATmega328p over the RS-422. The serial console program I use is picocom. 
+Your [Raspberry Pi] is your computer, you are the expert because I surely am not. Don't buy an RPUpi board and expect that I can help with your computer, I can not. So far I have found that SSH works and the AVR toolchain, so I am able to serial bootload the  ATmega328p, ATmega328pb, and ATmega1284p. I have tested SMBus and found it works but it does not do repeated starts or clock stretching, so let's not call it I2C. I have also tested SPI somewhat. The serial console program I use is picocom, the install package is built to do standard baud rates so that is what I have been using. 
 
 [Raspberry Pi]: https://www.raspberrypi.org/forums/
 
 ## Simplified Serial
 
-To allow a hardware UART on a Pi Single Board Computer to interface with an AVR UART the following connections can be used. Notice that the AVR is powered by 3.3V.
+To allow a hardware UART on a Raspberry Pi Single Board Computer to interface with an AVR UART the following connections can be used. Notice that the AVR is powered by 3.3V.
 
 ![Pi2AVR](./Documents/Pi2AVR.png "Pi to AVR")
 
-Now lets set things up to allow use with a 5V AVR and the ability to turn the SBC off (IOFF) without it pulling down on the serial port lines.
+Next, lets set things up to use an AVR at 5V. Using a buffer with IOFF for level shifting. Now I can turn off the SBC without locking (pulling down) the serial port lines (e.g. to the USB UART bridge).
 
 ![Pi2AVR_wIOFF](./Documents/Pi2AVR_wIOFF.png "Pi to AVR with IOFF")
 
 ## ICSP
 
-[ArduinoISP] sketch on an [Uno] with a SPI level converter is the [ICSP] tool I use to program the bus manager with the [Host2Remote] firmware. I then plug the RPUpi into an [RPUno] board and load my application firmware (e.g. [Solenoid] is used with a [K3] board). The RPUpi's Pi Zero host can communicate through RS-422 with other RPUno boards that have an [RPUadpt] pluged onto them. The additional boards will need the [Remote] firmware on there bus manager and have the rpu_bus address set in EEPROM.
+[ArduinoISP] sketch on an [Uno] with an SPI level converter (not needed for ^4 since it is 5V) is the [ICSP] tool I use to program the bus manager with the [Host2Remote] firmware. I then plug the RPUpi onto a target board and load my application firmware (e.g. target [RPUno] can run [Solenoid] to control a [K3] board). The RPUpi's SBC host can communicate via serial with other target boards that have an [RPUadpt] or RPUpi. The additional boards will need the [Remote] firmware on their bus manager and have a unique rpu_bus address set in EEPROM.
 
 [ArduinoISP]: https://github.com/arduino/Arduino/blob/master/build/shared/examples/11.ArduinoISP/ArduinoISP/ArduinoISP.ino
 [Uno]: https://www.adafruit.com/product/50
@@ -156,67 +156,70 @@ Now lets set things up to allow use with a 5V AVR and the ability to turn the SB
 
 ## Pi Zero Setup 
 
-The Pi Zero is a Single Board Computer (SBC) running [Linux]. I use it as a host machine since it has enough memory and processing power for the AVR toolchain as well as self-hosted compiling for itself and other applications and services (it furnishes just enough Linux at the edge). My use is sort of like a headless SCADA system for the control boards I have daisy-chain with the RS-422 bus. This is not an IoT setup rather it is a classic control system (but it is headless). The control boards have example firmware that provides a minimalistic command line interface for the Pi SBC to interact with. Essentially the controller just listens for an address and a command to perform from the RS-422 bus, the Pi SBC does all the network stuff (e.g. SSH) and runs the high-level programs (e.g. Python).
+The Pi Zero is a Single Board Computer (SBC) running [Linux]. I use it as a network machine to run a toolchain at the network edge. It has enough memory and processing power for the AVR toolchain (and others that I have not tested). It also does self-hosted compiling for (e.g. compiles programs to run on itself) and has lots of applications and services (node.js, mosquitto...). My use is sort of like a headless test bench computer embedded next to the bare metal control boards, I daisy-chain its serial to each target I want to bootload. Is it IoT, no it is not, it is a classic control system (but it is headless). So far I interact with the target boards with an SSH session and then using picocom, I am less sure that is going to change with each passing year. 
 
 [Linux]: ./Testing/linux.md
 
-The BCM2835 Broadcom chip used in the Raspberry Pi Zero is an ARM11 running at 1 GHz it is well supported by the [Raspbian] distribution that the Raspberry Pi Foundation works on. 
+The BCM2835 Broadcom chip used in the Raspberry Pi Zero is an ARM11 running at 1 GHz it has good support with the [Raspbian] distribution. 
 
 [Raspbian]: https://www.raspbian.org/
 
-__WARNING: The shield will be damaged if removed from a powered RPUno board. Before separating a shield from the RPUno it is very important to check that all power sources are disconnected.__
 
 ## Serial
 
-The Pi serial port (RX is BCM 15 and TX is BCM 14) connects to transceivers that drive differential pairs and then crossover to go to the shield's header for Tx and Rx e.g. Pi BCM Rx goes through a transceiver to Tx pin on the shield for MCU's UART. This allows the Pi Zero to talk to the shield's UART with serial as is expected. But the serial is also copied on the transceiver differential pairs, and can thus be daisy-chained to other nodes using an RPUadpt shield and CAT5 cables. 
+The Pi serial port (RX is BCM 15 and TX is BCM 14) is crossover connected at the transceivers that drive the differential pairs and then connect to the shield's target header for Tx and Rx e.g. BCM Rx goes through a transceiver to the target's Tx pin on the shield. This allows the SBC to talk to the shield's target with serial as is expected as well as being copied to the other transceivers connected to the differential pairs. 
 
 ![Pi Pinout](./Documents/Pi-pinout-graphic.png "Pi Pinout")
 
-The Pi's handshake lines nCTS and nRTS lines are on BCM 16 and 17 when the ALT3 option is active. BCM 17 is on the original 26 pin Pi connector, but BCM 16 is on the new 40 pin connector. I use this [rpirtscts] program as a command-line utility for enabling hardware flow control on the Pi Zero serial port. 
+The Pi's handshake lines nCTS and nRTS lines are on BCM 16 and 17 when the ALT3 option is active. BCM 17 is on the original 26 pin Pi connector, but BCM 16 is on the new 40 pin connector (e.g. use a 40 pin model). I use this [rpirtscts] program as a command-line utility for enabling hardware flow control on the Pi Zero serial port. 
 
 [rpirtscts]: https://github.com/epccs/RPUpi/tree/master/RPiRtsCts
 
-The Pi Zero serial lines (Rx, Tx, nRTS, and nCTS) are interfaced through a 74LVC07A buffer which is powered from the Pi's 3V3 power. When the Pi Zero is powered off the IOFF feature of the buffer will turn off (or hi-z) it's open collector output which will allow a pull-up to set the proper value on nRTS and the Tx line from the host. This allows the RPU_BUS to be used when the Pi Zero is powered off (or not plugged in). Also, a 74LVC07A buffer is used between the transceiver and the shield so the MCU on the shield can run at 3.3V or 5V, this buffer is powered from the shield so the shield UART can talk on the RS-422 when the Pi Zero is powered down (a big league ability).
+On the RPUpi board, the Pi Zero serial lines (Rx, Tx, nRTS, and nCTS) have been interfaced through a 74LVC07A buffer which is powered from the Pi's 3V3 power. When the Pi Zero is powered off the IOFF feature of the buffer will hi-z the output (it's an open collector output) which will allow a pull-up to set the proper value on nRTS and the Tx line. This allows the RPU_BUS to be used when the Pi Zero is powered off (or not plugged in). Also, a 74LVC07A buffer is used between the transceiver and the shield so the MCU on the shield can run at 3.3V or 5V, this buffer is powered from the shield so the shield UART can talk on the serial bus without the SBC.
 
-When the Pi's handshake lines are enabled picocom and avrdude work like an RPUftdi from a Ubuntu computer which sets nDTR and nRTS which allows the bus manager to bradcast a bootload address that in the case of avrdude allows programming the AVR's serial bootloader and in the case of picocom means waiting for the bootloader to timeout. 
+When the Pi's handshake lines are enabled the nRTS line is used to start a targets bootloader (e.g. the famous Arduino DTR trick). When avrdude opens the serial port the nRTS goes active, that is it pulls low and is coupled through a capacitor to the Uno nREST pin, and bang the bootloader runs. In this case, the bus manager sees nRTS and broadcast a bootload address on the out of band channel so avrdude sees a single target running its serial bootloader. Since picocom does the same thing I have to make sure the target is one I want to reset, and then have to wait for that targets bootloader to timeout and its application to get the bus address from its shield. 
+
 
 ## Full Duplex Serial Management
 
-The shield has a bus manager, though the example firmware is ongoing. It has access to enable/disable each transceiver receiver and/or driver. This means that each (or all) node(s) can be isolated from the serial bus (both host or target), the implications are significant. The original intent was to allow boot loading with a point to point full duplex mode (e.g. target with optiboot/xboot and the host running avrdude). The reason Arduino Uno is so amazing is that it allows boot loading a new executable binary image over a severely goofed up the bare metal application, the rpubus tries to retain the nearly bulletproof upload. 
+The shield has a bus manager, through its example firmware is ongoing. It has access to enable/disable each transceiver receiver and/or driver. This means that each (or all) targets can be isolated from the serial bus, the implications are significant. The original intent was to allow boot loading with a point to point full duplex mode (e.g. target with optiboot/xboot and the host running avrdude). The reason Arduino Uno is amazing is that it allows boot loading a new executable binary image over a severely goofed up the bare metal application, the rpubus tries to retain the nearly bulletproof upload. 
+
 
 ## Transceiver (RS-485)
 
-The transceivers have a built-in fail-safe bias, which is a little complicated to explain, but it makes an undriven bus (e.g. 0V or the failed condition) a defined true or high state. That is if I turn off the transceiver driving the bus (only one should drive the bus at any time), it is guaranteed to be in a defined state (e.g. HIGH). I have set up the transceivers to automatically turn off the driver while the UART output is a true (and HIGH is its default value). That means the driver will automatically drive the bus only when data is sent, so nothing needs to be done in software to turn on or off the transceivers. The bus manager (control over I2C) may override the transceiver with its disable.
+The transceivers used have a built-in fail-safe bias, which is a little complicated to explain, but it makes an undriven bus (e.g. 0V or the failed condition) a defined state (true or HIGH). That is if I turn off the transceiver driving the bus (only one should drive the bus at any time), it is guaranteed to be in a defined state (e.g. HIGH). I have set up the transceivers to automatically turn off the driver while the UART output is a true (since HIGH is its default value). That means the driver will automatically drive the bus only when data is sent, so nothing needs to be done in software to turn on or off the transceivers. The bus manager may override. 
 
 ## SPI
 
-The Pi Zero SPI lines (MOSI, SCK, MISO) are interfaced through a 74LVC07A buffer which is powered from the Pi's 3V3 power. When the Pi Zero is powered off the IOFF feature of the buffer will turn off (or hi-z) it's open collector output which will allow a pull-up (IOREF from the MCU board) to set the value on SCK and the MOSI line or allow the shield MCU to control them (though they have a pull up). 
+The SBC's SPI lines (MOSI, SCK, MISO, ^4 adds nSS) are interfaced through a 74LVC07A buffer. The lines MOSI, SCK, and nSS are powered from the SBC 3V3 power. When the SBC is powered off the IOFF feature of the buffer will hi-z its open collector output which will allow a pull-up to set the value on SCK and the MOSI line or allow the shield MCU to control them. 
 
 Known issues: RPUno has its SPI lines run to user connectors for digital control so make sure those are free if SPI is to be used.
 
 ## I2C
 
-The Raspery Pi I2C port is not actualy I2C, it is SMBus. The Pi has 1.8k pull-ups to 3.3V, and when the shield powers down VIN it will pull down the I2C lines as the Pi can no longer sustain its 3.3V supply. 
-
-On RPUpi^4 the ATmega328pb will duplicate what has been tested on RPUadpt^6. Which is to say the I2C1 interface has been setup to respond to some SMBus messages.
+The SBC has an SMBus port when it is running Linux, it is not actually I2C. It is not clear if anyone has ever done reliable I2C on a time-sharing operating system. The Raspberry Pi Zero has 1.8k pull-ups to 3.3V, and when it is powered down those resistors pull down the I2C lines and lock the bus. That is why the ^4 manager is an ATmega328pb. The second I2C port can talk to the SBC with SMBus commands, and the original I2C port can talk to the target.
 
 
 ## SD
 
-Card [corruption] seems to happen when the SD card is doing wear leveling operations at the time power is removed. It may be possible with this setup to push the shutdown button and have that run a script that before halting tells the node to wait for a while and then make sure the current draw from the battery is stabilized before turning off VIN or disconnecting the battery. The idea is that wear leveling will draw current somewhat randomly until all the page updates are done. The BCM2835 will be halted, and looping (it is checking one of the I2C pins) and using a steady current draw. So when the current draw is stable the wear leveling should be done and safe to disconnect power.
+SBC SD Card [corruption] seems to happen when the SD card is doing wear leveling operations at the time power is removed. It is possible with this setup to push the shutdown button and have that run a [Shutdown] script. In addition, the target can initiate a power down with [PwrMgt] which monitors power before killing power to the shield (VIN pin). The idea is that wear leveling will draw current somewhat randomly until all the page updates are done. The BCM2835 will be halted, and looping (it is checking one of the I2C pins) and using a steady current draw. So when the current draw is stable the wear leveling should be done and safe to disconnect the shield VIN.
 
+[Shutdown]: https://github.com/epccs/RPUpi/tree/master/Shutdown
+[PwrMgt]: https://github.com/epccs/RPUno/tree/master/PwrMgt
 [corruption]: https://hackaday.com/2016/08/03/single-board-revolution-preventing-flash-memory-corruption/
 
 
 ## Security
 
-One lesson I understand is to only bootload bare metal over secure links.
+One lesson I understand is to bootload bare metal over links that cannot have adversaries in the middle.
 
 
 ## Compiling
 
-To prevent heap usage and its fragmentation on the AVR I use C and avoid the malloc function. This means only the stack and static memory is used. Compiling with C++ would mix the heap and stack in the tiny dynamic memory space where collisions of the two systems result in memory corruption that cannot be detected. On hardware like a Raspberry Pi, C++ is fine since Linux can manage the heap and stack memory systems with hardware found in the memory management unit (which the bare metal lacks).
+To prevent heap usage and its fragmentation on the AVR I use C and avoid the malloc function. This means only the stack and static memory is used. 
 
-The AVR has a single clock domain (for the most part), so the GPIO, peripherals and flash memory operate in a predictable and repeatable way. That is to say, an AVR will pull an instruction from flash and use it to fiddle with an output in a predictable consistent way, however a fast machine may need to wait for instructions and will experience timing variations from the instruction cashing system as well as other clock domain transitions that cause timing variability in devices that run with multiple clock domains (e.g. MCU at higher speeds have to pre-fetch instructions from flash which runs in a slower clock domain, and write to GPIO in yet another slow clock domain).
+The AVR has a single clock domain (for the most part), so the GPIO, peripherals and flash memory operate in a predictable and repeatable way. That is to say, an AVR will pull an instruction from flash and run it to change an output in a predictable consistent way. A faster machine may need to buffer instructions from flash and will experience timing variations from branch test that follows a path into an empty instruction cache. There are other clock domain concerns that cause timing variability in fast devices that run with multiple clock domains (e.g. see [memory barrier]), but the point is that AVR is simple.
+
+[memory barrier]: https://en.wikipedia.org/wiki/Memory_barrier
 
 When a task is small and/or simple enough to be done with an AVR it takes less time and effort to just use an AVR. It uses the same GCC toolchain as the big boys (GCC also does x86, ARM, MIPS...), but the AVR is a simple device with a fraction of the documentation to understand (and the garden ain't going to eat itself... or wait actually it sort of does).
