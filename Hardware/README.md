@@ -58,7 +58,8 @@ This board connects a Pi Zero [W] to a multi-drop serial bus and a control board
             IOREF is for I2C and UART
             SPI_IOREF is for SPI only
             Add SPI nSS so the Raspery Pi CE10 can use it, (it was tested with RPUadpt^6)
-            remove ADC6.
+            remove ADC6 and ADC7.
+            remove smd mounts for 100 Ohm pair termination.
             Use TI's 5V THVD1500, wich cost less and has better specs.
             Run Manager at 5V to match trancever's.
             Remove 3V3 regulator, which is no longer needed.
