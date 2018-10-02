@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-# Web Server Gateway Interface (WSGI) deamon 
+# Web Server Gateway Interface (WSGI) daemon  
 # use to serve request on a TCP/IP PORT for serial devices that use simple commands 
 # at CLI run with
 # python3 WSGIdaemon.py
@@ -27,7 +27,7 @@ from cgi import parse_qs, escape
 # Arduino's ATmega16u2 is a modem... what? /dev/ttyACM0
 device = "/dev/ttyUSB0"
 sio = serial.Serial(device,38400, timeout=3)
-print("claim serial link " + device + "\n")
+print("claim serial link " + device)
 # TBD only run one WSGI server with one thread
 
 # A relatively simple WSGI application. 
@@ -35,47 +35,132 @@ def simple_app(environ, start_response):
     
     # Returns a dictionary from CGI in which the values are lists, it is the easy way
     query_string = parse_qs(environ['QUERY_STRING'])
-    #given URL: http://localhost:8000/?addr=0&cmd=id&q=true
-    #the QUERY_STRING is: addr=0&cmd=id&q=true
+    #given URL: http://localhost:8000/?addr=0&cmd=id&q=true&arg1=1&arg2=2&arg3=3&arg4=4&arg5=5
+    #the QUERY_STRING is: addr=0&cmd=id&q=true&arg1=1&arg2=2&arg3=3&arg4=4&arg5=5
     addr = query_string.get('addr', [''])[0] # Returns the first addr value
     cmd_base = query_string.get('cmd', [''])[0] # Returns the first cmd value
     q = query_string.get('q', [''])[0] # Returns the first q value
-    # TBD thre are arguments to add, but this is a start
-
-    status = '200 OK'
-    headers = [('Content-type', 'text/plain; charset=utf-8')]
-
-    start_response(status, headers)
+    arg1 = query_string.get('arg1', [''])[0] # Returns the first argument value
+    arg2 = query_string.get('arg2', [''])[0] # Returns the first argument value
+    arg3 = query_string.get('arg3', [''])[0] # Returns the first argument value
+    arg4 = query_string.get('arg4', [''])[0] # Returns the first argument value
+    arg5 = query_string.get('arg5', [''])[0] # Returns the first argument value
 
     #check for correctness of command
     if (addr == ''):
         addr = '0' # for default of /0/id?
-    if ( (addr < '0') or (addr > '9') ):
-        ret = [ ("ERR: addr must be in the range 0..9\n").encode('utf-8') + 
+    if ( not (addr.isalnum() and (len(addr) == 1) ) ):
+        status = '400 Bad Request'
+        headers = [('Content-type', 'text/plain; charset=utf-8')]
+        start_response(status, headers)
+        ret = [ ("ERR: addr must be a string of len == 1 that isalnum\n").encode('utf-8') + 
                 (b"ERR: bad query_string \"addr=" + addr.encode('utf-8') + b"\"\n").decode().encode('utf-8') ]
         return ret
     if (cmd_base == ''):
         cmd_base = "id" # default
     if ( not (cmd_base.isalpha()) ):
+        status = '400 Bad Request'
+        headers = [('Content-type', 'text/plain; charset=utf-8')]
+        start_response(status, headers)
         ret = [ ("ERR: cmd must be a string that isalpha\n").encode('utf-8') + 
                 (b"ERR: bad query_string \"cmd=" + cmd_base.encode('utf-8') + b"\"\n").decode().encode('utf-8') ]
         return ret
+
+    # start putting the command togather
+    command =  "/"+addr+"/"+cmd_base
+
     if (q == ''):
         q = 'true' # default needs a ? after the cmd_base 
     if ( not ( (q == 'true') or (q == 'false')) ):
+        status = '400 Bad Request'
+        headers = [('Content-type', 'text/plain; charset=utf-8')]
+        start_response(status, headers)
         ret = [ ("ERR: q must be true or false\n").encode('utf-8') + 
                 (b"ERR: bad query_string \"q=" + q.encode('utf-8') + b"\"\n").decode().encode('utf-8') ]
         return ret
 
-    # note: if the command will not encode with ascii then use bytes e.g.
-    # command = b"/"+bytes([192])+b"/id?"
+    # baggage from looking at GPIB commands for too many years
     if (q == "true"):
-        command =  "/"+addr+"/"+cmd_base+"?\n"
-    else:
-        command =  "/"+addr+"/"+cmd_base+"\n"
-    sio.write(command.encode('utf-8')) # "/0/id?" is like the command I want to send on the serial link 
+        command =  command+"?"
+
+    if (len(arg1) >= 1):
+        if ( not (arg1.isalnum() ) ):
+            status = '400 Bad Request'
+            headers = [('Content-type', 'text/plain; charset=utf-8')]
+            start_response(status, headers)
+            ret = [ ("ERR: arg1 must be a string that isalnum\n").encode('utf-8') + 
+                    (b"ERR: bad query_string \"arg1=" + arg1.encode('utf-8') + b"\"\n").decode().encode('utf-8') ]
+            return ret
+        command =  command+" "+arg1
+        
+        #ignore arg2 if arg1 not given
+        if (len(arg2) >= 1):
+            if ( not (arg2.isalnum() ) ):
+                status = '400 Bad Request'
+                headers = [('Content-type', 'text/plain; charset=utf-8')]
+                start_response(status, headers)
+                ret = [ ("ERR: arg2 must be a string that isalnum\n").encode('utf-8') + 
+                        (b"ERR: bad query_string \"arg2=" + arg2.encode('utf-8') + b"\"\n").decode().encode('utf-8') ]
+                return ret
+            command =  command+","+arg2
+
+            #ignore arg3 if arg2 not given
+            if (len(arg3) >= 1):
+                if ( not (arg3.isalnum() ) ):
+                    status = '400 Bad Request'
+                    headers = [('Content-type', 'text/plain; charset=utf-8')]
+                    start_response(status, headers)
+                    ret = [ ("ERR: arg3 must be a string that isalnum\n").encode('utf-8') + 
+                            (b"ERR: bad query_string \"arg3=" + arg3.encode('utf-8') + b"\"\n").decode().encode('utf-8') ]
+                    return ret
+                command =  command+","+arg3
+
+                #ignore arg4 if arg3 not given
+                if (len(arg4) >= 1):
+                    if ( not (arg4.isalnum() ) ):
+                        status = '400 Bad Request'
+                        headers = [('Content-type', 'text/plain; charset=utf-8')]
+                        start_response(status, headers)
+                        ret = [ ("ERR: arg4 must be a string that isalnum\n").encode('utf-8') + 
+                                (b"ERR: bad query_string \"arg4=" + arg4.encode('utf-8') + b"\"\n").decode().encode('utf-8') ]
+                        return ret
+                    command =  command+","+arg4
+
+                    #ignore arg5 if arg4 not given
+                    if (len(arg5) >= 1):
+                        if ( not (arg5.isalnum() ) ):
+                            status = '400 Bad Request'
+                            headers = [('Content-type', 'text/plain; charset=utf-8')]
+                            start_response(status, headers)
+                            ret = [ ("ERR: arg5 must be a string that isalnum\n").encode('utf-8') + 
+                                    (b"ERR: bad query_string \"arg5=" + arg5.encode('utf-8') + b"\"\n").decode().encode('utf-8') ]
+                            return ret
+                        command =  command+","+arg5
+
+    sio.write((command+"\n").encode('utf-8')) # "/0/id?" is like the command I want to send on the serial link 
+    sio_echo_cmd = b""
     sio_echo_cmd = sio.readline().strip() # my serial device echo's the command 
+    if ( not (len(sio_echo_cmd) >= 1) ):
+        status = '503 Service Unavailable'
+        headers = [('Content-type', 'text/plain; charset=utf-8')]
+        start_response(status, headers)
+        ret = [ ("ERR: device did not echo command\n").encode('utf-8') + 
+                (b"ERR: \command=\"" + command.encode('utf-8') + b"\"\n").decode().encode('utf-8') ]
+        return ret
     sio_echo = sio.readline().strip() # and then outpus the JSON
+    sio.write("\n".encode('utf-8')) # some commands keep outputing at timed intervals (e.g. /0/adc 1) this should stop them
+    if ( not (len(sio_echo) >= 1) ):
+        status = '503 Service Unavailable'
+        headers = [('Content-type', 'text/plain; charset=utf-8')]
+        start_response(status, headers)
+        ret = [ ("ERR: device found but ouput not returned\n").encode('utf-8') + 
+                (b"ERR: \"command=" + command.encode('utf-8') + b"\"\n").decode().encode('utf-8') ]
+        return ret
+
+    status = '200 OK'
+    headers = [('Content-type', 'text/plain; charset=utf-8')]
+
+    start_response(status, headers)
     
     # format as bytestring suitable for transmission as HTTP response headers
     ret = [ (sio_echo_cmd + b"\n").decode().encode('utf-8') +

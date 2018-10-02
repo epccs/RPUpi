@@ -2,8 +2,6 @@
 
 ## ToDo
 
-Add arguments, only commands without arguments work now.
-
 Don't echo the command, consumers probably don't want that.
 
 Validate the JSON?
@@ -11,7 +9,7 @@ Validate the JSON?
 
 ## Overview
 
-Web Server Gateway Interface (WSGI) deamon for serial
+Web Server Gateway Interface (WSGI) daemon for serial
 
 use to serve request on a TCP/IP PORT for serial devices that use simple commands 
 
@@ -55,6 +53,16 @@ http://localhost:8000/?addr=0&cmd=id&q=true
 ```
 
 The idea is to make a command for the serial link, the commands I use resemble "/0/id?". The second character is an address on the serial bus (it is a multi-drop), the command is "id", and the "?" means it is a query (but everything has an echo and returns JSON so it's just adding overhead)
+
+Arguments (arg1..arg5) have been added.
+
+```
+http://localhost:8000/?addr=0&cmd=iaddr&q=false&arg1=41
+```
+
+Which sends the command "/0/iaddr 41" and I should get back the JSON "{"address":"0x29"}". That requires an RPUadpt or RPUpi shield on the controler, and for the controler to run [i2c-debug] or software that includes it.
+
+[i2c-debug]: https://github.com/epccs/RPUno/tree/master/i2c-debug
 
 
 ## Oher Referances
