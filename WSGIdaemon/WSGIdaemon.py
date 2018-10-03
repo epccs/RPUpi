@@ -167,7 +167,9 @@ def simple_app(environ, start_response):
             (sio_echo + b"\n").decode().encode('utf-8') ]
     return ret
 
-
-with make_server('', 8000, simple_app) as httpd:
+#host  = ''
+#host = 'localhost'
+host = "192.168.0.7" # an address on local network
+with make_server(host, 8000, simple_app) as httpd:
     print("Serving on port 8000...")
     httpd.serve_forever()

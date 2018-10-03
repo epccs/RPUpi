@@ -11,7 +11,8 @@ Validate the JSON?
 
 Web Server Gateway Interface (WSGI) daemon for serial
 
-use to serve request on a TCP/IP PORT for serial devices that use simple commands 
+The idea is to use the gateway to convert a http request into a command for the serial link, the commands I use resemble "/0/id?". The second character is an address on the serial bus (it is a multi-drop), the command is "id", and the "?" means it is a query (but everything has an echo and returns JSON so it's just adding overhead)
+
 
 ## Startup
 
@@ -51,8 +52,6 @@ Place url in a brower
 ```
 http://localhost:8000/?addr=0&cmd=id&q=true
 ```
-
-The idea is to make a command for the serial link, the commands I use resemble "/0/id?". The second character is an address on the serial bus (it is a multi-drop), the command is "id", and the "?" means it is a query (but everything has an echo and returns JSON so it's just adding overhead)
 
 Arguments (arg1..arg5) have been added.
 
