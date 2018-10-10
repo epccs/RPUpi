@@ -33,7 +33,7 @@ function onTest(url, callback) {
 
 <body>
 
-    <p id="wsgi_daemon"> abcdef </p>
+    <p id="wsgi_daemon"> place_holder </p>
      <button onclick="clickID()">/0/id?</button> 
     
 <script>
@@ -50,55 +50,9 @@ function clickID() {
 }
 </script>
 
-<p>The daemon complains about broken pipes after click or two and a direct access</p>
-<pre>
-127.0.0.1 - - [02/Oct/2018 20:05:26] "GET / HTTP/1.1" 200 99
-127.0.0.1 - - [02/Oct/2018 20:05:26] "GET / HTTP/1.1" 200 99
-127.0.0.1 - - [02/Oct/2018 20:05:27] "GET / HTTP/1.1" 200 99
-127.0.0.1 - - [02/Oct/2018 20:05:58] "GET / HTTP/1.1" 200 99
-127.0.0.1 - - [02/Oct/2018 20:05:59] "GET /favicon.ico HTTP/1.1" 200 99
-127.0.0.1 - - [02/Oct/2018 20:05:59] "GET /favicon.ico HTTP/1.1" 200 99
-Traceback (most recent call last):
-  File "/usr/lib/python3.6/wsgiref/handlers.py", line 138, in run
-    self.finish_response()
-  File "/usr/lib/python3.6/wsgiref/handlers.py", line 180, in finish_response
-    self.write(data)
-  File "/usr/lib/python3.6/wsgiref/handlers.py", line 274, in write
-    self.send_headers()
-  File "/usr/lib/python3.6/wsgiref/handlers.py", line 332, in send_headers
-    self.send_preamble()
-  File "/usr/lib/python3.6/wsgiref/handlers.py", line 255, in send_preamble
-    ('Date: %s\r\n' % format_date_time(time.time())).encode('iso-8859-1')
-  File "/usr/lib/python3.6/wsgiref/handlers.py", line 453, in _write
-    result = self.stdout.write(data)
-  File "/usr/lib/python3.6/socketserver.py", line 800, in write
-    self._sock.sendall(b)
-BrokenPipeError: [Errno 32] Broken pipe
-127.0.0.1 - - [02/Oct/2018 20:05:59] "GET /favicon.ico HTTP/1.1" 500 59
-----------------------------------------
-Exception happened during processing of request from ('127.0.0.1', 59038)
-Traceback (most recent call last):
-  File "/usr/lib/python3.6/wsgiref/handlers.py", line 138, in run
-    self.finish_response()
-  File "/usr/lib/python3.6/wsgiref/handlers.py", line 180, in finish_response
-    self.write(data)
-  File "/usr/lib/python3.6/wsgiref/handlers.py", line 274, in write
-    self.send_headers()
-  File "/usr/lib/python3.6/wsgiref/handlers.py", line 332, in send_headers
-    self.send_preamble()
-  File "/usr/lib/python3.6/wsgiref/handlers.py", line 255, in send_preamble
-    ('Date: %s\r\n' % format_date_time(time.time())).encode('iso-8859-1')
-  File "/usr/lib/python3.6/wsgiref/handlers.py", line 453, in _write
-    result = self.stdout.write(data)
-  File "/usr/lib/python3.6/socketserver.py", line 800, in write
-    self._sock.sendall(b)
-BrokenPipeError: [Errno 32] Broken pipe
-</pre>
-<p>I think I see what the problem is now</p>
-<pre>
-Failed to load http://127.0.0.1:8000/: No 'Access-Control-Allow-Origin' header is present on the requested resource. Origin 'null' is therefore not allowed access.
-</pre>
-<p>Basically, the browser does not want to accept the connection because it does not know if it is safe, yet it will open it directly. </p>
+<p>Modern web browsers have implemented the W3C standard Cross-Origin Resource Sharing (CORS) that allows the browser to have a same-origin policy. This policy means the browser will only allow callbacks from URL's inside a page that has the same origin (scope), that is they have identical schemes, hosts, and ports (RFC 6454).</p>
+<p>When the callback fails the WSGI daemon will complain about a Broken pipe (e.g. the negotiated callback port did not accept input).</p>
+<p>CORS can be turned off in Firefox with the <A HREF="https://github.com/spenibus/cors-everywhere-firefox-addon">cors-everywhere-firefox-addon</A> extension (which is for developer use)</p>
 
 </body>
 
