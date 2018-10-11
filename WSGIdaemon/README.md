@@ -11,7 +11,9 @@ Validate the JSON?
 
 Web Server Gateway Interface (WSGI) daemon for serial
 
-The idea is to use the gateway to convert an HTTP request into a command for the serial link, the commands I use resemble "/0/id?". The second character is an address on the serial bus (it is a multi-drop), the command is "id", and the "?" means it is a query (but everything has an echo and returns JSON so it's just adding overhead).
+The idea is to use the gateway to convert an HTTP request into a command for the serial link, the commands I use resemble "/0/id?". The second character is an address on the serial bus (it is a multi-drop), the command is "id", and the "?" means it is a query.
+
+The daemon has now been set to allow the origin to be from everywhere, which means Cross-Origin Resource Sharing (CORS) is wide open. The reference I used to do this is over seven years old so if someone has a better idea please add an issue and suggest.
 
 
 ## Startup

@@ -15,6 +15,9 @@
 # I am using python3 so make sure the serial package is installed. 
 # sudo apt-get install python3-serial 
 
+import sys
+sys.path.append('wsgiac') #allow import of Access Control
+from accesscontrol import  AccessControlMiddleware
 import json
 import serial
 from time import sleep
@@ -145,7 +148,7 @@ def simple_app(environ, start_response):
         headers = [('Content-type', 'text/plain; charset=utf-8')]
         start_response(status, headers)
         ret = [ ("ERR: device did not echo command\n").encode('utf-8') + 
-                (b"ERR: \command=\"" + command.encode('utf-8') + b"\"\n").decode().encode('utf-8') ]
+                (b"ERR: \"command=" + command.encode('utf-8') + b"\"\n").decode().encode('utf-8') ]
         return ret
     sio_echo = sio.readline().strip() # and then outpus the JSON
     sio.write("\n".encode('utf-8')) # some commands keep outputing at timed intervals (e.g. /0/adc 1) this should stop them
@@ -167,9 +170,20 @@ def simple_app(environ, start_response):
             (sio_echo + b"\n").decode().encode('utf-8') ]
     return ret
 
+# Access-Control Middleware
+# from https://github.com/ianb/wsgi-access-control
+application = AccessControlMiddleware(
+    simple_app, allow_origin='*',
+    allow_methods=('GET','POST','PUT','DELETE','OPTIONS'),
+    allow_headers=('X-Authorization', 'Authorization',
+                   'X-If-Modified-Since', 'X-If-Unmodified-Since',
+                   'Content-Type'),
+    expose_headers=('X-Weave-Timestamp', 'X-Weave-Backoff',
+                    'X-Weave-Alert', 'X-Weave-Records'))
+
 host  = ''
 #host = 'localhost'
 #host = "192.168.0.7" # an address on local network
-with make_server(host, 8000, simple_app) as httpd:
+with make_server(host, 8000, application) as httpd:
     print("Serving on port 8000...")
     httpd.serve_forever()
