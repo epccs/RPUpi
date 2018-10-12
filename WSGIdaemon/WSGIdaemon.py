@@ -30,7 +30,7 @@ from cgi import parse_qs, escape
 # Arduino's ATmega16u2 is a modem... what? /dev/ttyACM0
 device = "/dev/ttyUSB0"
 sio = serial.Serial(device,38400, timeout=3)
-print("claim serial link " + device)
+print("serial link " + device)
 # TBD only run one WSGI server with one thread
 
 # A relatively simple WSGI application. 
@@ -181,9 +181,10 @@ application = AccessControlMiddleware(
     expose_headers=('X-Weave-Timestamp', 'X-Weave-Backoff',
                     'X-Weave-Alert', 'X-Weave-Records'))
 
-host  = ''
+#host  = ''
 #host = 'localhost'
-#host = "192.168.0.7" # an address on local network
+host = "192.168.0.7" # an address on local network
 with make_server(host, 8000, application) as httpd:
+    print("host " + host + " is")
     print("Serving on port 8000...")
     httpd.serve_forever()

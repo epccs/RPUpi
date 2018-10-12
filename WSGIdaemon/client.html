@@ -14,11 +14,27 @@ var xhr = new XMLHttpRequest();
 // http://recurial.com/programming/understanding-callback-functions-in-javascript/
 xhr.responseType = 'text';
 
-function onTest(url, callback) {
+// Lets run through a list of serial commands  and populate DOM elements 
+var IterateWSIGdaemon = [
+    //This is a RPUno with a K3 board runing KNL firmware, it is irrigating three zones
+    // for RPUno and KNL see https://github.com/epccs/RPUno/tree/master/KNL
+    // for K3 see https://github.com/epccs/Driver/tree/master/K3
+    // /1/id?
+    { "url": "http://192.168.0.7:8000/?addr=1&cmd=id&q=true", "elem_to_pop": "element0_to_populate" },
+    // /1/kflow? 1
+    { "url": "http://192.168.0.7:8000/?addr=1&cmd=kflow&q=true&arg1=1", "elem_to_pop": "element1_to_populate" },
+    // /1/kflow? 2
+    { "url": "http://192.168.0.7:8000/?addr=1&cmd=kflow&q=true&arg1=2", "elem_to_pop": "element2_to_populate" },
+    // /1/kflow? 3
+    { "url": "http://192.168.0.7:8000/?addr=1&cmd=kflow&q=true&arg1=3", "elem_to_pop": "element3_to_populate" }
+];
+
+function SendGETandRegisterCallback(url, callback) {
     "use strict";
-    // set the callback to use when the wsgi daemon finishes.
+    // register the callback to use when the wsgi daemon finishes.
     xhr.onreadystatechange = function () {
         if (xhr.readyState === 4 && xhr.status === 200) {
+            // the daemon is done  so pass the response to the function that was made to get it.
             callback.call(xhr.responseText);
         }
     }
@@ -33,20 +49,26 @@ function onTest(url, callback) {
 
 <body>
 
-    <p id="wsgi_daemon"> place_holder </p>
-     <button onclick="clickID()">/0/id?</button> 
+    <p id="element0_to_populate"> element0_to_populate </p>
+    <p id="element1_to_populate"> element1_to_populate </p>
+    <p id="element2_to_populate"> element2_to_populate </p>
+    <p id="element3_to_populate"> element3_to_populate </p>
+     <button onclick="UpdateDOM(0)">Update DOM</button> 
     
 <script>
-function clickID() {
+function UpdateDOM(i) {
     "use strict";
     // if it turns red that is DOM based evidance that call was done
-    document.getElementById("wsgi_daemon").style.color = 'yellow';
-    onTest('http://127.0.0.1:8000/', function () {
+    document.getElementById(IterateWSIGdaemon[i].elem_to_pop).style.color = 'yellow';
+    SendGETandRegisterCallback(IterateWSIGdaemon[i].url, function () {
         // pressent unamed callback gets this when it is called
-        document.getElementById("wsgi_daemon").innerHTML = this;
-        document.getElementById("wsgi_daemon").style.color = 'green';
+        document.getElementById(IterateWSIGdaemon[i].elem_to_pop).innerHTML = this;
+        document.getElementById(IterateWSIGdaemon[i].elem_to_pop).style.color = 'green';
+        if (i+1 < IterateWSIGdaemon.length) {
+            UpdateDOM(i+1); //recursion feels like the wrong way to do this, but how should it be done
+        }
     });
-    document.getElementById("wsgi_daemon").style.color = 'red';
+    document.getElementById(IterateWSIGdaemon[i].elem_to_pop).style.color = 'red';
 }
 </script>
 

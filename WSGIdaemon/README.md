@@ -6,6 +6,8 @@ Don't echo the command, but for now, I want to see it.
 
 Validate the JSON?
 
+Test on the R-Pi, so far this has only been used on a Ubuntu 18.04 desktop (using an RPUftdi shield).
+
 
 ## Overview
 
@@ -13,7 +15,7 @@ Web Server Gateway Interface (WSGI) daemon for serial
 
 The idea is to use the gateway to convert an HTTP request into a command for the serial link, the commands I use resemble "/0/id?". The second character is an address on the serial bus (it is a multi-drop), the command is "id", and the "?" means it is a query.
 
-The daemon has now been set to allow the origin to be from everywhere, which means Cross-Origin Resource Sharing (CORS) is wide open. The reference I used to do this is over seven years old so if someone has a better idea please add an issue and suggest.
+The daemon has now been set to allow the origin to be from everywhere, which means Cross-Origin Resource Sharing (CORS) does not need turned off in the browser. The reference I used to do this is over seven years old so if someone has a better idea please add an issue and suggest.
 
 
 ## Startup
@@ -49,21 +51,35 @@ Follow these rc.local [recommendations].
 
 ## Browser
 
-Place URL in a browser.
+Place URL in a browser (the host I have the WSGIdaemon running on is at 192.168.0.7)
 
 ```
-http://localhost:8000/?addr=0&cmd=id&q=true
+http://192.168.0.7:8000/?addr=0&cmd=id&q=true
 ```
 
-Arguments (arg1..arg5) have been added.
+Which sends the command "/0/id?" and I get back this JSON from a board on my test bench.
 
 ```
-http://localhost:8000/?addr=0&cmd=iaddr&q=false&arg1=41
+{"id":{"name":"I2Cdebug^1","desc":"RPUno (14140^9) Board /w atmega328p","avr-gcc":"5.4.0"}}
 ```
 
-Which sends the command "/0/iaddr 41" and I should get back the JSON "{"address":"0x29"}". That requires an RPUadpt or RPUpi shield on the controller, and for the controller to run [i2c-debug] or software that includes it.
+Now with arguments (arg1..arg5) have added.
+
+```
+http://192.168.0.7:8000/?addr=0&cmd=iaddr&q=false&arg1=41
+```
+
+Which sends the command "/0/iaddr 41" and I get back this JSON. 
+
+```
+{"address":"0x29"}
+```
+
+That is the bus manager I2C address (an I2C slave) on the RPUftdi (same for RPUadpt and RPUpi) shield mounted on the RPUno.  The RPUno is running [i2c-debug] software.
 
 [i2c-debug]: https://github.com/epccs/RPUno/tree/master/i2c-debug
+
+Next open the "client.html" file as a flat stand-alone HTML sourced from the disk with Edge, Chrome, or Firefox. Make sure to modify the HTML file so that the correct host address is used (e.g. it has to match the WSGIdaemon host.
 
 
 ## WSGI Python Referance
@@ -76,9 +92,9 @@ Which sends the command "/0/iaddr 41" and I should get back the JSON "{"address"
 * For CGI see https://docs.python.org/3.7/library/cgi.html
 
 
-## WSGI Python Frameworks 
+## WSGI Python Frameworks (more referance)
 
-It is not clear to me what these frameworks do, or when I would instantiate the device  (e.g. open the serial port) I want to act as a gateway for.
+It is not clear to me what these frameworks do, or if thay can act as a serial device  gateway.
 
 * For Flask see https://github.com/pallets/flask
 * For Bottle see https://github.com/bottlepy/bottle
@@ -99,7 +115,7 @@ Modern web browsers have implemented the W3C standard [CORS] that allows the bro
 * Mozilla notes https://developer.mozilla.org/en-US/docs/Web/HTTP/CORS
 * Google notes https://cloud.google.com/storage/docs/cross-origin
 
-CORS can be turned off in Firefox with this extension (this is for developer reference)
+CORS can be turned off in Firefox with this extension (check if a callback works then remove it)
 
 * Cors Everywhere https://github.com/spenibus/cors-everywhere-firefox-addon
 
