@@ -1,18 +1,19 @@
 #!/usr/bin/env python3
 # Web Server Gateway Interface (WSGI) daemon  
-# use to serve request on a TCP/IP PORT for serial devices that use simple commands 
+# use web server techniques to act as a gateway interface for a serial link 
 # at CLI run with
 # python3 WSGIdaemon.py
-# killing it is a PITA, I just close the terminal, yep that needs some work.
-# to try it open a brower with url: http://localhost:8000/?addr=0&cmd=id&q=true
+# to kill it, I close the terminal, that needs work.
+# set the host value (near bottom) for your machine
+# to try the interface open a brower with url: http://host:8000/?addr=0&cmd=id&q=true
 
 # For info on WSGI see https://docs.python.org/3.7/library/wsgiref.html
 # For info on CGI see https://docs.python.org/3.7/library/cgi.html
 
-# The goal is to hold a seril link open while a web server runs pages, e.g. use the WSGI daemon to access the serial link.
+# The goal is to hold a serial link open while client(s) make the request, e.g. use the WSGI Python core as a network gateway to access the serial link.
 # it takes commands from the CGI query string and turns them into the format I am using e.g. "/0/id?" or "/0/adc 3,4,5" 
 
-# I am using python3 so make sure the serial package is installed. 
+# Using python3 so make sure the serial package is installed. 
 # sudo apt-get install python3-serial 
 
 import sys
@@ -21,17 +22,20 @@ from accesscontrol import  AccessControlMiddleware
 import json
 import serial
 from time import sleep
-from wsgiref.simple_server import make_server
+import wsgiref.simple_server
 from cgi import parse_qs, escape
+import os
 
 # claim the serial link (e.g. it is a resourse that I will provide use of)
 # hardwar serial on R-Pi is/dev/ttyAMA0
 # FTDI and some other usb serial is /dev/ttyUSB0
 # Arduino's ATmega16u2 is a modem... what? /dev/ttyACM0
-device = "/dev/ttyUSB0"
+if os.uname().machine == 'i686': # Ubuntu with RPUftdi
+    device = "/dev/ttyUSB0"
+if os.uname().machine == 'armv6l': # R-Pi's hardware UART
+    device = "/dev/ttyAMA00"
 sio = serial.Serial(device,38400, timeout=3)
 print("serial link " + device)
-# TBD only run one WSGI server with one thread
 
 # A relatively simple WSGI application. 
 def simple_app(environ, start_response):
@@ -150,14 +154,32 @@ def simple_app(environ, start_response):
         ret = [ ("ERR: device did not echo command\n").encode('utf-8') + 
                 (b"ERR: \"command=" + command.encode('utf-8') + b"\"\n").decode().encode('utf-8') ]
         return ret
+    if ( not (sio_echo_cmd == command.encode('utf-8') ) ):
+        status = '503 Service Unavailable'
+        headers = [('Content-type', 'text/plain; charset=utf-8')]
+        start_response(status, headers)
+        ret = [ ("ERR: device command echo was bad\n").encode('utf-8') + 
+                (b"ERR: \"command=" + command.encode('utf-8') + b"\"\n").decode().encode('utf-8') +
+                (b"ERR: \"echo_cmd=" + sio_echo_cmd + b"\"\n").decode().encode('utf-8')]
+        return ret
     sio_echo = sio.readline().strip() # and then outpus the JSON
-    sio.write("\n".encode('utf-8')) # some commands keep outputing at timed intervals (e.g. /0/adc 1) this should stop them
+    sio.write("\n".encode('utf-8')) # some commands (e.g. /0/adc 1) will keep outputing at timed intervals,  this should stop that
     if ( not (len(sio_echo) >= 1) ):
         status = '503 Service Unavailable'
         headers = [('Content-type', 'text/plain; charset=utf-8')]
         start_response(status, headers)
-        ret = [ ("ERR: device found but ouput not returned\n").encode('utf-8') + 
+        ret = [ ("ERR: serial device found but ouput not returned\n").encode('utf-8') + 
                 (b"ERR: \"command=" + command.encode('utf-8') + b"\"\n").decode().encode('utf-8') ]
+        return ret
+    try:
+        json_object = json.loads(sio_echo)
+    except ValueError as e:
+        status = '503 Service Unavailable'
+        headers = [('Content-type', 'text/plain; charset=utf-8')]
+        start_response(status, headers)
+        ret = [ ("ERR: serial device returned bad JSON\n").encode('utf-8') + 
+                (b"ERR: \"command=" + command.encode('utf-8') + b"\"\n").decode().encode('utf-8') +
+                (b"ERR: \"sio_echo=" + sio_echo + b"\"\n").decode().encode('utf-8')]
         return ret
 
     status = '200 OK'
@@ -165,9 +187,8 @@ def simple_app(environ, start_response):
 
     start_response(status, headers)
     
-    # format as bytestring suitable for transmission as HTTP response headers
-    ret = [ (sio_echo_cmd + b"\n").decode().encode('utf-8') +
-            (sio_echo + b"\n").decode().encode('utf-8') ]
+    # JSON is formated as bytestring suitable for transmission with HTTP response headers
+    ret = [ (sio_echo + b"\n").decode().encode('utf-8') ]
     return ret
 
 # Access-Control Middleware
@@ -181,10 +202,14 @@ application = AccessControlMiddleware(
     expose_headers=('X-Weave-Timestamp', 'X-Weave-Backoff',
                     'X-Weave-Alert', 'X-Weave-Records'))
 
+port = 8000
 #host  = ''
 #host = 'localhost'
 host = "192.168.0.7" # an address on local network
-with make_server(host, 8000, application) as httpd:
+
+# create server with settings server_class=WSGIServer, handler_class=WSGIRequestHandler
+# seems that Python does a single thread and process for these settings, and that is what I want.
+with wsgiref.simple_server.make_server(host, port, application) as httpd:
     print("host " + host + " is")
-    print("Serving on port 8000...")
+    print("serving on port " + str(port))
     httpd.serve_forever()

@@ -5,19 +5,19 @@ This is a list of notes regarding Raspbin (Linux) things for RPUpi.
 
 # Table Of Contents:
 
-1. [Prepare SD Card](#prepare-sd-card)
-2. [Headless Setup](#headless-setup)
-3. [Network Setup](#network-setup)
-4. [SSH](#ssh)
-5. [Samba](#samba)
-6. [Python 3](#python-3)
-7. [Serial](#serial)
-8. [Packages used for the AVR toolchain](#packages-used-for-the-avr-toolchain)
-9. [Avrdude](#avrdude)
-10. [SPI and I2C](#spi-and-i2c)
-11. [WiFi Dropout](#wiFi-dropout)
-12. [Package Updates](#package-updates)
-13. [Editor](#editor)
+1. Prepare SD Card
+1. Headless Setup
+1. Network Setup
+1. SSH
+1. Samba
+1. Web Server
+1. Python 3
+1. Serial
+1. Packages used for the AVR toolchain
+1. SPI and I2C
+1. WiFi Dropout
+1. Package Updates
+1. Editor
 
 
 ## Prepare SD Card
@@ -276,14 +276,23 @@ mkdir /home/rsutherland/Samba
 sudo nano /etc/samba/smb.conf
 ```
 
-Add the share to the /etc/samba/smb.conf file.
+Add the share to the /etc/samba/[smb.conf] file.
+
+[smb.conf]: https://www.samba.org/samba/docs/current/man-html/smb.conf.5.html
 
 ```
+[global]
+# allow linking /var/www, /usr/lib/avr/include, /usr/lib/gcc/avr
+# not secure? nothing about samba is secure 
+# I would not run samba on a macine that needs to be secure
+allow insecure wide links = yes
+
 # add this to the very end of the file
 [Samba]
 path = /home/rsutherland/Samba
 valid users = rsutherland
 read only = no
+wide links = yes
 ```
 
 Restart Samba and check for errors.
@@ -300,6 +309,28 @@ testparm
 ```
 
 Note the Pi also shows the user home folders but Ubuntu did not, I will ignor those.
+
+
+## Web Server
+
+Use [apache2] to serve static or flat pages. 
+
+[apache2]: https://packages.debian.org/stretch/apache2
+
+```
+sudo apt-get install apache2
+# www-data is for the web server, and I can then be in its group (genius, yet simple)
+sudo chown -R www-data:www-data /var/www
+sudo chmod -R 775 /var/www
+sudo usermod -a -G www-data rsutherland
+# samba does not know about the new premission (hint: restart it)
+```
+
+Symlink to the web files so Samba can share and I can edit them on a Windows machine.
+
+```
+ln -s /var/www /home/rsutherland/Samba/www
+```
 
 
 ## Python 3
@@ -371,14 +402,15 @@ This is sneaky mode operation on the Remote firmware. In sneaky mode the Pi Zero
 ## Packages used for the AVR toolchain
 
 ```
-sudo apt-get install gcc-avr binutils-avr gdb-avr avr-libc avrdude
+sudo apt-get install git make gcc-avr binutils-avr gdb-avr avr-libc avrdude
 ```
 
-Copy the avr includes to the Samba share so I can look at them from Windows.
+Link the avr includes to the Samba share so I can use intelliSense with VSC from Windows.
 
 ```
-#  c(o)p(y) -r(ecursive) <target> <optional name>
-cp -s /usr/lib/avr/include /home/rsutherland/Samba/lib/avr/include
+#  link -s(ymbolic) <target> <linkname name>
+ln -s /usr/lib/avr/include /home/rsutherland/Samba/lib/avr-libc/include
+ln -s /usr/lib/gcc/avr /home/rsutherland/Samba/lib/gcc-avr
 ```
 
 Setup intelliSense with Visual Studio Code 
@@ -420,37 +452,6 @@ I do not see a way to show VSC how to deal with macros passed from the Makefile 
 {
     "C_Cpp.errorSquiggles": "Disabled"
 }
-```
-
-## Avrdude
-
-Avrdude is a programming tool for AVR microcontrollers, it is used to place the binary image into the controller and set a verity of hardware options (fuses). Let's look at the RPUno files to see how it works. Adc is an interactive command line program that works over the RS-422 serial (which is the purpose of RPUpi) linking the Pi UART to the AVR UART, it shows a way to read analog channels from the ATmega328p on the RPUno from the Pi. 
-
-```
-[cd Samba/git]
-git clone git://github.com/epccs/RPUlux.git
-```
-
-I setup avrdude to run with rules in a Makefile. The following is what the rules for the [Adc] firmware Makefile looks like after the variables are solved.
-
-[Adc]: https://github.com/epccs/RPUlux/tree/master/Adc
-
-```
-avrdude -v -p atmega328p -c arduino -P /dev/ttyAMA0 -b 115200 -U flash:w:Adc.hex
-```
-
-The BOOT_PORT is detected for /dev/ttyUSB0 (RPUftdi with Ubuntu) or /dev/ttyAMA0 (RPUpi with Raspbian on a Pi Zero) in the Makefile.
-
-The option -c arduino (programmer-id) means an optiboot programmer is going to be the target. I have put the optiboot bootloader on the ATmega328p in RPUno.
-
-Remember to enable CTS/RST before using Avrdude see the [Headless Setup].
-
-[Headless Setup]: https://github.com/epccs/RPUpi/blob/master/Hardware/Testing/linux.md#headless-setup
-
-```
-sudo ./bin/rpirtscts on
-Pi Zero Rev 1.3 with 40 pin GPIO header detected
-Enabling CTS0 and RTS0 on GPIOs 16 and 17
 ```
 
 

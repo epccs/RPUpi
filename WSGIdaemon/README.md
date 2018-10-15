@@ -48,6 +48,16 @@ Follow these rc.local [recommendations].
 
 [recommendations]: https://www.raspberrypi.org/documentation/linux/usage/rc-local.md
 
+To stop the daemon
+
+```
+ps aux | grep 'WSGIdaemon'
+# the number in second column is the WSGIdaemon-pid
+kill -TERM [WSGIdaemon-pid]
+# if wsgiref.simple_server.make_server.serve_forever has ignored it
+kill -KILL [WSGIdaemon-pid]
+```
+
 
 ## Browser
 
