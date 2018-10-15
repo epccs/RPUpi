@@ -2,10 +2,6 @@
 
 ## ToDo
 
-Don't echo the command, but for now, I want to see it.
-
-Validate the JSON?
-
 Test on the R-Pi, so far this has only been used on a Ubuntu 18.04 desktop (using an RPUftdi shield).
 
 

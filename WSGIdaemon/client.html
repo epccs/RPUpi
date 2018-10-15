@@ -49,6 +49,7 @@ function SendGETandRegisterCallback(url, callback) {
 
 <body>
 
+    <p id="id_cmd"><button id="id.name" disabled>Name</button>  <button id="id.desc" disabled>Description</button> <button id="id.avr-gcc" disabled>__VERSION__</button></p>
     <p id="element0_to_populate"> element0_to_populate </p>
     <p id="element1_to_populate"> element1_to_populate </p>
     <p id="element2_to_populate"> element2_to_populate </p>
@@ -58,12 +59,21 @@ function SendGETandRegisterCallback(url, callback) {
 <script>
 function UpdateDOM(i) {
     "use strict";
-    // if it turns red that is DOM based evidance that call was done
+    // if it turns red after yellow then that is evidance that the call was done
     document.getElementById(IterateWSIGdaemon[i].elem_to_pop).style.color = 'yellow';
     SendGETandRegisterCallback(IterateWSIGdaemon[i].url, function () {
-        // pressent unamed callback gets this when it is called
+        // anonymous  callback is registered and will be given "this" when it is called
+        // the WSIGdaemon should have validated the serial reply from the AVR as JSON so it can now become an object
+        var avr_obj = JSON.parse(this)
         document.getElementById(IterateWSIGdaemon[i].elem_to_pop).innerHTML = this;
         document.getElementById(IterateWSIGdaemon[i].elem_to_pop).style.color = 'green';
+        if (i == 0) {
+            //{"id":{"name":"KNL","desc":"RPUno (14140^9) Board /w atmega328p","avr-gcc":"5.4.0"}}
+            document.getElementById("id.name").innerHTML = avr_obj.id.name;
+            document.getElementById("id.desc").innerHTML = avr_obj.id.desc;
+            // the object .avr-gcc does not work since it has a "-"
+            document.getElementById("id.avr-gcc").innerHTML = avr_obj.id["avr-gcc"];
+        };
         if (i+1 < IterateWSIGdaemon.length) {
             UpdateDOM(i+1); //recursion feels like the wrong way to do this, but how should it be done
         }
