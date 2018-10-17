@@ -1,17 +1,34 @@
 #!/usr/bin/env python3
-# Web Server Gateway Interface (WSGI) daemon  
-# use web server techniques to act as a gateway interface for a serial link 
-# at CLI run with
+# Copyright (C) 2018 Ronald S Sutherland
+#
+# This is free software: you can redistribute it and/or modify
+# it under the terms of the GNU General Public License as published by
+# the Free Software Foundation, either version 3 of the License, or
+# (at your option) any later version.
+#
+# This Library is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU General Public License for more details.
+#
+# You should have received a copy of the GNU General Public License 
+# along with the Arduino DigitalIO Library.  If not, see
+# http://www.gnu.org/licenses/
+#
+# Web Server Gateway Interface (WSGI) daemon 
+# use web server techniques to act as a gateway interface to a serial link 
+#
+# at CLI
 # python3 WSGIdaemon.py
-# to kill it, I close the terminal, that needs work.
+#
 # set the host value (near bottom) for your machine
 # to try the interface open a brower with url: http://host:8000/?addr=0&cmd=id&q=true
 
 # For info on WSGI see https://docs.python.org/3.7/library/wsgiref.html
 # For info on CGI see https://docs.python.org/3.7/library/cgi.html
 
-# The goal is to hold a serial link open while client(s) make the request, e.g. use the WSGI Python core as a network gateway to access the serial link.
-# it takes commands from the CGI query string and turns them into the format I am using e.g. "/0/id?" or "/0/adc 3,4,5" 
+# The goal is to hold a serial link open while client(s) make request to access the serial link.
+# it takes parameters from the query string and turns them into the serail commands I use e.g. "/0/id?" or "/0/adc 3,4,5" 
 
 # Using python3 so make sure the serial package is installed. 
 # sudo apt-get install python3-serial 
