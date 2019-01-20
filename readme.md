@@ -18,7 +18,7 @@ A [RPUadpt] shield is also available if the host SBC does not use the Raspberry 
 
 ## Status
 
-Available through [Tindie](https://www.tindie.com/products/10350/)
+[Available](https://rpubus.org/Order_Form.html)
 
 ![Status](./Hardware/status_icon.png "Status")
 

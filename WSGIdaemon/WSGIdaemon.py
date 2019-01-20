@@ -222,7 +222,7 @@ application = AccessControlMiddleware(
 port = 8000
 #host  = ''
 #host = 'localhost'
-host = "192.168.0.7" # an address on local network
+host = "192.168.4.8" # set your IP address if you see "OSError: [Errno 99] Cannot assign requested address"
 
 # create server with settings server_class=WSGIServer, handler_class=WSGIRequestHandler
 # seems that Python does a single thread and process for these settings, and that is what I want.

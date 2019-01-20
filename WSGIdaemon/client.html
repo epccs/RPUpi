@@ -5,31 +5,48 @@
     <title>Example web client page for WSGIdaemon</title>
 </head>
 <body>
-    <script type="text/javascript">
-var xhr = new XMLHttpRequest();
-// Use XMLHttpRequest (XHR) objects to interact with servers
-// https://developer.mozilla.org/en-US/docs/Web/API/XMLHttpRequest
-// The Document Object Model (DOM) connects web pages to scripts or programming languages
-// https://developer.mozilla.org/en-US/docs/Web/API/Document_Object_Model
-// what is this JS callback maddness 
-// http://recurial.com/programming/understanding-callback-functions-in-javascript/
-xhr.responseType = 'text';
+    <H1 id="date_stamp"> now </H1>
+    <p id="id_cmd">Firmware Name<button id="id.name" disabled>App Name</button> Board <button id="id.desc" disabled>Description</button> Toolchain<button id="id.avr-gcc" disabled>__VERSION__</button></p>
+    <p id="element0_to_populate"> element0_to_populate </p>
+    <p id="kflow_1_cmd"> Flow Count <button id="kflow_1.flow_cnt" style="background-color:lightgray">0</button> Cycles<progress id="kflow_1.cycles" value="0" max="10"></progress></p>
+    <p id="element1_to_populate"> element1_to_populate </p>
+    <p id="kflow_2_cmd"> Flow Count <button id="kflow_2.flow_cnt" style="background-color:lightgray">0</button> Cycles<progress id="kflow_2.cycles" value="0" max="10"></progress></p>
+    <p id="element2_to_populate"> element2_to_populate </p>
+    <p id="kflow_3_cmd"> Flow Count <button id="kflow_3.flow_cnt" style="background-color:lightgray">0</button> Cycles<progress id="kflow_3.cycles" value="0" max="10"></progress></p>
+    <p id="element3_to_populate"> element3_to_populate </p>
+     <button onclick="UpdateDOM(0)">Update DOM</button> 
+    
+    <script>
+// Copyright (C) 2018 Ronald S Sutherland
+// This web page is free software: you can redistribute it and/or modify 
+// it under the terms of the GNU General Public License as published by
+// the Free Software Foundation, either version 3 of the License, or
+// (at your option) any later version.
 
-// Lets run through a list of serial commands  and populate DOM elements 
+//  This web page is distributed in the hope that it will be useful,
+// but WITHOUT ANY WARRANTY; without even the implied warranty of
+// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
+// GNU General Public License for more details.
+
+//  For a copy of the GNU General Public License  see
+// http://www.gnu.org/licenses/
+
+// Lets run through a list of serial commands and populate DOM elements 
 var IterateWSIGdaemon = [
     //This is a RPUno with a K3 board runing KNL firmware, it is irrigating three zones
     // for RPUno and KNL see https://github.com/epccs/RPUno/tree/master/KNL
     // for K3 see https://github.com/epccs/Driver/tree/master/K3
     // /1/id?
-    { "url": "http://192.168.0.7:8000/?addr=1&cmd=id&q=true", "elem_to_pop": "element0_to_populate" },
-    // /1/kflow? 1
-    { "url": "http://192.168.0.7:8000/?addr=1&cmd=kflow&q=true&arg1=1", "elem_to_pop": "element1_to_populate" },
-    // /1/kflow? 2
-    { "url": "http://192.168.0.7:8000/?addr=1&cmd=kflow&q=true&arg1=2", "elem_to_pop": "element2_to_populate" },
-    // /1/kflow? 3
-    { "url": "http://192.168.0.7:8000/?addr=1&cmd=kflow&q=true&arg1=3", "elem_to_pop": "element3_to_populate" }
+    { "url": "http://192.168.4.8:8000/?addr=1&cmd=id&q=true", "elem_to_pop": "element0_to_populate" },
+    // /1/kflow? 7
+    { "url": "http://192.168.4.8:8000/?addr=1&cmd=kflow&q=true&arg1=7", "elem_to_pop": "element1_to_populate" },
+    // /1/kflow? 6
+    { "url": "http://192.168.4.8:8000/?addr=1&cmd=kflow&q=true&arg1=6", "elem_to_pop": "element2_to_populate" },
+    // /1/kflow? 5
+    { "url": "http://192.168.4.8:8000/?addr=1&cmd=kflow&q=true&arg1=5", "elem_to_pop": "element3_to_populate" }
 ];
 
+// Websocket used to update display without delay using an asynchronous callback
 function SendGETandRegisterCallback(url, callback) {
     "use strict";
     // register the callback to use when the wsgi daemon finishes.
@@ -44,26 +61,12 @@ function SendGETandRegisterCallback(url, callback) {
     xhr.setRequestHeader("Content-type","application/x-www-form-urlencoded");
     xhr.send();
 }
-    </script>
-    <H1 id="date_stamp"> now
-    <script>
+
 function date_time() {
     var dt = new Date();
     document.getElementById("date_stamp").innerHTML = dt;
 }
-date_time();
-    </script> </H1>
-    <p id="id_cmd">Firmware Name<button id="id.name" disabled>App Name</button> Board <button id="id.desc" disabled>Description</button> Toolchain<button id="id.avr-gcc" disabled>__VERSION__</button></p>
-    <p id="element0_to_populate"> element0_to_populate </p>
-    <p id="kflow_1_cmd"> Flow Count <button id="kflow_1.flow_cnt" style="background-color:lightgray">0</button> Cycles<progress id="kflow_1.cycles" value="0" max="10"></progress></p>
-    <p id="element1_to_populate"> element1_to_populate </p>
-    <p id="kflow_2_cmd"> Flow Count <button id="kflow_2.flow_cnt" style="background-color:lightgray">0</button> Cycles<progress id="kflow_2.cycles" value="0" max="10"></progress></p>
-    <p id="element2_to_populate"> element2_to_populate </p>
-    <p id="kflow_3_cmd"> Flow Count <button id="kflow_3.flow_cnt" style="background-color:lightgray">0</button> Cycles<progress id="kflow_3.cycles" value="0" max="10"></progress></p>
-    <p id="element3_to_populate"> element3_to_populate </p>
-     <button onclick="UpdateDOM(0)">Update DOM</button> 
-    
-    <script>
+
 function UpdateDOM(i) {
     "use strict";
     // if it turns red after yellow then that is evidance that the call was done
@@ -81,31 +84,29 @@ function UpdateDOM(i) {
             // the object .avr-gcc does not work since it has a "-"
             document.getElementById("id.avr-gcc").innerHTML = avr_obj.id["avr-gcc"];
         };
-        if (i == 1) { // /1/kflow? 1
-            //{"K1":{"cycle_state":"0","cycles":"0","flow_cnt":"2044"}}
-            if (avr_obj.K1.cycle_state == 0) { document.getElementById("kflow_1.flow_cnt").style = 'background-color:lightgray'; }
-            if (avr_obj.K1.cycle_state == 4) { document.getElementById("kflow_1.flow_cnt").style = 'background-color:blue'; }
-             if (avr_obj.K1.cycle_state == 11) { document.getElementById("kflow_1.flow_cnt").style = 'background-color:yellow'; }
-            document.getElementById("kflow_1.flow_cnt").innerHTML = avr_obj.K1.flow_cnt;
-            document.getElementById("kflow_1.cycles").value = 10 - avr_obj.K1.cycles; 
+        if (i == 1) { // /1/kflow? 7
+            //{"K7":{"cycle_state":"0","cycles":"0","flow_cnt":"2044"}}
+            if (avr_obj.K7.cycle_state == 0) { document.getElementById("kflow_1.flow_cnt").style = 'background-color:lightgray'; }
+            if (avr_obj.K7.cycle_state == 4) { document.getElementById("kflow_1.flow_cnt").style = 'background-color:blue'; } // irrigation is in progress
+             if (avr_obj.K7.cycle_state == 11) { document.getElementById("kflow_1.flow_cnt").style = 'background-color:yellow'; } // delay between cycles
+            document.getElementById("kflow_1.flow_cnt").innerHTML = avr_obj.K7.flow_cnt;
+            document.getElementById("kflow_1.cycles").value = 10 - avr_obj.K7.cycles; 
         };
-        if (i == 2) { // /1/kflow? 2
-            //{"K2":{"cycle_state":"11","cycles":"3","flow_cnt":"9132"}}
-            // if (cycle_state == 11) the solonoid is doing a delay between cycles
-            if (avr_obj.K2.cycle_state == 0) { document.getElementById("kflow_2.flow_cnt").style = 'background-color:lightgray'; }
-            if (avr_obj.K2.cycle_state == 4) { document.getElementById("kflow_2.flow_cnt").style = 'background-color:blue'; }
-             if (avr_obj.K2.cycle_state == 11) { document.getElementById("kflow_2.flow_cnt").style = 'background-color:yellow'; }
-            document.getElementById("kflow_2.flow_cnt").innerHTML = avr_obj.K2.flow_cnt;
-            document.getElementById("kflow_2.cycles").value = 10 - avr_obj.K2.cycles; 
+        if (i == 2) { // /1/kflow? 6
+            //{"K6":{"cycle_state":"11","cycles":"3","flow_cnt":"9132"}}
+            if (avr_obj.K6.cycle_state == 0) { document.getElementById("kflow_2.flow_cnt").style = 'background-color:lightgray'; }
+            if (avr_obj.K6.cycle_state == 4) { document.getElementById("kflow_2.flow_cnt").style = 'background-color:blue'; }
+             if (avr_obj.K6.cycle_state == 11) { document.getElementById("kflow_2.flow_cnt").style = 'background-color:yellow'; }
+            document.getElementById("kflow_2.flow_cnt").innerHTML = avr_obj.K6.flow_cnt;
+            document.getElementById("kflow_2.cycles").value = 10 - avr_obj.K6.cycles; 
         };
-        if (i == 3) { // /1/kflow? 3
-            //{"K3":{"cycle_state":"4","cycles":"3","flow_cnt":"14256"}}
-            // if (cycle_state == 4) then irrigation is in progress
-            if (avr_obj.K3.cycle_state == 0) { document.getElementById("kflow_3.flow_cnt").style = 'background-color:lightgray'; }
-            if (avr_obj.K3.cycle_state == 4) { document.getElementById("kflow_3.flow_cnt").style = 'background-color:blue'; }
-             if (avr_obj.K3.cycle_state == 11) { document.getElementById("kflow_3.flow_cnt").style = 'background-color:yellow'; }
-            document.getElementById("kflow_3.flow_cnt").innerHTML = avr_obj.K3.flow_cnt;
-            document.getElementById("kflow_3.cycles").value = 10 - avr_obj.K3.cycles; 
+        if (i == 3) { // /1/kflow? 5
+            //{"K5":{"cycle_state":"4","cycles":"3","flow_cnt":"14256"}}
+            if (avr_obj.K5.cycle_state == 0) { document.getElementById("kflow_3.flow_cnt").style = 'background-color:lightgray'; }
+            if (avr_obj.K5.cycle_state == 4) { document.getElementById("kflow_3.flow_cnt").style = 'background-color:blue'; }
+             if (avr_obj.K5.cycle_state == 11) { document.getElementById("kflow_3.flow_cnt").style = 'background-color:yellow'; }
+            document.getElementById("kflow_3.flow_cnt").innerHTML = avr_obj.K5.flow_cnt;
+            document.getElementById("kflow_3.cycles").value = 10 - avr_obj.K5.cycles; 
         };
         if (i+1 < IterateWSIGdaemon.length) {
             UpdateDOM(i+1); //recursion feels like the wrong way to do this, but how should it be done
@@ -116,21 +117,16 @@ function UpdateDOM(i) {
     });
     document.getElementById(IterateWSIGdaemon[i].elem_to_pop).style.color = 'red';
 }
-    </script>
-    <p ALIGN=RIGHT>Copyright (C) 2018 Ronald S Sutherland</p>
-    <script>
-//This web page is free software: you can redistribute it and/or modify 
-// it under the terms of the GNU General Public License as published by
-// the Free Software Foundation, either version 3 of the License, or
-// (at your option) any later version.
 
-//  This web page is distributed in the hope that it will be useful,
-// but WITHOUT ANY WARRANTY; without even the implied warranty of
-// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
-// GNU General Public License for more details.
-
-//  For a copy of the GNU General Public License  see
-// http://www.gnu.org/licenses/
+// Use XMLHttpRequest (XHR) objects to interact with servers
+// https://developer.mozilla.org/en-US/docs/Web/API/XMLHttpRequest
+// The Document Object Model (DOM) connects web pages to scripts or programming languages
+// https://developer.mozilla.org/en-US/docs/Web/API/Document_Object_Model
+// what is this JS callback maddness 
+// http://recurial.com/programming/understanding-callback-functions-in-javascript/
+var xhr = new XMLHttpRequest();
+xhr.responseType = 'text';
+date_time();
     </script>
 </body>
 

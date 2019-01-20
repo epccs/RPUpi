@@ -100,7 +100,7 @@ Next open the "client.html" file as a flat stand-alone HTML sourced from the dis
 
 ## WSGI Python Frameworks (more referance)
 
-It is not clear to me what these frameworks do, or if thay can act as a serial device  gateway.
+It is not clear to me what these frameworks do, or if thay can act as a serial device gateway.
 
 * For Flask see https://github.com/pallets/flask
 * For Bottle see https://github.com/bottlepy/bottle

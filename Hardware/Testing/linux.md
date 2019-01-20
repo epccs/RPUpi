@@ -182,9 +182,9 @@ On Ubuntu the SD card mounts at /media/username. This is how I want to edit the 
 #update_config=1
 
 # bellow are the settings I used
-#country=US
 ctrl_interface=DIR=/var/run/wpa_supplicant GROUP=netdev
 update_config=1
+country=US
 
 network={
  ssid="EPCCS4"
@@ -200,7 +200,9 @@ network={
  priority=2
 }
 
+# scan  to detect a hidden SSID 
 network={
+ scan_ssid=1
  ssid="EPCCS2"
  psk="yourkeynotmynetworkey"
  key_mgmt=WPA-PSK
