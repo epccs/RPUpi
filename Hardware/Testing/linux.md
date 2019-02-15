@@ -345,7 +345,9 @@ sudo apt-get install python3
 
 ## Serial 
 
-Use raspi-config to turn off the login shell to the serial port, and enable the serial port hardware (e.g. /dev/ttyAMA0).
+Use raspi-config to turn off the login shell to the [UART] port, and enable the serial port hardware (e.g. /dev/ttyAMA0).
+
+[UART]: https://www.raspberrypi.org/documentation/configuration/uart.md
 
 ```
 sudo raspi-config

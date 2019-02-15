@@ -51,9 +51,9 @@ This board connects a Pi Zero [W] to a multi-drop serial bus and a control board
 ![Status](./status_icon.png "RPUpi Status")
 
 ```
-        ^4  Done: Design, Layout, BOM,
-            WIP: Review*,
-            Todo: Order Boards, Assembly, Testing, Evaluation.
+        ^4  Done: Design, Layout, BOM, Review*, Order Boards, Assembly,
+            WIP: Testing,
+            Todo: Evaluation.
             *during review the Design may change without changing the revision.
             IOREF is for I2C and UART
             SPI_IOREF is for SPI only
@@ -123,7 +123,20 @@ Check correct assembly and function with [Testing](./Testing/)
 
 # Bill of Materials
 
-Import the [BOM](./Design/16197,BOM.csv) into LibreOffice Calc (or Excel) with semicolon separated values, or use a text editor.
+The BOM is a CVS file, import it into a spreadsheet program like LibreOffice Calc (or Excel), or use a text editor.
+
+Option | BOM's included
+----- | ----- 
+A. | [BRD] 
+M. | [BRD] [SMD] [HDR] 
+N. | [BRD] [SMD] [HDR] [POL]
+Y. | [BRD] [SMD] [HDR] [POL] [CAT5]
+
+[BRD]: ./Design/16197BRD,BOM.csv
+[SMD]: ./Design/16197SMD,BOM.csv
+[HDR]: ./Design/16197HDR,BOM.csv
+[POL]: ./Design/16197POL,BOM.csv
+[CAT5]: ./Design/16197CAT,BOM.csv
 
 
 # How To Use
