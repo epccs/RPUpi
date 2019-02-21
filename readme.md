@@ -18,7 +18,7 @@ A [RPUadpt] shield is also available if the host SBC does not use the Raspberry 
 
 ## Status
 
-[Available](https://rpubus.org/Order_Form.html)
+[Options](./Hardware#bill-of-materials)
 
 ![Status](./Hardware/status_icon.png "Status")
 

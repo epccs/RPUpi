@@ -25,7 +25,7 @@ This is a list of Test preformed on each RPUpi after assembly.
 
 ## Basics
 
-These tests are for an assembled RPUpi board 16197^3 which may be referred to as a Unit Under Test (UUT). If the UUT fails and can be reworked then do so, otherwise it needs to be scraped. 
+These tests are for an assembled RPUpi board 16197^4 which may be referred to as a Unit Under Test (UUT). If the UUT fails and can be reworked then do so, otherwise it needs to be scraped. 
 
 **Warning: never use a soldering iron to rework ceramic capacitors due to the thermal shock.**
     
@@ -47,9 +47,12 @@ Check continuity between pin and pad by measuring the reverse body diode drop fr
 ## Bias +5V and Check LDO Regulator
 
 
-Apply a 30mA current limited (CC mode) supply set at 5V to the +5V (J7 pin 4) and 0V (J7 pin 2) header pins. Check that the the linear regulator has 3.3V (J9 pin 2). Check that the input current is for the blank MCU. Turn off power.
+Apply a 30mA current limited (CC mode) supply set at 5V to the +5V (J7 pin 4) and 0V (J7 pin 2) header pins. Check that the input current is for the blank MCU. Turn off power.
 
 ```
+^4 removed LDO
+{  "I_IN_BLANKMCU_mA":[5.2,] }
+^3
 {  "I_IN_BLANKMCU_mA":[2.1,1.8,2.2,2.2,],
     "LDO_V":[3.302,3.282,3.276,3.292,] }
 ```
@@ -57,18 +60,17 @@ Apply a 30mA current limited (CC mode) supply set at 5V to the +5V (J7 pin 4) an
 
 ## Set MCU Fuse
 
-Install Git and AVR toolchain on Ubuntu (16.04, on an old computer try https://wiki.ubuntu.com/Lubuntu). 
+Install Git and AVR toolchain on Ubuntu (I use 18.04). 
 
 ```
-sudo apt-get install git gcc-avr binutils-avr gdb-avr avr-libc avrdude
+sudo apt-get install git make gcc-avr binutils-avr gdb-avr avr-libc avrdude
 ```
 
 Clone the RPUpi repository.
 
 ```
-cd ~
 git clone https://github.com/epccs/RPUpi
-cd ~/RPUpi/Bootload
+cd RPUpi/Bootload
 ```
 
 Connect a 5V supply with CC mode set at 30mA to the +5V (J7 pin 4) and  0V (J7 pin 2). Connect the ICSP tool (J9). The MCU needs its fuses set, so run the Makefile rule to do that. 
@@ -82,6 +84,9 @@ Note: There is not a bootloader, it just sets fuses.
 Disconnect the ICSP tool and measure the input current for 12Mhz crystal at 3.3V. It takes a long time to settle.
 
 ```
+^4
+{  "I_IN_MCU_12MHZ_LP-CRYSTAL_mA":[14.9,]}
+^3
 {  "I_IN_MCU_12MHZ_LP-CRYSTAL_mA":[4.9,5.1,5.0,5.1,]}
 ```
 
@@ -104,6 +109,8 @@ The program loops through the test. It blinks the red LED to show which test num
 As the firmware loops, the input current can be measured, it should have two distinct levels, one when the DTR pair is driven low and one when the DTR pair is not driven. The blinking LED leaves the DMM unsettled. Turn off the power.
 
 ```
+
+^3
 {  "DTR_HLF_LD_mA":[33.4,33.8,33.6,33.7,],
     "DTR_NO_LD_mA":[10.0,10.5,10.5,10.5,] }
 ```

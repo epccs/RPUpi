@@ -20,35 +20,35 @@ Modified in 2012 by Todd Krein (todd@krein.org) to implement repeated starts
 Modified in 2016 by Ronald Sutherland (ronald.sutherlad@gmail) to use as a C library with avr-libc dependency
 */
 
-#ifndef twi_h
-#define twi_h
+#ifndef twi1_h
+#define twi1_h
 
-#ifndef TWI_FREQ
-#define TWI_FREQ 100000L
+#ifndef TWI1_FREQ
+#define TWI1_FREQ 100000L
 #endif
 
-#ifndef TWI_BUFFER_LENGTH
-#define TWI_BUFFER_LENGTH 32
+#ifndef TWI1_BUFFER_LENGTH
+#define TWI1_BUFFER_LENGTH 32
 #endif
 
-#define TWI_READY 0
-#define TWI_MRX   1
-#define TWI_MTX   2
-#define TWI_SRX   3
-#define TWI_STX   4
+#define TWI1_READY 0
+#define TWI1_MRX   1
+#define TWI1_MTX   2
+#define TWI1_SRX   3
+#define TWI1_STX   4
   
-void twi_init(uint8_t);
-void twi_disable(void);
-void twi_setAddress(uint8_t);
-void twi_setFrequency(uint32_t);
-uint8_t twi_readFrom(uint8_t, uint8_t*, uint8_t, uint8_t);
-uint8_t twi_writeTo(uint8_t, uint8_t*, uint8_t, uint8_t, uint8_t);
-uint8_t twi_transmit(const uint8_t*, uint8_t);
-void twi_attachSlaveRxEvent( void (*)(uint8_t*, int) );
-void twi_attachSlaveTxEvent( void (*)(void) );
-void twi_reply(uint8_t);
-void twi_stop(void);
-void twi_releaseBus(void);
+void twi1_init(uint8_t);
+void twi1_disable(void);
+void twi1_setAddress(uint8_t);
+void twi1_setFrequency(uint32_t);
+uint8_t twi1_readFrom(uint8_t, uint8_t*, uint8_t, uint8_t);
+uint8_t twi1_writeTo(uint8_t, uint8_t*, uint8_t, uint8_t, uint8_t);
+uint8_t twi1_transmit(const uint8_t*, uint8_t);
+void twi1_attachSlaveRxEvent( void (*)(uint8_t*, int) );
+void twi1_attachSlaveTxEvent( void (*)(void) );
+void twi1_reply(uint8_t);
+void twi1_stop(void);
+void twi1_releaseBus(void);
 
 #endif
 

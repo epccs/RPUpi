@@ -4,6 +4,7 @@ Some lessons I learned doing RPUpi.
 
 # Table Of Contents:
 
+1. ^4 nSS to CE10 WTF
 1. ^3 Connect nSS to SBC CE10
 1. ^2 Protect I2C With 182 Ohm 
 1. ^2 RS-422 Buffer needs Power
@@ -13,6 +14,15 @@ Some lessons I learned doing RPUpi.
 1. ^1 Pi Tx Pull-Up
 1. ^1 I2C
 1. ^0 U3 Placed Backward
+
+
+## ^4 nSS to CE10 WTF
+
+No no no... that is not what was tested, it was tested with nCE00 the RPUadpt test setup photo clearly shows it was nCE00. So I assembled one ^4 board and will rework it then finish testing.
+
+![AVR-nSS To R-pi nCE00](./RPUpi^4_avr-nSS_should_goto_rpi-nCE00.jpg "RPUpi^4 AVR-nSS To R-pi nCE00")
+
+![RPUpi^4 Rework PI_nCS](./RPUpi^4_Rework_cut_PI_nCS_and_route_to_rpi-nCE00.png "RPUpi^4 Rework PI_nCS")
 
 
 ## ^3 Connect nSS to SBC CE10

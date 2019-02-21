@@ -51,6 +51,12 @@ This board connects a Pi Zero [W] to a multi-drop serial bus and a control board
 ![Status](./status_icon.png "RPUpi Status")
 
 ```
+        ^5  Done: 
+            WIP: 
+            Todo: Design, Layout, BOM, Review*, Order Boards, Assembly, Testing, Evaluation.
+            *during review the Design may change without changing the revision.
+            AVR's nSS should goto R-Pi's nCE00 that was what was tested on RPUadpt.
+
         ^4  Done: Design, Layout, BOM, Review*, Order Boards, Assembly,
             WIP: Testing,
             Todo: Evaluation.
@@ -73,15 +79,6 @@ This board connects a Pi Zero [W] to a multi-drop serial bus and a control board
             RS-422 Buffer has Power (power U3 with +3V3) 
             Swaped U3E and U3F with U1E and U1F.
             Through hole LED so it can be moved outside the enclosure.
-
-        ^2  Done: Design, Layout, BOM, Review*, Order Boards, Assembly, Testing,
-            WIP: Evaluation.
-            location: 2017-5-26 Test Bench, hacked U3 to power serial buffers witout Pi.
-
-        ^1  Done: Design, Layout, BOM, Review*, Order Boards, Assembly, Testing,
-            WIP: Evaluation.
-            location: 2017-2-6 Test Bench, used as an RPUadpt with an RPUno^4.
-            location: 2017-4-11 Scrap (in que, some parts salvaged 2017-7-18).
 ```
 
 Debugging and fixing problems i.e. [Schooling](./Schooling/)
@@ -137,6 +134,8 @@ Y. | [BRD] [SMD] [HDR] [POL] [CAT5]
 [HDR]: ./Design/16197HDR,BOM.csv
 [POL]: ./Design/16197POL,BOM.csv
 [CAT5]: ./Design/16197CAT,BOM.csv
+
+[Order Form](https://rpubus.org/Order_Form.html)
 
 
 # How To Use
