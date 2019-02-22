@@ -2,8 +2,6 @@
 
 ## Overview
 
-This firmware is used to test the DTR connections, do not use it with a node board, or a Pi Zero installed.
-
 ``` 
 delay 4000
 set DTR_TXD LOW so U4 DI input has 0V.

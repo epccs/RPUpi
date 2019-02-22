@@ -15,6 +15,8 @@
  * along with the Arduino DigitalIO Library.  If not, see
  * <http://www.gnu.org/licenses/>.
  *
+ * story: first RPUadpt^3 board had a little whisker of solder between DTR_RXD and DTR_TXD
+ * three days was spent chasing the ghost.
  */ 
 
 #include <util/delay.h>
@@ -94,7 +96,7 @@ int main(void)
 
     sei(); // Enable global interrupts to start TIMER0
 
-    // the UART has a startup glitch... this should keep it from to the DTR pair.
+    // the UART has a startup glitch... this should keep it from the DTR pair.
     // NOTE UART is not initalized for this program, but will keep the logic.
     _delay_ms(10);
     digitalWrite(DTR_DE, HIGH); 
@@ -149,7 +151,6 @@ int main(void)
             blink(4);
             _delay_ms(1000);
         } while (digitalRead(DTR_RXD) != HIGH);
-
         uint8_t shutdown_now = !digitalRead(SHUTDOWN);
 
         // if the shutdown switch is pressed then remove RX/TX lockout

@@ -93,9 +93,7 @@ Disconnect the ICSP tool and measure the input current for 12Mhz crystal at 3.3V
 
 ## Load CheckDTR Firmware
 
-Plug a header (or jumper) onto the +5V pin so that IOREF is jumpered to +5V. Connect TX pin to IOREF to pull it up (the RPUno normaly does his). Plug a CAT5 RJ45 stub with 100 Ohm RX, TX and DTR pair terminations. Connect a 5V supply with CC mode set at 50mA to the +5V that was jumpered to IOREF (J8 pin 2) and  0V (J7 pin 2). Connect the ICSP tool (J9).
-
-NOTE: IOREF J7 pin 4 is not connected so use J8 pin 2
+Plug a header (or jumper) onto the +5V pin so that IOREF is jumpered to +5V, also jumper it to SPI_IOREF (J8 pin 2) with ez-hook. Connect TX pin to IOREF to pull it up (the RPUno/Irrigate7 normaly does his). Plug a CAT5 RJ45 stub with 100 Ohm RX, TX and DTR pair terminations. Connect the 5V supply with CC mode set at 90mA to the +5V (J7 pin 4) and  0V (J7 pin 2). Connect the ICSP tool (J9).
 
 Use the command line to select the CheckDTR source working directory. Run the makefile rule used to load CheckDTR firmware that verifies DTR control is working:
 
@@ -109,26 +107,31 @@ The program loops through the test. It blinks the red LED to show which test num
 As the firmware loops, the input current can be measured, it should have two distinct levels, one when the DTR pair is driven low and one when the DTR pair is not driven. The blinking LED leaves the DMM unsettled. Turn off the power.
 
 ```
-
+^4
+{  "DTR_HLF_LD_mA":[35.6,],
+    "DTR_NO_LD_mA":[19.9,] }
 ^3
 {  "DTR_HLF_LD_mA":[33.4,33.8,33.6,33.7,],
     "DTR_NO_LD_mA":[10.0,10.5,10.5,10.5,] }
 ```
 
-Note: the ICSP tool is pluged in and has some pullups with the level shift. 
+Note: the ICSP tool is pluged in and has some pullups with the level shift.
 
 
 ## Check Differential Bias
 
 Plug a header (or jumper) onto the +5V pin so that IOREF is jumpered to +5V. Plug a CAT5 RJ45 stub with 100 Ohm RX, TX and DTR pair terminations. Connect TX pin to 0V to pull it down to simulate the MCU sending data. Connect a 5V supply with CC mode set at 100mA to the +5V that was jumpered to IOREF (J8 pin 2) and 0V (J7 pin 2).
 
-NOTE: IOREF J7 pin 4 is not connected 
 
 Hold down the shutdown switch while running the CheckDTR firmware to set TX_DE and RX_DE high.
 
-Check  that the input current is cycling between 56mA and 33mA. At 56mA the TX driver is driving the TX pair with half load and DTR driver is driving the DTR pair with a half load, while ony the TX pair is driven at 33mA. 
+Check  that the input current is cycling between 50mA and 35mA. At 50mA the TX driver is driving the TX pair with half load and DTR driver is driving the DTR pair with a half load, while ony the TX pair is driven at 35mA. 
 
 ```
+^4
+{  "DTR_TX_HLF_LD_mA":[50.5,],
+    "TX_HLF_LD_mA":[35.0,] }
+^3
 {  "DTR_TX_HLF_LD_mA":[56.0,56.9,57.0,56.8,],
     "TX_HLF_LD_mA":[33.0,33.7,33.7,33.7,] }
 ```
@@ -136,13 +139,17 @@ Check  that the input current is cycling between 56mA and 33mA. At 56mA the TX d
 
 ## Differential Loopback with TX Driver
 
-Plug a header (or jumper) onto the +5V pin so that IOREF is jumpered to +5V. Plug a CAT5 RJ45 stub with 100 Ohm RX, TX and DTR pair terminations. Connect TX pin to 0V to pull it down to simulate the MCU sending data. Connect a 5V supply with CC mode set at 100mA to the +5V that was jumpered to IOREF (J8 pin 2) and 0V (J7 pin 2).
+Plug a header (or jumper) onto the +5V pin so that IOREF is jumpered to +5V. Plug a CAT5 RJ45 stub with 100 Ohm RX, TX and DTR pair terminations. Connect TX pin to 0V to pull it down to simulate the MCU sending data. Connect a 5V supply with CC mode set at 130mA to the +5V that was jumpered to IOREF (J8 pin 2) and 0V (J7 pin 2).
 
 NOTE: IOREF J7 pin 4 is not connected
 
 Connect a RJ45 loopback connector to allow the TX differential pair to drive RX differential pair and measure the input current. The TX driver is now driving 50 Ohms, which is the normal load. Verify that RX has 0V on it now.
 
 ```
+^4
+{  "DTR_HLF_LD_TX_FL_LD_mA":[60.8,],
+    "TX_FL_LD_mA":[45.7,] }
+^3
 {  "DTR_HLF_LD_TX_FL_LD_mA":[72.4,73.9,74.0,74.3,],
     "TX_FL_LD_mA":[49.1,50.7,50.9,51.0,] }
 ```
@@ -165,6 +172,10 @@ Power on 5V supply at 100mA. Hold down the shutdown switch while running the Che
 Measure the supply current when RX is driven and when a DTR half load is added.
 
 ```
+^4
+{  "DTR_HLF_LD_RX_FL_LD_mA":[67.8,],
+    "RX_FL_LD_mA":[52.0,] }
+^3
 {  "DTR_HLF_LD_RX_FL_LD_mA":[83.3,88.0,88.3,88.0,],
     "RX_FL_LD_mA":[60.0,65.0,65.1,65.0,] }
 ```
@@ -177,8 +188,12 @@ Turn off power. Disconnect everything.
 Apply a 30mA current limited (CC mode) supply set at 12.8V to the VIN (J7 pin 1) and 0V (J7 pin 3) header pins. Measure the SMPS providing +5V_2PI (J1 pin 2). Check that the input current is for no load. Turn off power.
 
 ```
+^4
+{  "VIN@NOLD_mA":[0.2,],
+    +5V2PI_V":[4.97*,] }
+^3 * same SMPS
 {  "VIN@NOLD_mA":[0.2,0.2,0.2,0.2,],
-    +5V2PI_V":[4.97,4.99,5.00,5.00,] }
+    +5V2PI_V":[4.97*,4.99,5.00,5.00,] }
 ```
 
 ## Host Lockout
