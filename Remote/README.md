@@ -1,28 +1,32 @@
 # Remote
 
-This bus manager firmware is for an RPUpi board, it will watch for a byte matching the local RPU_ADDRESS on the DTR pair and when seen reset the local MCU board placing it in bootloader mode. A non-matching byte will disconnect RS-422 from the RX and TX to the shield headers placing it in lockout mode.
+This firmware is for the bus manager on an RPUpi board, it will watch for a byte matching the local RPU_ADDRESS on the DTR pair and when seen reset the local controller placing it in bootloader mode. A non-matching byte will disconnect the RX and TX lines to the local controller and thus place it in lockout mode until a LOCKOUT_DELAY completes or an RPU_NORMAL_MODE byte is seen on the DTR pair.
 
 ## Overview
 
-In normal mode, the RS-422 pairs RX and TX are connected to the shield RX and TX pins. While the RS-485 (DTR) pair is connected to the bus manager UART and used to set the system-wide bus state.
+In normal mode, the serial pairs RX and TX are connected through transceivers to the controller board RX and TX pins. While the DTR pair is connected to the bus manager UART and is used to set the system-wide bus state.
 
-Durring lockout mode the RS-422 pairs RX and TX are disconnected from the shield RX and TX pins.
+During lockout mode, the serial pairs RX and TX are disconnected at the transceivers from the controller board RX and TX pins. Use LOCKOUT_DELAY to set the time in mSec.
 
-Bootload mode occures when a byte on the DTR pair matches the RPU_ADDRESS of the shield. It will cause a pulse on the shield reset pin to activate the bootloader on the board the shield is pluged into. After bootloading is done the shield will send the RPU_NORMAL_MODE byte on the DTR pair when the RPU_ADDRESS is read with an I2C command (otherwise the shield will timeout but not connect to the RS-422 bus).
+Bootload mode occurs when a byte on the DTR pair matches the RPU_ADDRESS of the shield. It will cause a pulse on the shield reset pin to activate the bootloader on the board the shield is plugged into. After the bootloader is done the shield will run the application which, if it reads the RPU_ADDRESS. will cause the manager to send an RPU_NORMAL_MODE byte on the DTR pair. The RPU_ADDRESS is read with an I2C command from the controller board. If the RPU_ADDRESS is not read the shield will timeout but not connect the RX and TX transceivers to the controller board. Use BOOTLOADER_ACTIVE to set the time in mSec, it nees to be less than LOCKOUT_DELAY.
 
-lockout mode occures when a byte on the DTR pair does not match the RPU_ADDRESS of shield. It will cause the lockout condition and last for a duration determined by the LOCKOUT_DELAY or when a RPU_NORMAL_MODE byte is seen on the DTR pair.
+The lockout mode occurs when a byte on the DTR pair does not match the RPU_ADDRESS of the manager. It will cause the lockout condition and last for a duration determined by the LOCKOUT_DELAY or when an RPU_NORMAL_MODE byte is seen on the DTR pair.
 
-When nRTS or nDTR are pulled active the bus manager will connect the HOST_TX and HOST_RX lines to the RX and TX pairs, and pull the nCTS and nDSR lines active to let the host know it is Ok to send. If the bus is in use the host remains disconnected from the bus. Note the Remote firmware sets a status bit at startup that prevents the host from connecting until it is cleared with an I2C command.
+When nRTS (or nDTR on RPUadpt) are pulled active the bus manager will connect the HOST_TX and HOST_RX lines to the RX and TX pairs, and pull the nCTS (and nDSR) lines active to let the host know it is Ok to send. If the bus is in use the host will remain disconnected from the bus. Note the Remote firmware sets a status bit at startup that prevents the host from connecting until it is cleared with an I2C command.
 
-Arduino Mode (Work in progress, this is a list of ideas and may or may not be doable). It may be a sort of permeate bootload mode that the Arduino IDE can connect to. It would need to be enabled by a program on the board (an Uno) under an RPUftdi, which would set the mode with an I2C command. The command would send out a byte (on DTR pair) that enables a sticky bootload mode that is the point to point communication required for full duplex bootloaders and does not time out but does allow rerunning a proper bootload.
+Arduino Mode (Not Done, it is not yet even a work in progress, this is just a list of ideas). Perhaps a sort of permeate bootload mode that the Arduino IDE can connect to. It would need to be enabled by the host. Perhaps a host connected to a local bus manager I2C1 port with a command (yet to be done). The command would send out a byte (on the DTR pair) that enables a sticky_bootload mode (e.g. point to point communication).
 
+Test Mode (Not Done, it is not yet even a work in progress, this is just a list of ideas). Disable: turn off all transceivers (even the DTR), allows the controller to measure input current. DtrEnable: turn on the DTR transceiver while the manager has a HIGH on its DTR_TXD line, allows the controller to measure input current. nDtrEnable: turn on the DTR transceiver while the manager has a LOW on its DTR_TXD line, allows the controller to measure input current. Rest is TBD.
 
 ## Firmware Upload
 
 Use an ICSP tool connected to the bus manager (set the ISP_PORT in Makefile) run 'make isp' and it should compile and then flash the bus manager.
 
 ```
-rsutherland@conversion:~/Samba/RPUpi/Remote$ make isp
+sudo apt-get install make git gcc-avr binutils-avr gdb-avr avr-libc avrdude
+git clone https://github.com/epccs/RPUpi/
+cd /RPUpi/Remote
+make isp
 ...
 avrdude done.  Thank you.
 ```
@@ -31,201 +35,347 @@ avrdude done.  Thank you.
 
 The Address '1' on the RPU_BUS is 0x31, (e.g. not 0x1 but the ASCII value for the character).
 
-When HOST_nDTR (or HOST_nRTS) are pulled active from a host trying to connect to the RS-422 bus the local bus manager will set localhost_active and send the bootloader_address over the DTR pair. If an address received by way of the DTR pair matches the local RPU_ADDRESS the bus manager will enter bootloader mode (marked with bootloader_started), and connect the shield RX/TX to the RS-422 (see connect_bootload_mode() function), all other address are locked out. After a LOCKOUT_DELAY time or when a normal mode byte is seen on the DTR pair, the lockout ends and normal mode resumes. The node that has bootloader_started broadcast the return to normal mode byte on the DTR pair when that node has the RPU_ADDRESS read from the bus manager over I2C (otherwise it will time out and not connect the shield RX/TX to RS-422).
+When HOST_nRTS are pulled active from a host trying to connect to the serial bus the local bus manager will set localhost_active and send the bootloader_address over the DTR pair. If an address received by way of the DTR pair matches the local RPU_ADDRESS the bus manager will enter bootloader mode (marked with bootloader_started), and connect the shield RX/TX to the RS-422 (see connect_bootload_mode() function), all other addresses are locked out. After a LOCKOUT_DELAY time or when a normal mode byte is seen on the DTR pair, the lockout ends and normal mode resumes. The node that has bootloader_started broadcast the return to normal mode byte on the DTR pair when that node has the RPU_ADDRESS read from its bus manager over I2C (otherwise it will time out and not connect the controller RX/TX to serial).
 
 
 ## Bus Manager Modes
 
-In Normal Mode, the RPU bus manager connects the local MCU node to the RPU bus if it is RPU aware (e.g. ask for RPU address over I2C). Otherwise, it will not connect the local MCU's TX to the bus but does connect RX. The host will be connected unless it is foreign.
+In Normal Mode, the RPU bus manager connects the local MCU node to the RPU bus if it is RPU aware (e.g. ask for RPU_ADDRESS over I2C). Otherwise, it will not connect the local MCU's TX to the bus but does connect RX. The host will be connected unless it is foreign.
 
-In bootload mode, the RPU bus manager connects the local MCU node to the RPU bus. Also, the host will be connected unless it is foreign. It is expected that all other nodes are in lockout mode. Note the BOOTLOADER_ACTIVE delay is less than the LOCKOUT_DELAY, but it needs to be in bootload mode long enough to allow finishing. A slow bootloader will require longer delays.
+In bootload mode, the RPU bus manager connects the local controller to the serial bus. Also, the host will be connected unless it is foreign. It is expected that all other nodes are in lockout mode. Note the BOOTLOADER_ACTIVE delay is less than the LOCKOUT_DELAY, but it needs to be in bootload mode long enough to allow uploading. A slow bootloader will require longer delays.
 
-In lockout mode, if the host is foreign both the local MCU node and Host are disconnected from the bus, otherwise, the host remains connected.
-
-To enter the sneaky mode no one can have used the bus since the node was powered on. When host DTR/RTS goes active the bus manager will connect the local controller and the host without a DTR pair broadcast (i.e. sneaky). This allows the host to set a bootload address to broadcast and turn off the lockout status bit. The bootload address is broadcast immediately when the lockout bit is cleared, which activates the bus (e.g. disabling sneaky mode for others).
+In lockout mode, if the host is foreign both the local controller and Host are disconnected from the bus, otherwise, the host remains connected.
 
 
 ## I2C/TWI Slave
 
-The I2C address is 0x29 (dec 41). It is organized as an array of read or write commands. Note: the sent data is used to size the reply, so add an extra byte after the command to size the reply.
+The I2C0 address is 0x29 (dec 41) and I2C1 is 0x2A (dec 42). It is organized as an array of commands. Note: the sent data is used to size the reply, so add a byte after the command for the manager to fill in with the reply.
 
-0. read the shields RPU_BUS addrss and activate normal mode (boadcast if localhost_active).
-1. set the shields RPU_BUS address and write it (and an id) to eeprom
-2. read the address sent when DTR/RTS toggles 
+0. read the shields RPU_BUS address and activate normal mode (broadcast if localhost_active).
+1. set the shields RPU_BUS address and write it to EEPROM.
+2. read the address sent when DTR/RTS toggles.
 3. write the address that will be sent when DTR/RTS toggles
-4. read RPUpi shutdown (the ICP1 pin has a weak pull up and a momentary switch)
-5. set RPUpi shutdown (pull down ICP1 for SHUTDOWN_TIME in millis to cause host to hault)
-6. reads status bits [0:DTR readback timeout, 1:twi transmit fail, 2:DTR readback not match, 3:host lockout]
-7. wrties (or clears) status 
+4. read RPUpi shutdown (the ICP1 pin has a weak pull-up and a momentary switch).
+5. set RPUpi shutdown (pull down ICP1 for SHUTDOWN_TIME to cause the host to halt).
+6. reads status bits [0:DTR readback timeout, 1:twi transmit fail, 2:DTR readback not match, 3:host lockout].
+7. writes (or clears) status.
 
+The controller has all commands available, but the HOST is limited to 0, 2, 3, 6, 7.
 
-Connect to i2c-debug on an RPUno with an RPUftdi shield using picocom (or ilk). 
+Connect to i2c-debug on an RPUno with an RPU shield using picocom (or ilk). 
 
 ``` 
 picocom -b 38400 /dev/ttyUSB0
 ``` 
 
 
-## Scan with i2c-debug 
+## RPU /w i2c-debug scan
 
-Scan for the I2C slave address of the RPUftdi shield and address I2C.
+Scan for the I2C0 slave address of shield and address.
 
 ``` 
-/0/id?
-{"id":{"name":"I2Cdebug","desc":"RPUno Board /w atmega328p and LT3652","avr-gcc":"4.9"}}
-/0/iscan?
+picocom -b 38400 /dev/ttyUSB0
+/1/id?
+{"id":{"name":"I2Cdebug^1","desc":"RPUno (14140^9) Board /w atmega328p","avr-gcc":"5.4.0"}}
+/1/iscan?
 {"scan":[{"addr":"0x29"}]}
-/0/iaddr 41
-{"address":"0x29"}
 ```
 
-## Read the RPUpi shield address with i2c-debug
+
+## Raspberry Pi scan the shield address
+
+I2C1 slave port is for host access. A Raspberry Pi is set up as follows.
+
+```
+sudo apt-get install i2c-tools python3-smbus
+sudo usermod -a -G i2c rsutherland
+# logout for the change to take
+i2cdetect 1
+WARNING! This program can confuse your I2C bus, cause data loss and worse!
+I will probe file /dev/i2c-1.
+I will probe address range 0x03-0x77.
+Continue? [Y/n] Y
+     0  1  2  3  4  5  6  7  8  9  a  b  c  d  e  f
+00:          -- -- -- -- -- -- -- -- -- -- -- -- --
+10: -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- --
+20: -- -- -- -- -- -- -- -- -- -- 2a -- -- -- -- --
+30: -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- --
+40: -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- --
+50: -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- --
+60: -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- --
+70: -- -- -- -- -- -- -- --
+```
+
+
+## RPU /w i2c-debug read the shield address
 
 The local RPU address can be read.
 
 ``` 
+picocom -b 38400 /dev/ttyUSB0
 /1/iaddr 41
 {"address":"0x29"}
 /1/ibuff 0,255
-{"txBuffer":[{"data":"0x0"},{"data":"0xFF"}]}
+{"txBuffer[2]":[{"data":"0x0"},{"data":"0xFF"}]}
 /1/iread? 2
 {"rxBuffer":[{"data":"0x0"},{"data":"0x31"}]}
 ``` 
 
 
-## Set the bootload address with i2c-debug
+## Raspberry Pi read the shield address
 
-Set the byte that is sent when DTR/RTS toggles ('2' is 0x32 or 50).
+The host can read the local RPU_ADDRESS with the I2C1 port.
+
+``` 
+python3
+import smbus
+bus = smbus.SMBus(1)
+#write_i2c_block_data(I2C_ADDR, I2C_COMMAND, DATA)
+bus.write_i2c_block_data(42, 0, [255])
+#read_i2c_block_data(I2C_ADDR, OFFSET, NUM_OF_BYTES)
+# OFFSET is not implemented
+print(bus.read_i2c_block_data(42, 0, 2))
+[0, 49]
+``` 
+
+
+## RPU /w i2c-debug set RPU_BUS address
+
+__Warning:__ this changes eeprom, flashing with ICSP does not clear eeprom due to fuse setting.
+
+Using an RPUno and an RPUftdi shield, connect another RPUno with i2c-debug firmware to the RPUpi shield that needs its address set. The default RPU_BUS address can be changed from '1' to any other value. 
+
+``` 
+picocom -b 38400 /dev/ttyUSB0
+/1/iaddr 41
+{"address":"0x29"}
+/1/ibuff 1,50
+{"txBuffer[2]":[{"data":"0x1"},{"data":"0x32"}]}
+/1/iread? 2
+{"rxBuffer":[{"data":"0x1"},{"data":"0x32"}]}
+``` 
+
+The RPU program normally reads the address during setup in which case it needs a reset to get the update. The reset can be done by setting its bootload address (bellow).
 
 ```
+/2/id?
+{"id":{"name":"I2Cdebug^1","desc":"RPUno (14140^9) Board /w atmega328p","avr-gcc":"5.4.0"}}
+``` 
+
+
+## RPU /w i2c-debug read the address sent when DTR/RTS toggles
+
+I2C0 can be used by the RPU to Read the local bootload address that it will send when a host connects to it.
+
+``` 
+picocom -b 38400 /dev/ttyUSB0
+/1/iaddr 41
+{"address":"0x29"}
+/1/ibuff 2,255
+{"txBuffer[2]":[{"data":"0x2"},{"data":"0xFF"}]}
+/1/iread? 2
+{"rxBuffer":[{"data":"0x2"},{"data":"0x30"}]}
+``` 
+
+Address 0x30 is ascii '0' so the RPU at that location will be reset and connected to the serial bus when a host connects to the shield at address '1'. 
+
+
+## Raspberry Pi read the address sent when DTR/RTS toggles
+
+I2C1 can be used by the host to Read the local bootload address that it will send when a host connects to it.
+
+``` 
+python3
+import smbus
+bus = smbus.SMBus(1)
+#write_i2c_block_data(I2C_ADDR, I2C_COMMAND, DATA)
+bus.write_i2c_block_data(42, 2, [255])
+#read_i2c_block_data(I2C_ADDR, OFFSET, NUM_OF_BYTES)
+#OFFSET is not implemented
+print(bus.read_i2c_block_data(42, 0, 2))
+[2, 48]
+``` 
+
+Address 48 is 0x30 or ascii '0' so the RPU at that location will be reset and connected to the serial bus when the Raspberry Pi connects to the shield at this location (use command 1 to find the local address).
+
+
+## RPU /w i2c-debug set the bootload address
+
+__Note__: this valuse is not saved in eeprom so a power loss will set it back to '0'.
+
+I2C0 can be used by the RPU to set the local bootload address that it will send when a host connects to it. When DTR/RTS toggles send ('2' is 0x32 is 50).
+
+```
+picocom -b 38400 /dev/ttyUSB0
 /1/iaddr 41
 {"address":"0x29"}
 /1/ibuff 3,50
-{"txBuffer":[{"data":"0x3"},{"data":"0x32"}]}
+{"txBuffer[2]":[{"data":"0x3"},{"data":"0x32"}]}
 /1/iread? 2
 {"rxBuffer":[{"data":"0x3"},{"data":"0x32"}]}
 ``` 
 
 exit picocom with C-a, C-x. 
 
-See bellow for how to Clear Host Lockout Status and then use the Pi Zero as a host that can bootload controler boards.
-
-
-## Set RPU_BUS address with i2c-debug
-
-Using an RPUno and an RPUftdi shield, connect another RPUno with i2c-debug firmware to the RPUadpt shield that needs its address set. The default RPU_BUS address can be changed from '1' to any other value. 
+Connect with picocom again. 
 
 ``` 
-/1/iaddr 41
-{"address":"0x29"}
-/1/ibuff 1,50
-{"txBuffer":[{"data":"0x1"},{"data":"0x32"}]}
-/1/iread? 2
-{"rxBuffer":[{"data":"0x1"},{"data":"0x32"}]}
+picocom -b 38400 /dev/ttyUSB0
 ``` 
 
-The example programs read the address durring setup, so they will need a reset.
+This will toggle RTS on the RPUpi shield and the manager will send 0x32 on the DTR pair. The RPUpi shield should blink slow to indicate a lockout, while the shield with address '2' blinks fast to indicate bootloader mode. The lockout timeout LOCKOUT_DELAY can be adjusted in firmware.
 
-```
-/2/id?
-{"id":{"name":"I2Cdebug","desc":"RPUno Board /w atmega328p and LT3652","avr-gcc":"4.9"}}
-``` 
 
-## Set RPUpi Shutdown
+## Raspberry Pi set the bootload address
 
-To hault the host send the I2C shutdown command 5 (first byte), with data 1 (second byte) which sets shutdown_started, clears shutdown_detected and pulls down the SHUTDOWN (ICP1) pin. The shutdown_started flag is also used to stop blinking of the LED_BUILTIN to reduce power usage noise so that the host power usage can be clearly seen.
+__Note__: this valuse is not saved in eeprom so a power loss will set it back to '0'.
+
+I2C1 can be used by the host to set the local bootload address that it will send when a host connects to it. When DTR/RTS toggles send ('2' is 0x32 is 50).
 
 ``` 
-/1/iaddr 41
-{"address":"0x29"}
-/1/ibuff 5,1
-{"txBuffer":[{"data":"0x5"},{"data":"0x1"}]}
-/1/iread? 2
-{"rxBuffer":[{"data":"0x5"},{"data":"0x1"}]}
+python3
+import smbus
+bus = smbus.SMBus(1)
+#write_i2c_block_data(I2C_ADDR, I2C_COMMAND, DATA)
+bus.write_i2c_block_data(42, 3, [50])
+#read_i2c_block_data(I2C_ADDR, OFFSET, NUM_OF_BYTES)
+#OFFSET is not implemented
+print(bus.read_i2c_block_data(42,0, 2))
+[3, 50]
 ``` 
 
-Above used an RPUftdi shield, connected to an RPUpi shield at address '1'. The shields were each mounted on an RPUno loaded with i2c-debug firmware.
 
+## RPU /w i2c-debug read if HOST shutdown detected
 
-## Read RPUpi Shutdown Detected
-
-To check if host got a hault command or if the shutdown button got pressed send the I2C shutdown command 4 (first byte), with place holder data (second byte). This clears shutdown_detected flag that was used to keep the LED_BUILTIN from blinking.
+To check if host got a manual hault command (e.g. if the shutdown button got pressed) send the I2C shutdown command 4 (first byte), with place holder data (second byte). This clears shutdown_detected flag that was used to keep the LED_BUILTIN from blinking.
 
 ``` 
+picocom -b 38400 /dev/ttyUSB0
 /1/iaddr 41
 {"address":"0x29"}
 /1/ibuff 4,255
-{"txBuffer":[{"data":"0x4"},{"data":"0xFF"}]}
+{"txBuffer[2]":[{"data":"0x4"},{"data":"0xFF"}]}
 /1/iread? 2
 {"rxBuffer":[{"data":"0x4"},{"data":"0x1"}]}
 /1/ibuff 4,255
-{"txBuffer":[{"data":"0x4"},{"data":"0xFF"}]}
+{"txBuffer[2]":[{"data":"0x4"},{"data":"0xFF"}]}
 /1/iread? 2
 {"rxBuffer":[{"data":"0x4"},{"data":"0x0"}]}
 ``` 
 
-Above used an RPUftdi shield, connected to an RPUpi shield at address '1'. The shields were each mounted on an RPUno loaded with i2c-debug firmware.
+The above used a remote host and shield.
 
-Second value in rxBuffer has shutdown_detected value (0 or 1). It is cleared when reading.
+Second value in rxBuffer has shutdown_detected value 0x1, it is cleared after reading.
 
 
-## Clear Host Lockout Status
+## RPU /w i2c-debug set HOST to shutdown
 
-Connect with picocom (this requires sneaky mode, which assumes no host has used the bus). 
-
-``` 
-picocom -b 38400 /dev/ttyAMA0
-```
-
-Check that the lockout bit is set by reading the status_byt. The HOST_LOCKOUT_STATUS bit is 3 at this time. Note Pi Zero is on RPUpi with addres '2' (50 or 0x32).
+To hault the host send the I2C shutdown command 5 (first byte), with data 1 (second byte) which sets shutdown_started, clears shutdown_detected and pulls down the SHUTDOWN (ICP1) pin. The shutdown_started flag is also used to stop blinking of the LED_BUILTIN to reduce power usage noise so that the host power usage can be clearly seen.
 
 ``` 
-/2/iaddr 41
+picocom -b 38400 /dev/ttyUSB0
+/1/iaddr 41
 {"address":"0x29"}
-/2/ibuff 6,0
-{"txBuffer":[{"data":"0x6"},{"data":"0x0"}]}
-/2/iread? 2
+/1/ibuff 5,1
+{"txBuffer[2]":[{"data":"0x5"},{"data":"0x1"}]}
+/1/iread? 2
+{"rxBuffer":[{"data":"0x5"},{"data":"0x1"}]}
+``` 
+
+The above used a remote host and shield.
+
+
+## RPU /w i2c-debug read status bits
+
+I2C0 can be used by the RPU to read the local status bits.
+
+0. DTR readback timeout
+1. twi transmit fail 
+2. DTR readback not match
+3. host lockout
+
+``` 
+picocom -b 38400 /dev/ttyUSB0
+/1/iaddr 41
+{"address":"0x29"}
+/1/ibuff 6,255
+{"txBuffer[2]":[{"data":"0x6"},{"data":"0xFF"}]}
+/1/iread? 2
 {"rxBuffer":[{"data":"0x6"},{"data":"0x8"}]}
 ``` 
 
-Clear the status_byt to unlock the host (e.g. allow it to bootload on the bus). At this time the only bit that will clear is the HOST_LOCKOUT_STATUS bit.
+
+## Raspberry Pi read status bits
+
+I2C1 can be used by the host to read the local status bits.
+
+0. DTR readback timeout
+1. twi transmit fail 
+2. DTR readback not match
+3. host lockout
 
 ``` 
-/2/iaddr 41
+python3
+import smbus
+bus = smbus.SMBus(1)
+#write_i2c_block_data(I2C_ADDR, I2C_COMMAND, DATA)
+bus.write_i2c_block_data(42, 6, [255])
+#read_i2c_block_data(I2C_ADDR, OFFSET, NUM_OF_BYTES)
+#OFFSET is not implemented
+print(bus.read_i2c_block_data(42,0, 2))
+[6, 8]
+``` 
+
+Bit 3 is set so the host can not connect until that has been cleared.
+
+
+## RPU /w i2c-debug set status bits
+
+I2C0 can be used by the RPU to set the local status bits.
+
+0. DTR readback timeout
+1. twi transmit fail 
+2. DTR readback not match
+3. host lockout
+
+``` 
+picocom -b 38400 /dev/ttyUSB0
+/1/iaddr 41
 {"address":"0x29"}
-/2/ibuff 7,0
-{"txBuffer":[{"data":"0x7"},{"data":"0x0"}]}
-/2/iread? 2
+/1/ibuff 7,8
+{"txBuffer[2]":[{"data":"0x7"},{"data":"0x0"}]}
+/1/iread? 2
 {"rxBuffer":[{"data":"0x7"},{"data":"0x0"}]}
 ``` 
 
-At this time the heuristics for this are unpleasant, the Pi Zero ends up having to use sneaky mode to enable its status as a host. It may also need to set the bootload address to itself if address 0x30 is not on the bus.
+## Raspberry Pi sets status bits
 
-```
-/2/iaddr 41
-{"address":"0x29"}
-/2/ibuff 3,50
-{"txBuffer":[{"data":"0x3"},{"data":"0x32"}]}
-/2/iread? 2
-{"rxBuffer":[{"data":"0x3"},{"data":"0x32"}]}
-``` 
+I2C1 can be used by the host to read the local status bits.
 
-exit picocom with C-a, C-x.
-
-Connect with picocom again. 
+0. DTR readback timeout
+1. twi transmit fail 
+2. DTR readback not match
+3. host lockout
 
 ``` 
+python3
+import smbus
+bus = smbus.SMBus(1)
+#write_i2c_block_data(I2C_ADDR, I2C_COMMAND, DATA)
+bus.write_i2c_block_data(42, 7, [0])
+#read_i2c_block_data(I2C_ADDR, OFFSET, NUM_OF_BYTES)
+#OFFSET is not implemented
+print(bus.read_i2c_block_data(42,0, 2))
+[7, 0]
+exit()
 picocom -b 38400 /dev/ttyAMA0
+...
+Terminal ready
+/1/id?
+# C-a, C-x.
 ``` 
 
-This will set nRTS active on the RPUpi shield which should send 0x32 on the DTR pair. The RPUpi with address '2' blinks fast to indicate bootloader mode.
-
-Now check that the shield that has address '2'. The control board can read the address over I2C.
-
-``` 
-/2/id?
-{"id":{"name":"I2Cdebug^1","desc":"RPUlux (17323^0) Board /w atmega328p","avr-gcc":"5.4.0"}}
-``` 
+The Raspberry Pi can bootload a target on the RPU serial bus.
 
 
 ## Notes

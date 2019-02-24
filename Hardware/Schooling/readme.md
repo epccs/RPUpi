@@ -4,6 +4,7 @@ Some lessons I learned doing RPUpi.
 
 # Table Of Contents:
 
+1. ^4 Bootload Speed
 1. ^4 nSS to CE10 WTF
 1. ^3 Connect nSS to SBC CE10
 1. ^2 Protect I2C With 182 Ohm 
@@ -14,6 +15,17 @@ Some lessons I learned doing RPUpi.
 1. ^1 Pi Tx Pull-Up
 1. ^1 I2C
 1. ^0 U3 Placed Backward
+
+
+## ^4 Bootload Speed
+
+I have been using Optiboot at 115.2k bps but was not able to do that reliably with picocom (or any other serial). I think it was just on the edge of working with the 3172EIBZ at both ends, but placing the THVD1500 at one end adds to much delay so the THVD1500 and AVR UART clock at 111.1k bps is not able to work reliably with the 3172EIBZ and FTDI UART at 115.2k. 
+
+Changing the AVR to 38.461k is a much better match to the FTDI's speed of 38.4k. I changed the speed for applications serial communication ages ago, and that has been reliable. Communication at 115.2k bps with picocom was getting the wrong values back so I have been confused for some time about the magic trick optiboot and avrdude were doing, I have dug through the source somewhat but did not see anything obvious so this is frankly comforting to see. 
+
+Arduino's Uno is living on a bootload speed edge, I guess it works for them but I want a robust serial link for both communication and bootload. This will make my boards less compatible with Arduino's, but [MiniCore] can be used on there IDE and it has a 38.4k bps Optiboot. Now that I have seen this issue I will move my other boards to this speed also. Note that I am not using the Arduino IDE, the makefile is used in its place, it has the rules used to build the software so I can build the firmware remotely over an SSH login. 
+
+[MiniCore]: https://github.com/MCUdude/MiniCore
 
 
 ## ^4 nSS to CE10 WTF

@@ -228,9 +228,9 @@ Terminal ready
 
 Exit picocom (Cntl^a and Cntl^x). 
 
-Plug the UUT (the [RPUpi] shield) onto a second RPUno board. Connect the ICSP tool to UUT (J9). Power the RPUno (e.g. connect a 12V SLA battery and supply the PV input with 180mA CC and 20V). Load the Remote firmware onto UUT.
+Plug the UUT (the [RPUpi] shield) onto a second RPUno board. Connect the ICSP tool to UUT (J9). Power the RPUno (e.g. connect supply set with 12.8V at 180mA CC).
 
-Use the command line to select the source working directory for the UUT bus manager firmware to use (i.e. [Remote]). Run the makefile rule used to load it:
+Load the Remote firmware onto UUT. Use the command line to select the source working directory for the UUT bus manager firmware to use (i.e. [Remote]). Run the makefile rule used to load it:
 
 [Remote]: https://github.com/epccs/RPUadpt/tree/master/Remote
 
@@ -265,39 +265,29 @@ Terminal ready
 Measure the analog values. The charge data is accumulated from the time the RPUno started.
 
 ```
-/1/analog? 2,3,6,7
-{"CHRG_A":"0.060","DISCHRG_A":"0.000","PV_V":"20.02","PWR_V":"14.32"}
+/1/analog? 6,7
+{"PWR_I":"0.017","PWR_V":"12.76"}
 /1/charge?
-{"CHRG_mAHr":"5.31","DCHRG_mAHr":"0.00","RMNG_mAHr":"0.00","ACCUM_Sec":"311.94"}
+{"CHRG_mAHr":"1.06","ACCUM_Sec":"224.58"}
 ```
 
-Turn off power to PV input.
-
-```
-/1/analog? 2,3,6,7
-{"CHRG_A":"0.000","DISCHRG_A":"0.027","PV_V":"0.36","PWR_V":"13.94"}
-/1/charge?
-{"CHRG_mAHr":"8.55","DCHRG_mAHr":"0.21","RMNG_mAHr":"0.00","ACCUM_Sec":"551.38"}
-Ctrl-a and Ctrl-x
-```
-
-Disconnect the Battery.
+Disconnect the Power.
 
 ## Pi Zero without SD card
 
-Plug in a Pi Zero without an SD card. Connect a battery to RPUno and power the PV input at 20V with CC 180mA.
+Plug in a Pi Zero without an SD card. Power the RPUno with 12.8V and 250mA.
 
 The Pi Zero takes about 15mA for a second and then 23mA without an SD card. Verify the Pi's zero used for test has a 3V3 output.
 
 Note: pi-bench is 3.309V,
 
-Measure the analog values (from Ubuntu and RPUftid connection).
+Measure the analog values from Ubuntu host over the RPUftid connection.
 
 ```
 picocom -b 38400 /dev/ttyUSB0
 ...
 Terminal ready
-/1/analog? 2,3,6,7
+/1/analog? 6,7
 {"CHRG_A":"0.092","DISCHRG_A":"0.000","PV_V":"19.87","PWR_V":"14.37"}
 ```
 

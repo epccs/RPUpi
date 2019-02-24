@@ -4,6 +4,22 @@
 
 Blink the on board LED plus debug the host I2C interface (e.g. the secnond I2C port on ATmega328pb).
 
+
+## Firmware Upload
+
+Use an ICSP tool connected to the bus manager (set the ISP_PORT in Makefile) run 'make isp' and it should compile and then flash the bus manager.
+
+```
+sudo apt-get install make git gcc-avr binutils-avr gdb-avr avr-libc avrdude
+git clone https://github.com/epccs/RPUpi/
+cd /RPUpi/BlinkLED
+make isp
+...
+avrdude done.  Thank you.
+```
+
+## How To Use
+
 The [i2c-debug] firmware on an RPUno can be used to test the I2C host manager interface, its address is at 0x2A. The RPUno controler has its own manager interfac at 0x29. 
 
 [i2c-debug]: https://github.com/epccs/RPUno/tree/master/i2c-debug

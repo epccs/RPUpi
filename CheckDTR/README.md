@@ -2,6 +2,8 @@
 
 ## Overview
 
+Use during hardware tesing after building a board, this is not an applicaiton.
+
 ``` 
 delay 4000
 set DTR_TXD LOW so U4 DI input has 0V.
@@ -26,6 +28,15 @@ test DTR_RXD == HIGH
 loop
 ``` 
 
-Toolchain setup http://epccs.org/indexes/Document/DvlpNotes/LinuxBoxCrossCompiler.html
+## Firmware Upload
 
+Use an ICSP tool connected to the bus manager (set the ISP_PORT in Makefile) run 'make isp' and it should compile and then flash the bus manager.
 
+```
+sudo apt-get install make git gcc-avr binutils-avr gdb-avr avr-libc avrdude
+git clone https://github.com/epccs/RPUpi/
+cd /RPUpi/CheckDTR
+make isp
+...
+avrdude done.  Thank you.
+```
