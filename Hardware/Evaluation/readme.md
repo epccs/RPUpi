@@ -7,13 +7,99 @@ This shows the setup and methods used for evaluation of RPUpi.
 
 # Table Of Contents:
 
-7. ^3 SPI Interface
-6. ^3 Power Data
-5. ^3 Bootload Remote AVR
-4. ^2 Clearance IDE Connector For ICSP Tool
-3. ^2 Clearance Between Pi and Plugable
-2. ^1 Vertical Mounting
+1. ^4 SPI 2MHz Checked With Raspberry Pi Zero
+1. ^3 SPI Interface
+1. ^3 Power Data
+1. ^3 Bootload Remote AVR
+1. ^2 Clearance IDE Connector For ICSP Tool
+1. ^2 Clearance Between Pi and Plugable
+1. ^1 Vertical Mounting
 1. ^0 Mounting
+
+
+## ^4 SPI 2MHz Checked With Raspberry Pi Zero
+
+Note: AVR's nSS that went to Pi's nCE10 was changed to nCE00 for this test, it needs to be fixed on next board version.
+
+The unit under test is at address '1'. So first I need to bootload its controller (an RPUno^9) with [SpiSlv].
+
+[SpiSlv]:https://github.com/epccs/RPUno/tree/master/SpiSlv
+
+To do that I set the booload address on the shield that is connected to the host which will build [SpiSlv] and upload the firmware. 
+
+``` 
+# first set user premision to use the SPI port
+sudo usermod -a -G spi rsutherland
+# logout for the change to take
+# Write the address '1' (0x31) that will be sent when nRTS enables.
+# Next clear the lockout bit to alow the Pi Zero to use the RPUBUS as a host (e.g. from the Pi Zero in sneaky mode)
+picocom -b 38400 /dev/ttyAMA0
+...
+Terminal ready
+/1/iaddr 41
+{"address":"0x29"}
+/1/ibuff 3,49
+{"txBuffer[2]":[{"data":"0x3"},{"data":"0x31"}]}
+/1/iread? 2
+{"rxBuffer":[{"data":"0x3"},{"data":"0x31"}]}
+/1/ibuff 7,0
+{"txBuffer[2]":[{"data":"0x7"},{"data":"0x0"}]}
+/1/iread? 2
+# ASCII character glitch may show now since the local controller has just reset
+# C-a, C-x.
+
+# next check that RPU '1' is blinking fast
+picocom -b 38400 /dev/ttyAMA0
+...
+Terminal ready
+# C-a, C-x.
+
+# now change the working directory to where SpiSlv is and then build and upload
+cd ~/wher_you_told_git_to_clone/RPUno/SpiSlv
+make bootload
+...
+avrdude done.  Thank you.
+
+# 
+gcc -o spidev_test spidev_test.c
+chmod ugo+x ./spidev_test
+# trun on the RPU SPI port
+picocom -b 38400 /dev/ttyAMA0
+...
+Terminal ready
+/1/id?
+{"id":{"name":"SpiSlv","desc":"RPUno (14140^9) Board /w atmega328p","avr-gcc":"5.4.0"}}
+/1/spi UP
+{"SPI":"UP"}
+# C-a, C-x.
+# test with
+./spidev_test -s 1000 -D /dev/spidev0.0
+./spidev_test -s 10000 -D /dev/spidev0.0
+./spidev_test -s 100000 -D /dev/spidev0.0
+./spidev_test -s 250000 -D /dev/spidev0.0
+./spidev_test -s 500000 -D /dev/spidev0.0
+./spidev_test -s 1000000 -D /dev/spidev0.0
+./spidev_test -s 2000000 -D /dev/spidev0.0
+# 4MHz fails on this RPUpi^4 setup with nCE10 swaped to nCE00.
+```
+
+The test output should look like this
+
+```
+spi mode: 0
+bits per word: 8
+max speed: 500000 Hz (500 KHz)
+
+0D FF FF FF FF FF
+FF 40 00 00 00 00
+95 FF FF FF FF FF
+FF FF FF FF FF FF
+FF FF FF FF FF FF
+FF DE AD BE EF BA
+AD F0
+``` 
+
+The maximum speed seen is 2MegHz.
 
 
 ## ^3 SPI Interface

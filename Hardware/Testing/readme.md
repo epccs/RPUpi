@@ -288,41 +288,35 @@ picocom -b 38400 /dev/ttyUSB0
 ...
 Terminal ready
 /1/analog? 6,7
-{"CHRG_A":"0.092","DISCHRG_A":"0.000","PV_V":"19.87","PWR_V":"14.37"}
+{"PWR_I":"0.043","PWR_V":"12.66"}
 ```
 
-Turn off power to PV input.
-
-```
-/1/analog? 2,3,6,7
-{"CHRG_A":"0.000","DISCHRG_A":"0.042","PV_V":"0.42","PWR_V":"13.58"}
-```
 
 Turn off the VIN pin
 
 ```
 /1/vin DOWN
-{"VIN":"CCSHUTDOWN"}
-{"VIN":"I2CHAULT"}
-{"VIN":"ATHAULTCURR"}
+{"VIN":"ALT_DWN?"}
+{"VIN":"I2C_HAULT"}
+{"VIN":"AT_HAULT_CURR"}
 {"VIN":"DELAY"}
 {"VIN":"WEARLEVELINGCLEAR"}
-{"VIN":"DOWN"}`
-/1/analog? 2,3,6,7
-{"CHRG_A":"0.000","DISCHRG_A":"0.027","PV_V":"0.42","PWR_V":"13.41"}
+{"VIN":"DOWN"}
+/1/analog? 6,7
+{"PWR_I":"0.017","PWR_V":"12.66"}
 ```
 
-The Pi Zero is using about 15mA from the battery (which is converted to 5V befor going to the Pi Zero).
+The Pi Zero is using about 26mA from 12.8V (which is converted to 5V befor going to the Pi Zero).
 
 
 ## Boot Headless Pi Zero
 
-Connect a 12V SLA AGM battery to an RPUno. Plug a Pi Zero into the RPUpi board. Plug an SD card setup with Raspbian and setup these headless [Linux] settings (e.g. pi-bench). Power the RPUno's PV input with a source at 180mA constant current and 20V. Wait for the green LED on the Pi Zero to be uninterrupted.
+Connect a 12V8@250mA power supply to an RPUno (not yet on). Plug a Pi Zero into the RPUpi board. Plug an SD card setup with Raspbian and these headless [Linux] settings (e.g. pi2.local was pi-bench). Power the RPUno. Wait for the green LED on the Pi Zero to be uninterrupted.
 
 [Linux]: ./linux.md
 
 ```
-ssh pi-bench.local
+ssh pi2.local
 ```
 
 The [RTS/CTS] functions should enable if these [Linux] settins have been used (e.g. pi-bench).
@@ -335,7 +329,7 @@ Pi Zero Rev 1.3 with 40 pin GPIO header detected
 Enabling CTS0 and RTS0 on GPIOs 16 and 17
 ```
 
-Clear the lockout bit to alow the Pi Zero to use RS-422 as a host (e.g. from the Pi Zero in sneaky mode).
+Write the address '1' (0x31) that will be sent when nRTS enables. Next clear the lockout bit to alow the Pi Zero to use the RPUBUS as a host (e.g. from the Pi Zero in sneaky mode).
 
 ```
 picocom -b 38400 /dev/ttyAMA0
@@ -350,28 +344,16 @@ Terminal ready
 /1/ibuff 7,0
 {"txBuffer[2]":[{"data":"0x7"},{"data":"0x0"}]}
 /1/iread? 2
-# RS-422 ASCII character glitch may show now since the RPUno has just been reset
+# ASCII character glitch may show now since the local controller has just reset
 ```
 
-After the UUT bus managers resets the RPUno it is mounted on wait for the RS-422 to start working (ending sheaky mode causes a reset that may show as an ASCII character), measure the analog values.
+After the local bus manager is at address '1' and will reset its local controler. Wait for the RPUBUS to start working again and then measure the analog values.
 
 ```
-/1/analog? 2,3,6,7
-{"CHRG_A":"0.088","DISCHRG_A":"0.000","PV_V":"16.91","PWR_V":"14.06"}
-```
-
-Turn off power to PV input.
-
-```
-/1/analog? 2,3,6,7
-{"CHRG_A":"0.000","DISCHRG_A":"0.113","PV_V":"0.10","PWR_V":"13.79"}
-{"CHRG_A":"0.000","DISCHRG_A":"0.096","PV_V":"0.36","PWR_V":"13.71"}
-{"CHRG_A":"0.000","DISCHRG_A":"0.096","PV_V":"0.31","PWR_V":"13.60"}
-{"CHRG_A":"0.000","DISCHRG_A":"0.190","PV_V":"0.39","PWR_V":"13.59"}
+/1/analog? 6,7
+{"PWR_I":"0.099","PWR_V":"12.62"}
 /1/charge?
-{"CHRG_mAHr":"463.09","DCHRG_mAHr":"6.77","RMNG_mAHr":"0.00","ACCUM_Sec":"24562.52"}
-{"CHRG_mAHr":"463.09","DCHRG_mAHr":"8.35","RMNG_mAHr":"0.00","ACCUM_Sec":"24622.52"}
-{"CHRG_mAHr":"463.09","DCHRG_mAHr":"9.96","RMNG_mAHr":"0.00","ACCUM_Sec":"24682.54"}
+{"CHRG_mAHr":"15.12","ACCUM_Sec":"551.90"}
 ```
 
 exit picocom
@@ -405,9 +387,10 @@ Ctrl-a and Ctrl-x
 Thanks for using picocom
 ```
 
-Run spidev_test (see [SpiSlv]) on the Pi Zero:
+Compile spidev_test.c and run it (see [SpiSlv]) on the Pi Zero:
 
-``` 
+```
+gcc -o spidev_test spidev_test.c
 ./spidev_test -s 500000 -D /dev/spidev0.0
 
 spi mode: 0
@@ -443,16 +426,16 @@ Note the SPI output is offset a byte since it was sent back from the AVR. Close 
 exit
 ```
 
-Press the shutdown button and wait for the green LED on the Pi Zero to be off uninterrupted. For referance another host (e.g. from a RPUftdi or another RPUpi) can take the RS-422 bus now and be used to restart this Pi Zero (it needs [PwrMgt] on the RPUno). 
+Press the shutdown button and wait for the green LED on the Pi Zero to be off uninterrupted. For referance another host (e.g. from a RPUftdi or another RPUpi) can take the RPUBUS and use it to restart this Pi Zero (but it needs [PwrMgt] on the local controller). 
 
 ```
 picocom -b 38400 /dev/ttyUSB0
 ...
 Terminal ready
 /1/vin DOWN
-{"VIN":"CCSHUTDOWN"}
-{"VIN":"I2CHAULT"}
-{"VIN":"ATHAULTCURR"}
+{"VIN":"ALT_DWN?"}
+{"VIN":"I2C_HAULT"}
+{"VIN":"AT_HAULT_CURR"}
 {"VIN":"DELAY"}
 {"VIN":"WEARLEVELINGCLEAR"}
 {"VIN":"DOWN"}

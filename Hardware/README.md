@@ -57,9 +57,9 @@ This board connects a Pi Zero [W] to a multi-drop serial bus and a control board
             *during review the Design may change without changing the revision.
             AVR's nSS should goto R-Pi's nCE00 that was what was tested on RPUadpt.
 
-        ^4  Done: Design, Layout, BOM, Review*, Order Boards, Assembly,
-            WIP: Testing,
-            Todo: Evaluation.
+        ^4  Done: Design, Layout, BOM, Review*, Order Boards, Assembly, Testing,
+            WIP: Evaluation.
+            Todo: 
             *during review the Design may change without changing the revision.
             IOREF is for I2C and UART
             SPI_IOREF is for SPI only
@@ -71,8 +71,8 @@ This board connects a Pi Zero [W] to a multi-drop serial bus and a control board
             Remove 3V3 regulator, which is no longer needed.
             Change Q1..Q3 to use K1N. 
 
-        ^3  Done: Design, Layout, BOM, Review*, Order Boards, Assembly, Testing,
-            WIP: Evaluation.
+        ^3  Done: Design, Layout, BOM, Review*, Order Boards, Assembly, Testing, Evaluation.
+            WIP: 
             Todo: 
             *during review the Design may change without changing the revision.
             I2C added 182 Ohm between shield pins and bus manager
@@ -140,7 +140,7 @@ Y. | [BRD] [SMD] [HDR] [POL] [CAT5]
 
 # How To Use
 
-Your [Raspberry Pi] is your computer, you are the expert because I surely am not. Don't buy an RPUpi board and expect that I can help with your computer, I can not. So far I have found that SSH works and the AVR toolchain, so I am able to serial bootload the  ATmega328p, ATmega328pb, and ATmega1284p. I have tested SMBus and found it works but it does not do repeated starts or clock stretching, so let's not call it I2C. I have also tested SPI somewhat. The serial console program I use is picocom, the install package is built to do standard baud rates so that is what I have been using. 
+Your [Raspberry Pi] is your computer, you are the expert because I am not. Don't buy an RPUpi board and expect that I can help with your computer, I can not. So far I have found that SSH works and the AVR toolchain, so I am able to serial bootload the  ATmega328p, ATmega328pb, and ATmega1284p. I have tested SMBus and found it works but it does not do repeated starts or clock stretching, so let's not call it I2C. I have also tested SPI somewhat. The serial console program I use is picocom, the install package is built to do standard baud rates (e.g. 38.4k bps) so that is what I have been using. 
 
 [Raspberry Pi]: https://www.raspberrypi.org/forums/
 
@@ -188,14 +188,14 @@ The Pi's handshake lines nCTS and nRTS lines are on BCM 16 and 17 when the ALT3 
 
 [rpirtscts]: https://github.com/epccs/RPUpi/tree/master/RPiRtsCts
 
-On the RPUpi board, the Pi Zero serial lines (Rx, Tx, nRTS, and nCTS) have been interfaced through a 74LVC07A buffer which is powered from the Pi's 3V3 power. When the Pi Zero is powered off the IOFF feature of the buffer will hi-z the output (it's an open collector output) which will allow a pull-up to set the proper value on nRTS and the Tx line. This allows the RPU_BUS to be used when the Pi Zero is powered off (or not plugged in). Also, a 74LVC07A buffer is used between the transceiver and the shield so the MCU on the shield can run at 3.3V or 5V, this buffer is powered from the shield so the shield UART can talk on the serial bus without the SBC.
+On the RPUpi board, the Pi Zero serial lines (Rx, Tx, nRTS, and nCTS) have been interfaced through a 74LVC07A buffer which is powered from the Pi's 3V3 power. When the Pi Zero is powered off the IOFF feature of the buffer will hi-z the output (it's an open collector output) which will allow a pull-up to set the proper value on nRTS and the Tx line. This allows the RPUBUS to be used when the Pi Zero is powered off (or not plugged in). Also, a 74LVC07A buffer is used between the transceiver and the controller that the shield is pluged into so it can run at 3.3V or 5V, this buffer is powered from the controller so it works without the SBC.
 
-When the Pi's handshake lines are enabled the nRTS line is used to start a targets bootloader (e.g. the famous Arduino DTR trick). When avrdude opens the serial port the nRTS goes active, that is it pulls low and is coupled through a capacitor to the Uno nREST pin, and bang the bootloader runs. In this case, the bus manager sees nRTS and broadcast a bootload address on the out of band channel so avrdude sees a single target running its serial bootloader. Since picocom does the same thing I have to make sure the target is one I want to reset, and then have to wait for that targets bootloader to timeout and its application to get the bus address from its shield. 
+When the Pi's handshake lines are enabled the nRTS line is used to start a targets bootloader. When avrdude opens the serial port the nRTS goes active, that is it pulls low the bus manager sees this and broadcast a bootload address on the DTR pair causing everything but the bootload device which is also reset to lockout and thus avrdude sees a single target running its serial bootloader. Since picocom does the same thing I have to make sure the target is one I want to reset, and then have to wait for that targets bootloader to timeout and its application to get the bus address from its shield. 
 
 
 ## Full Duplex Serial Management
 
-The shield has a bus manager, through its example firmware is ongoing. It has access to enable/disable each transceiver receiver and/or driver. This means that each (or all) targets can be isolated from the serial bus, the implications are significant. The original intent was to allow boot loading with a point to point full duplex mode (e.g. target with optiboot/xboot and the host running avrdude). The reason Arduino Uno is amazing is that it allows boot loading a new executable binary image over a severely goofed up the bare metal application, the rpubus tries to retain the nearly bulletproof upload. 
+The shield has a bus manager, through its example firmware is ongoing. It has access to enable/disable each transceiver receiver and/or driver. This means that each (or all) targets can be isolated from the serial bus, the implications are significant. The original intent was to allow boot loading with a point to point full duplex mode (e.g. target with optiboot/xboot and the host running avrdude). The reason Arduino Uno is amazing is that it allows boot loading a new executable binary image over a severely goofed up bare metal application, the rpubus tries to retain the nearly bulletproof upload. 
 
 
 ## Transceiver (RS-485)
@@ -224,15 +224,6 @@ SBC SD Card [corruption] seems to happen when the SD card is doing wear leveling
 
 ## Security
 
-One lesson I understand is to bootload bare metal over links that cannot have adversaries in the middle.
+Do not bootload bare metal over links that can have adversaries in the middle.
 
 
-## Compiling
-
-To prevent heap usage and its fragmentation on the AVR I use C and avoid the malloc function. This means only the stack and static memory is used. 
-
-The AVR has a single clock domain (for the most part), so the GPIO, peripherals and flash memory operate in a predictable and repeatable way. That is to say, an AVR will pull an instruction from flash and run it to change an output in a predictable consistent way. A faster machine may need to buffer instructions from flash and will experience timing variations from branch test that follows a path into an empty instruction cache. There are other clock domain concerns that cause timing variability in fast devices that run with multiple clock domains (e.g. see [memory barrier]), but the point is that AVR is simple.
-
-[memory barrier]: https://en.wikipedia.org/wiki/Memory_barrier
-
-When a task is small and/or simple enough to be done with an AVR it takes less time and effort to just use an AVR. It uses the same GCC toolchain as the big boys (GCC also does x86, ARM, MIPS...), but the AVR is a simple device with a fraction of the documentation to understand (and the garden ain't going to eat itself... or wait actually it sort of does).
