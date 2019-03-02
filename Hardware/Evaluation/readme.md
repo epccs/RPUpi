@@ -9,6 +9,7 @@ This shows the setup and methods used for evaluation of RPUpi.
 
 1. ^4 I2C1 Checked With Raspberry Pi Zero
 1. ^4 SPI 2MHz Checked With Raspberry Pi Zero
+1. ^3 Life Test
 1. ^3 SPI Interface
 1. ^3 Power Data
 1. ^3 Bootload Remote AVR
@@ -165,6 +166,23 @@ AD F0
 ``` 
 
 The maximum speed seen is 2MegHz.
+
+
+## ^3 Life Test
+
+A Pi Zero has been in operation on a RPUlux from April 2018 to March 2019. 
+
+![RPUpi^3 with Zero on RPUlux](./16197^3,PiZeroOnRPUlux^1.jpg "RPUpi^3 with Zero on RPUlux")
+
+An SD card failed after an OS update in June 2018 but it was replaced and has operated fine since. The card was a PNY 16GB Prime microSD with marking C10 and A0577 (PN:P-SDU16GU160G-GE)
+
+https://www.newegg.com/Product/Product.aspx?Item=9SIAJ628HH6760
+
+It was a low cost SD card.
+
+![Corrupt SD](./corrupt_sd_from_raspberry_pi.png "Corrupt SD")
+
+There are industrially rated SD cards if needed, but as a rule, don't use the single board computer to keep important data. Figure out a way to push the data into a reliable data storage system. Another option may be to use redundant SBC and keep the data on them synchronizing.
 
 
 ## ^3 SPI Interface

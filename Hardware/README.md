@@ -52,8 +52,8 @@ This board connects a Pi Zero [W] to a multi-drop serial bus and a control board
 
 ```
         ^5  Done: 
-            WIP: 
-            Todo: Design, Layout, BOM, Review*, Order Boards, Assembly, Testing, Evaluation.
+            WIP: Design, 
+            Todo: Layout, BOM, Review*, Order Boards, Assembly, Testing, Evaluation.
             *during review the Design may change without changing the revision.
             AVR's nSS should goto R-Pi's nCE00 that was what was tested on RPUadpt.
 
