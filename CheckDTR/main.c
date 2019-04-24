@@ -1,23 +1,22 @@
-/* RPUpi CheckDTR for hardware testing
- * Copyright (C) 2016 Ronald Sutherland
- *
- * This Library is free software: you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as published by
- * the Free Software Foundation, either version 3 of the License, or
- * (at your option) any later version.
- *
- * This Library is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU General Public License for more details.
- *
- * You should have received a copy of the GNU General Public License 
- * along with the Arduino DigitalIO Library.  If not, see
- * <http://www.gnu.org/licenses/>.
- *
- * story: first RPUadpt^3 board had a little whisker of solder between DTR_RXD and DTR_TXD
- * three days was spent chasing the ghost.
- */ 
+/* CheckDTR for hardware testing on RPUpi
+ Copyright (C) 2016 Ronald Sutherland
+
+This program is free software; you can redistribute it and/or
+modify it under the terms of the GNU General Public License
+as published by the Free Software Foundation; either version 2
+of the License, or (at your option) any later version.
+
+This program is distributed in the hope that it will be useful,
+but WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+GNU General Public License for more details.
+
+For a copy of the GNU General Public License use
+http://www.gnu.org/licenses/gpl-2.0.html
+ 
+story: first RPUadpt^3 board had a little bridge of solder between DTR_RXD and DTR_TXD
+three days was spent chasing the ghost.
+*/ 
 
 #include <util/delay.h>
 #include <avr/io.h>

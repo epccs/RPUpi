@@ -10,7 +10,7 @@ This is a list of Test preformed on each RPUpi after assembly.
 1. Basics
 2. Assembly check
 3. IC Solder Test
-4. Bias +5V and Check LDO Regulator
+4. Bias +5V
 5. Set MCU Fuse
 6. Load CheckDTR Firmware
 7. Check Differential Bias
@@ -44,12 +44,14 @@ After assembly check the circuit carefully to make sure all parts are soldered a
 Check continuity between pin and pad by measuring the reverse body diode drop from 0V (aka ground) and all other IC pads not connected to 0V. This value will vary somewhat depending on what the pin does, but there is typically an ESD diode to ground or sometimes a body diode (e.g. open drain MOSFET), thus a value of .4V to .7V is valid to indicate a solder connection. Note the RS485 drivers will show high impedance on the differential lines, so skip those.
 
 
-## Bias +5V and Check LDO Regulator
+## Bias +5V
 
 
 Apply a 30mA current limited (CC mode) supply set at 5V to the +5V (J7 pin 4) and 0V (J7 pin 2) header pins. Check that the input current is for the blank MCU. Turn off power.
 
 ```
+^5 
+{  "I_IN_BLANKMCU_mA":[4.2,] }
 ^4 removed LDO
 {  "I_IN_BLANKMCU_mA":[5.2,] }
 ^3
@@ -81,9 +83,11 @@ make fuse
 
 Note: There is not a bootloader, it just sets fuses.
 
-Disconnect the ICSP tool and measure the input current for 12Mhz crystal at 3.3V. It takes a long time to settle.
+Disconnect the ICSP tool and measure the input current for 12Mhz crystal. It takes a long time to settle.
 
 ```
+^5
+{  "I_IN_MCU_12MHZ_LP-CRYSTAL_mA":[13.8,]}
 ^4
 {  "I_IN_MCU_12MHZ_LP-CRYSTAL_mA":[14.9,]}
 ^3

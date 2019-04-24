@@ -1,4 +1,6 @@
-/* Remote is for bus manager on RPUpi, Host2Remote is for RPUftdi
+/* Remote is a RPUBUS manager firmware
+Copyright (C) 2019 Ronald Sutherland
+
  This program is free software; you can redistribute it and/or
 modify it under the terms of the GNU General Public License
 as published by the Free Software Foundation; either version 2
@@ -57,8 +59,8 @@ static uint8_t i2c1BufferLength = 0;
 static uint8_t i2c1_oldBuffer[TWI1_BUFFER_LENGTH]; //i2c1_old is for SMBus
 static uint8_t i2c1_oldBufferLength = 0;
 
-#define BOOTLOADER_ACTIVE 115000
-#define LOCKOUT_DELAY 120000
+#define BOOTLOADER_ACTIVE 115000UL
+#define LOCKOUT_DELAY 120000UL
 
 // the LED is used to blink status
 #define BLINK_BOOTLD_DELAY 75

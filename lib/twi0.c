@@ -1,19 +1,20 @@
 /*
 AVR asynchronous interrupt-driven TWI/I2C C library 
-Copyright (C) 2018 Ronald Sutherland
+Copyright (C) 2019 Ronald Sutherland
 
-This program is free software; you can redistribute it and/or
-modify it under the terms of the GNU General Public License
-as published by the Free Software Foundation; either version 2
-of the License, or (at your option) any later version.
+    This library is free software; you can redistribute it and/or
+    modify it under the terms of the GNU Lesser General Public
+    License as published by the Free Software Foundation; either
+    version 2.1 of the License, or (at your option) any later version.
 
-This program is distributed in the hope that it will be useful,
-but WITHOUT ANY WARRANTY; without even the implied warranty of
-MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-GNU General Public License for more details.
+    This library is distributed in the hope that it will be useful,
+    but WITHOUT ANY WARRANTY; without even the implied warranty of
+    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+    Lesser General Public License for more details.
 
-For a copy of the GNU General Public License use
-http://www.gnu.org/licenses/gpl-2.0.html
+    You should have received a copy of the GNU Lesser General Public
+    License along with this library; if not, write to the Free Software
+    Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 
 Original 2006 Nicholas Zambetti 
 Modified in 2012 by Todd Krein (todd@krein.org) to implement repeated starts
@@ -31,8 +32,28 @@ static volatile uint8_t twi0_slarw;
 static volatile uint8_t twi0_sendStop;			// should the transaction end with a stop
 static volatile uint8_t twi0_inRepStart;			// in the middle of a repeated start
 
-static void (*twi0_onSlaveTransmit)(void);
-static void (*twi0_onSlaveReceive)(uint8_t*, int);
+// used to initalize the Transmit functions in case they are not used.
+void transmit0_default(void)
+{
+    return;
+}
+
+typedef void (*PointerToTransmit)(void);
+
+// used to initalize the Receive functions in case they are not used.
+void receive0_default(uint8_t *rxBuffer, int rxBufferIndex)
+{
+    // ignore the received data
+    // the receive event happens once after an I2C stop or repeated-start
+    // that will need the slave to have data ready to transmit
+    // repeated-start is usd for atomic operation e.g. prevents others from using bus 
+    return;
+}
+
+typedef void (*PointerToReceive)(uint8_t*, int);
+
+static PointerToTransmit twi0_onSlaveTransmit = transmit0_default;
+static PointerToReceive twi0_onSlaveReceive = receive0_default;
 
 static uint8_t twi0_masterBuffer[TWI0_BUFFER_LENGTH];
 static volatile uint8_t twi0_masterBufferIndex;

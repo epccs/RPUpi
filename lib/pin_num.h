@@ -1,22 +1,22 @@
 /* DigitalIO Library
- * Copyright (C) 2016 Ronald Sutherland
- *
- * This Library is free software: you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as published by
- * the Free Software Foundation, either version 3 of the License, or
- * (at your option) any later version.
- *
- * This Library is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU General Public License for more details.
- *
- * You should have received a copy of the GNU General Public License
- * along with the DigitalIO Library.  If not, see
- * <http://www.gnu.org/licenses/>.
- *
- * Hacked from William Greiman to work in C with my board
- * Functions are inspired by Wiring from Hernando Barragan
+  Copyright (C) 2019 Ronald Sutherland
+ 
+  This library is free software; you can redistribute it and/or
+  modify it under the terms of the GNU Lesser General Public
+  License as published by the Free Software Foundation; either
+  version 2.1 of the License, or (at your option) any later version.
+
+  This library is distributed in the hope that it will be useful,
+  but WITHOUT ANY WARRANTY; without even the implied warranty of
+  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+  Lesser General Public License for more details.
+
+  You should have received a copy of the GNU Lesser General Public
+  License along with this library; if not, write to the Free Software
+  Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
+ 
+   Hacked from William Greiman to work in C with my board
+   Functions are inspired by Wiring from Hernando Barragan
  */
 #ifndef PinNum_h
 #define PinNum_h
@@ -81,11 +81,17 @@ static const Pin_Map pinMap[NUM_DIGITAL_PINS] = {
 };
 #endif  // defined(__AVR_ATmega328PB__)
 
-void badPinNumber(void) __attribute__((error("Pin number is too large or not a constant")));
-
-static inline __attribute__((always_inline)) void badPinCheck(uint8_t pin) 
+// note: the use of dead code elimination tricks is not standard C. 
+static inline __attribute__((always_inline)) uint8_t badPin(uint8_t pin) 
 {
-    if (pin >= NUM_DIGITAL_PINS) badPinNumber();
+    if (pin >= NUM_DIGITAL_PINS) 
+    {
+        return 1;
+    }
+    else
+    {
+        return 0;
+    }
 }
 
 static inline __attribute__((always_inline))
@@ -110,33 +116,39 @@ void bitWrite(volatile uint8_t* register_addr, uint8_t bit_offset, bool value_fo
 static inline __attribute__((always_inline))
 bool digitalRead(uint8_t pin_num) 
 {
-    badPinCheck(pin_num);
-    return (*pinMap[pin_num].pin >> pinMap[pin_num].bit) & 1;
+    if (!badPin(pin_num)) 
+    {
+        return (*pinMap[pin_num].pin >> pinMap[pin_num].bit) & 1;
+    }
+    else
+    {
+        return 0;
+    }
 }
 
-/* set pin value */
+/* set pin value HIGH and LOW */
 static inline __attribute__((always_inline))
 void digitalWrite(uint8_t pin_num, bool value_for_bit) {
-    badPinCheck(pin_num);
-    bitWrite(pinMap[pin_num].port, pinMap[pin_num].bit, value_for_bit);
+    if (!badPin(pin_num)) bitWrite(pinMap[pin_num].port, pinMap[pin_num].bit, value_for_bit);
 }
 
-/* toggle pin*/
+/* toggle pin number  */
 static inline __attribute__((always_inline))
-void digitalToggle(uint8_t pin) {
-    badPinCheck(pin);
-    // Ckeck if pin is in OUTPUT mode befor changing it
-    if( ( ( (*pinMap[pin].ddr) >> pinMap[pin].bit ) & 1) == OUTPUT )  
+void digitalToggle(uint8_t pin_num) {
+    if (!badPin(pin_num)) 
     {
-        digitalWrite(pin, !digitalRead(pin));
+        // Ckeck if pin is in OUTPUT mode befor changing it
+        if( ( ( (*pinMap[pin_num].ddr) >> pinMap[pin_num].bit ) & 1) == OUTPUT )  
+        {
+            digitalWrite(pin_num, !digitalRead(pin_num));
+        }
     }
 }
 
 /* set pin mode INPUT and OUTPUT */
 static inline __attribute__((always_inline))
 void pinMode(uint8_t pin_num, bool output_mode) {
-    badPinCheck(pin_num);
-    bitWrite(pinMap[pin_num].ddr, pinMap[pin_num].bit, output_mode);
+    if (!badPin(pin_num)) bitWrite(pinMap[pin_num].ddr, pinMap[pin_num].bit, output_mode);
 }
 
 #endif  // DigitalPin_h
