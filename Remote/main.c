@@ -25,6 +25,7 @@ http://www.gnu.org/licenses/gpl-2.0.html
 #include "../lib/uart.h"
 #include "../lib/pin_num.h"
 #include "../lib/pins_board.h"
+#include "rpubus_manager_state.h"
 
 //I2C_ADDRESS slave address is defined in the Makefile use numbers between 0x08 to 0x78
 // RPU_ADDRESS is defined in the Makefile it is used as an ascii characer
@@ -59,45 +60,6 @@ static uint8_t i2c1BufferLength = 0;
 static uint8_t i2c1_oldBuffer[TWI1_BUFFER_LENGTH]; //i2c1_old is for SMBus
 static uint8_t i2c1_oldBufferLength = 0;
 
-#define BOOTLOADER_ACTIVE 115000UL
-#define LOCKOUT_DELAY 120000UL
-
-// the LED is used to blink status
-#define BLINK_BOOTLD_DELAY 75
-#define BLINK_ACTIVE_DELAY 500
-#define BLINK_LOCKOUT_DELAY 2000
-#define BLINK_STATUS_DELAY 200
-
-#define UART_TTL 500
-#define SHUTDOWN_TIME 1000
-
-static unsigned long blink_started_at;
-static unsigned long lockout_started_at;
-static unsigned long uart_started_at;
-static unsigned long bootloader_started_at;
-static unsigned long shutdown_started_at;
-
-static uint8_t bootloader_started;
-static uint8_t host_active;
-static uint8_t localhost_active;
-static uint8_t bootloader_address; 
-static uint8_t lockout_active;
-static uint8_t uart_has_TTL;
-static uint8_t host_is_foreign;
-static uint8_t local_mcu_is_rpu_aware;
-static uint8_t rpu_address;
-static uint8_t write_rpu_address_to_eeprom;
-static uint8_t shutdown_detected;
-static uint8_t shutdown_started;
-
-// status_byt bits
-#define DTR_READBACK_TIMEOUT 0
-#define DTR_I2C_TRANSMIT_FAIL 1
-#define DTR_READBACK_NOT_MATCH 2
-#define HOST_LOCKOUT_STATUS 3
-
-volatile uint8_t status_byt;
-volatile uint8_t uart_output;
 
 // I2C Commands
 #define I2C_COMMAND_TO_READ_RPU_ADDRESS 0

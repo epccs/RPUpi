@@ -3,6 +3,7 @@
 TARGET = Remote
 LIBDIR = ../lib
 OBJECTS = main.o \
+	rpubus_manager_state.o \
 	$(LIBDIR)/uart.o \
 	$(LIBDIR)/timers.o \
 	$(LIBDIR)/twi0.o \

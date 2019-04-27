@@ -310,7 +310,7 @@ testparm
 \\pi1\Samba
 ```
 
-Note the Pi also shows the user home folders but Ubuntu did not, I will ignor those.
+Note the Pi also shows the user home folders, but Ubuntu did not, I will ignore the difference.
 
 
 ## Web Server
@@ -325,23 +325,16 @@ sudo apt-get install apache2
 sudo chown -R www-data:www-data /var/www
 sudo chmod -R 775 /var/www
 sudo usermod -a -G www-data rsutherland
-# samba does not know about the new premission (hint: restart it)
+# samba does not know about the new premission
+sudo service smbd restart
 ```
 
-Symlink to the web files so Samba can share and I can edit them on a Windows machine.
+Symlink to the web files so that Samba can share, and I can edit them on a Windows machine.
 
 ```
 ln -s /var/www /home/rsutherland/Samba/www
 ```
 
-
-## Python 3
-
-Raspian stretch has Python 3 so this is not needed.
-
-```
-sudo apt-get install python3
-```
 
 ## Serial 
 
@@ -374,34 +367,6 @@ sudo usermod -a -G dialout rsutherland
 picocom -b 38400 /dev/ttyAMA0
 ```
 
-If the RPUpi bus manger is loaded with [Remote] firmware, it needs to send a valid bootload address or there is a long timeout (30 second). 
-
-[Remote]: https://github.com/epccs/RPUadpt/tree/master/Remote
-
-On the controller board under the RPUpi, I am working on [PwrMgt] firmware. 
-
-[PwrMgt]: https://github.com/epccs/RPUno/tree/master/PwrMgt
-
-```
-/1/id?
-{"id":{"name":"PwrMgt","desc":"RPUno Board /w atmega328p and LT3652","avr-gcc":"4.9"}}
-/1/iaddr 41
-{"address":"0x29"}
-# i2c command 3 will set the bootload address that is sent when DTR/RTS goes active to the bus manager with Remote firmware
-/1/ibuff 3,49
-{"txBuffer[2]":[{"data":"0x3"},{"data":"0x31"}]}
-/1/iread? 2
-{"rxBuffer":[{"data":"0x3"},{"data":"0x31"}]}
-# i2c command 7 will clear the lockout bit on the bus manager with Remote firmware
-/1/ibuff 7,0
-{"txBuffer[2]":[{"data":"0x7"},{"data":"0x0"}]}
-/1/iread? 2
-# this will cause the bus manage to see the nRTS active and start the bootload cycle.
-# after a delay I can use the RS-422 again.
-```
-
-This is sneaky mode operation on the Remote firmware. In sneaky mode the Pi Zero can set its bus manager lockout bit through the local controller board, it only works after the bus manager is powered up and while the bus has never been made active.
-
 
 ## Packages used for the AVR toolchain
 
@@ -412,9 +377,16 @@ sudo apt-get install git make gcc-avr binutils-avr gdb-avr avr-libc avrdude
 Link the avr includes to the Samba share so I can use intelliSense with VSC from Windows.
 
 ```
-#  link -s(ymbolic) <target> <linkname name>
-ln -s /usr/lib/avr/include /home/rsutherland/Samba/lib/avr-libc/include
-ln -s /usr/lib/gcc/avr /home/rsutherland/Samba/lib/gcc-avr
+# unfortunately, the toolchain does not have a group my user name can be part of
+# so I will just copy the files I need for intelliSense
+mkdir ~/Samba/lib
+mkdir ~/Samba/lib/avr-libc
+#  copy -r(ecursively) <target> <to_target_name>
+cp -r /usr/lib/avr/include /home/rsutherland/Samba/lib/avr-libc/include
+cp -r /usr/lib/gcc/avr /home/rsutherland/Samba/lib/gcc-avr
+# I also like a copy of avrdude.conf
+mkdir ~/Samba/lib/etc
+cp /etc/avrdude.conf /home/rsutherland/Samba/lib/etc/avrdude.conf
 ```
 
 Setup intelliSense with Visual Studio Code 
@@ -530,7 +502,7 @@ The devices at 2a is a ATmega328pb on [RPUadpt] ^6 running [BlinkLED].
 
 ## WiFi Dropout
 
-I am using a [Realtek].
+I am using a [Realtek] on some R-Pi Zero's (e.g. not the W).
 
 [Realtek]: https://www.adafruit.com/products/814
 
@@ -578,7 +550,7 @@ sudo apt-get clean
 
 ## Editor
 
-An editor that will take care of the tab character and no trailing spaces in a Makefile is helpful. I am using [Visual Studio Code] most of the time, but for small changes it is a little heavy. SciTE is an editor I also use, it has a SciTEUser.properties file that I set as follows:
+An editor that will take care of the tab character and no trailing spaces in a Makefile is helpful. I am using [Visual Studio Code] some of the time, but for small changes it is a little heavy. SciTE is an editor I also use, it has a SciTEUser.properties file that I set as follows:
 
 [Visual Studio Code]: https://code.visualstudio.com/
 

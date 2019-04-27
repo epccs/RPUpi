@@ -111,6 +111,9 @@ The program loops through the test. It blinks the red LED to show which test num
 As the firmware loops, the input current can be measured, it should have two distinct levels, one when the DTR pair is driven low and one when the DTR pair is not driven. The blinking LED leaves the DMM unsettled. Turn off the power.
 
 ```
+^5
+{  "DTR_HLF_LD_mA":[49.7,],
+    "DTR_NO_LD_mA":[21.4,] }
 ^4
 {  "DTR_HLF_LD_mA":[35.6,],
     "DTR_NO_LD_mA":[19.9,] }
@@ -129,9 +132,12 @@ Plug a header (or jumper) onto the +5V pin so that IOREF is jumpered to +5V. Plu
 
 Hold down the shutdown switch while running the CheckDTR firmware to set TX_DE and RX_DE high.
 
-Check  that the input current is cycling between 50mA and 35mA. At 50mA the TX driver is driving the TX pair with half load and DTR driver is driving the DTR pair with a half load, while ony the TX pair is driven at 35mA. 
+Check  that the input current is cycling with a lower value and higher value. At the higher value is when the TX driver is driving the TX pair with half load and DTR driver is driving the DTR pair with a half load, while ony the TX pair is driven at the lower value. 
 
 ```
+^5
+{  "DTR_TX_HLF_LD_mA":[78.9,],
+    "TX_HLF_LD_mA":[50.1,] }
 ^4
 {  "DTR_TX_HLF_LD_mA":[50.5,],
     "TX_HLF_LD_mA":[35.0,] }
@@ -150,6 +156,9 @@ NOTE: IOREF J7 pin 4 is not connected
 Connect a RJ45 loopback connector to allow the TX differential pair to drive RX differential pair and measure the input current. The TX driver is now driving 50 Ohms, which is the normal load. Verify that RX has 0V on it now.
 
 ```
+^5
+{  "DTR_HLF_LD_TX_FL_LD_mA":[97.9,],
+    "TX_FL_LD_mA":[69.3,] }
 ^4
 {  "DTR_HLF_LD_TX_FL_LD_mA":[60.8,],
     "TX_FL_LD_mA":[45.7,] }
@@ -165,7 +174,7 @@ Turn off power.
 
 Continuing from previous test, now disconnect TX from ground and Connect it to IOREF, which will disable the TX driver (U2) so that the RX driver (U6) can operate through the RJ45 loopback. Keep the CAT5 RJ45 stub with 100 Ohm RX, TX and DTR pair terminations and the RJ45 loopback connector so the TX pair is looped back to the RX pair. 
 
-Bias PI3V3 (J1 pin 1) with IOREF (The Pi will power this with 3.3V but it will work with the 5V on IOREF for testing).
+Bias PI3V3 (J1 pin 1) with IOREF (The Pi will power this with 3.3V but it will work with the 5V on IOREF).
 
 Connect PI_TX (J1 pin 8) to 0V (J1 pin 6) to cause the RX driver to drive the RX pair. 
 
@@ -176,6 +185,9 @@ Power on 5V supply at 100mA. Hold down the shutdown switch while running the Che
 Measure the supply current when RX is driven and when a DTR half load is added.
 
 ```
+^4
+{  "DTR_HLF_LD_RX_FL_LD_mA":[107.7,],
+    "RX_FL_LD_mA":[79.7,] }
 ^4
 {  "DTR_HLF_LD_RX_FL_LD_mA":[67.8,],
     "RX_FL_LD_mA":[52.0,] }
@@ -192,6 +204,8 @@ Turn off power. Disconnect everything.
 Apply a 30mA current limited (CC mode) supply set at 12.8V to the VIN (J7 pin 1) and 0V (J7 pin 3) header pins. Measure the SMPS providing +5V_2PI (J1 pin 2). Check that the input current is for no load. Turn off power.
 
 ```
+^5
+TBD
 ^4
 {  "VIN@NOLD_mA":[0.2,],
     +5V2PI_V":[4.97*,] }
