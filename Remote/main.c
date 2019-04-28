@@ -44,40 +44,7 @@ const uint8_t EE_IdTable[] PROGMEM =
 #define EE_RPU_ID 40
 #define EE_RPU_ADDRESS 50
 
-void connect_normal_mode(void)
-{
-    // connect the local mcu if it has talked to the rpu manager (e.g. got an address)
-    if(host_is_foreign)
-    {
-        digitalWrite(RX_DE, LOW); // disallow RX pair driver to enable if FTDI_TX is low
-        digitalWrite(RX_nRE, LOW);  // enable RX pair recevior to output to local MCU's RX input
-        if(local_mcu_is_rpu_aware)
-        {
-            digitalWrite(TX_DE, HIGH); // allow TX pair driver to enable if TX (from MCU) is low
-        }
-        else
-        {
-            digitalWrite(TX_DE, LOW); // disallow TX pair driver to enable if TX (from MCU) is low
-        }
-        digitalWrite(TX_nRE, HIGH);  // disable TX pair recevior to output to FTDI_RX input
-    }
 
-     // connect both the local mcu and host/ftdi uart if mcu is rpu aware, otherwise block MCU from using the TX pair
-    else
-    {
-        digitalWrite(RX_DE, HIGH); // allow RX pair driver to enable if FTDI_TX is low
-        digitalWrite(RX_nRE, LOW);  // enable RX pair recevior to output to local MCU's RX input
-        if(local_mcu_is_rpu_aware)
-        {
-            digitalWrite(TX_DE, HIGH); // allow TX pair driver to enable if TX (from MCU) is low
-        }
-        else
-        {
-            digitalWrite(TX_DE, LOW); // disallow TX pair driver to enable if TX (from MCU) is low
-        }
-        digitalWrite(TX_nRE, LOW);  // enable TX pair recevior to output to FTDI_RX input
-    }
-}
 
 void connect_bootload_mode(void)
 {

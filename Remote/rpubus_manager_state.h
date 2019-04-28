@@ -52,4 +52,7 @@ extern uint8_t shutdown_started;
 volatile extern uint8_t status_byt;
 volatile extern uint8_t uart_output;
 
+// rpubus mode setup
+extern void connect_normal_mode(void);
+
 #endif // RPUbus_manager_state_H 
