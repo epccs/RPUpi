@@ -4,6 +4,8 @@ TARGET = Remote
 LIBDIR = ../lib
 OBJECTS = main.o \
 	rpubus_manager_state.o \
+	i2c_cmds.o \
+	smbus_cmds.o \
 	$(LIBDIR)/uart.o \
 	$(LIBDIR)/timers.o \
 	$(LIBDIR)/twi0.o \

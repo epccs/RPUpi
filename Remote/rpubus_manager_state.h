@@ -1,6 +1,17 @@
 #ifndef RPUbus_manager_state_H
 #define RPUbus_manager_state_H
 
+//I2C_ADDRESS slave address is defined in the Makefile use numbers between 0x08 to 0x78
+// RPU_ADDRESS is defined in the Makefile it is used as an ascii characer
+// If the RPU_ADDRESS is defined as '1' then the addrss is 0x31. It may then be used as part of a textual command e.g. /1/id?
+// RPU_HOST_CONNECT is defined in the Makefile and is used as default address sent on DTR pair if FTDI_nDTR toggles
+// byte broadcast on DTR pair when HOST_nDTR (or HOST_nRTS) is no longer active
+#define RPU_HOST_DISCONNECT ~RPU_HOST_CONNECT
+// return to normal mode address sent on DTR pair
+#define RPU_NORMAL_MODE 0x00
+// disconnect and set error mode on DTR pair
+#define RPU_ERROR_MODE 0xFF
+
 #define BOOTLOADER_ACTIVE 115000UL
 #define LOCKOUT_DELAY 120000UL
 
