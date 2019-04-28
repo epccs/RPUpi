@@ -79,3 +79,44 @@ void connect_normal_mode(void)
     }
 }
 
+void connect_bootload_mode(void)
+{
+    // connect the remote host and local mcu
+    if (host_is_foreign)
+    {
+        digitalWrite(RX_DE, LOW); // disallow RX pair driver to enable if FTDI_TX is low
+        digitalWrite(RX_nRE, LOW);  // enable RX pair recevior to output to local MCU's RX input
+        digitalWrite(TX_DE, HIGH); // allow TX pair driver to enable if TX (from MCU) is low
+        digitalWrite(TX_nRE, HIGH);  // disable TX pair recevior to output to FTDI_RX input
+    }
+    
+    // connect the local host and local mcu
+    else
+    {
+        digitalWrite(RX_DE, HIGH); // allow RX pair driver to enable if FTDI_TX is low
+        digitalWrite(RX_nRE, LOW);  // enable RX pair recevior to output to local MCU's RX input
+        digitalWrite(TX_DE, HIGH); // allow TX pair driver to enable if TX (from MCU) is low
+        digitalWrite(TX_nRE, LOW);  // enable TX pair recevior to output to FTDI_RX input
+    }
+}
+
+void connect_lockout_mode(void)
+{
+    // lockout everything
+    if (host_is_foreign)
+    {
+        digitalWrite(RX_DE, LOW); // disallow RX pair driver to enable if FTDI_TX is low
+        digitalWrite(RX_nRE, HIGH);  // disable RX pair recevior to output to local MCU's RX input
+        digitalWrite(TX_DE, LOW); // disallow TX pair driver to enable if TX (from MCU) is low
+        digitalWrite(TX_nRE, HIGH);  // disable TX pair recevior to output to FTDI_RX input
+    }
+    
+    // lockout MCU, but not host
+    else
+    {
+        digitalWrite(RX_DE, HIGH); // allow RX pair driver to enable if FTDI_TX is low
+        digitalWrite(RX_nRE, HIGH);  // disable RX pair recevior to output to local MCU's RX input
+        digitalWrite(TX_DE, LOW); // disallow TX pair driver to enable if TX (from MCU) is low
+        digitalWrite(TX_nRE, LOW);  // enable TX pair recevior to output to FTDI_RX input
+    }
+}

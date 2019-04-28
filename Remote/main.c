@@ -44,50 +44,6 @@ const uint8_t EE_IdTable[] PROGMEM =
 #define EE_RPU_ID 40
 #define EE_RPU_ADDRESS 50
 
-
-
-void connect_bootload_mode(void)
-{
-    // connect the remote host and local mcu
-    if (host_is_foreign)
-    {
-        digitalWrite(RX_DE, LOW); // disallow RX pair driver to enable if FTDI_TX is low
-        digitalWrite(RX_nRE, LOW);  // enable RX pair recevior to output to local MCU's RX input
-        digitalWrite(TX_DE, HIGH); // allow TX pair driver to enable if TX (from MCU) is low
-        digitalWrite(TX_nRE, HIGH);  // disable TX pair recevior to output to FTDI_RX input
-    }
-    
-    // connect the local host and local mcu
-    else
-    {
-        digitalWrite(RX_DE, HIGH); // allow RX pair driver to enable if FTDI_TX is low
-        digitalWrite(RX_nRE, LOW);  // enable RX pair recevior to output to local MCU's RX input
-        digitalWrite(TX_DE, HIGH); // allow TX pair driver to enable if TX (from MCU) is low
-        digitalWrite(TX_nRE, LOW);  // enable TX pair recevior to output to FTDI_RX input
-    }
-}
-
-void connect_lockout_mode(void)
-{
-    // lockout everything
-    if (host_is_foreign)
-    {
-        digitalWrite(RX_DE, LOW); // disallow RX pair driver to enable if FTDI_TX is low
-        digitalWrite(RX_nRE, HIGH);  // disable RX pair recevior to output to local MCU's RX input
-        digitalWrite(TX_DE, LOW); // disallow TX pair driver to enable if TX (from MCU) is low
-        digitalWrite(TX_nRE, HIGH);  // disable TX pair recevior to output to FTDI_RX input
-    }
-    
-    // lockout MCU, but not host
-    else
-    {
-        digitalWrite(RX_DE, HIGH); // allow RX pair driver to enable if FTDI_TX is low
-        digitalWrite(RX_nRE, HIGH);  // disable RX pair recevior to output to local MCU's RX input
-        digitalWrite(TX_DE, LOW); // disallow TX pair driver to enable if TX (from MCU) is low
-        digitalWrite(TX_nRE, LOW);  // enable TX pair recevior to output to FTDI_RX input
-    }
-}
-
 void setup(void) 
 {
     pinMode(LED_BUILTIN, OUTPUT);
@@ -334,7 +290,7 @@ void check_uart(void)
 
         // was this byte sent with the local DTR pair driver, if so the status_byt may need update
         // and the lockout from a local host needs to be treated differently
-        // need to ignore the local host's DTR if getting control from a remote host
+        // need to ignore the local host's nRTS if getting control from a remote host
         if ( uart_has_TTL )
         {
             if(input != uart_output) 

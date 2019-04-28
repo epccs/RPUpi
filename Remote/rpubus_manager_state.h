@@ -54,5 +54,7 @@ volatile extern uint8_t uart_output;
 
 // rpubus mode setup
 extern void connect_normal_mode(void);
+extern void connect_bootload_mode(void);
+extern void connect_lockout_mode(void);
 
 #endif // RPUbus_manager_state_H 
