@@ -14,7 +14,7 @@ This is a list of notes regarding Raspbin (Linux) things for RPUpi.
 1. Python 3
 1. Serial
 1. Packages used for the AVR toolchain
-1. SPI and I2C
+1. SPI, I2C and IO
 1. WiFi Dropout
 1. Package Updates
 1. Editor
@@ -431,7 +431,7 @@ I do not see a way to show VSC how to deal with macros passed from the Makefile 
 ```
 
 
-## SPI and I2C
+## SPI, I2C and IO
 
 Load an [RPUno] (ATmega328p) with [SpiSlv] firmware and use its command line to enable the AVR's SPI so we can test the interface between the Raspberry Pi [SPI] hardware and the AVR. Raspian needs its SPI master driver enabled with [raspi-config].
 
@@ -498,6 +498,10 @@ Continue? [Y/n] Y
 The devices at 2a is a ATmega328pb on [RPUadpt] ^6 running [BlinkLED].
 
 [BlinkLED]: https://github.com/epccs/RPUadpt/tree/master/BlinkLED
+
+Efficient IO with [io_uring] is new in Linux and soon will be on the R-Pi.
+
+[io_uring]: http://kernel.dk/io_uring.pdf
 
 
 ## WiFi Dropout
