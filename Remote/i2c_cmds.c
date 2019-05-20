@@ -26,36 +26,8 @@ Copyright (C) 2019 Ronald Sutherland
 #include "rpubus_manager_state.h"
 #include "i2c_cmds.h"
 
-uint8_t i2c0Buffer[TWI0_BUFFER_LENGTH];
+uint8_t i2c0Buffer[I2C_BUFFER_LENGTH];
 uint8_t i2c0BufferLength = 0;
-
-#define GROUP  4
-#define MGR_CMDS  8
-
-// Prototypes for point 2 multipoint commands
-void fnRdMgrAddr(uint8_t*, int);
-void fnWtMgrAddr(uint8_t*, int);
-void fnRdBootldAddr(uint8_t*, int);
-void fnWtBootldAddr(uint8_t*, int);
-void fnRdShtdnDtct(uint8_t*, int);
-void fnWtShtdnDtct(uint8_t*, int);
-void fnRdStatus(uint8_t*, int);
-void fnWtStatus(uint8_t*, int);
-
-// Prototypes for point 2 point commands
-// TBD
-
-// Prototypes for reserved (e.g. power management?) commands
-// TBD
-
-// Prototypes for test mode commands
-// TBD
-
-/* Dummy function */
-void fnNull(uint8_t* inBytes, int numBytes)
-{
-    return; 
-}
 
 // called when I2C data is received. 
 void receive_i2c_event(uint8_t* inBytes, int numBytes) 
@@ -76,6 +48,8 @@ void receive_i2c_event(uint8_t* inBytes, int numBytes)
     }
     i2c0BufferLength = numBytes;
 
+    if(i2c0BufferLength <= 1) return; // not valid, do nothing just echo.
+
     // mask the group bits (6 and 7) so they are alone then roll those bits to the left so they can be used as an index.
     uint8_t group;
     group = (i2c0Buffer[0] & 0xc0) >> 6;
@@ -85,8 +59,6 @@ void receive_i2c_event(uint8_t* inBytes, int numBytes)
     uint8_t command;
     command = i2c0Buffer[0] & 0x3F;
     if(command >= MGR_CMDS) return; // not valid, do nothing but the echo.
-
-    if(i2c0BufferLength <= 1) return; // not valid, do nothing just echo.
 
     /* Call the command function and return */
     (* pf[group][command])(i2c0Buffer, numBytes);
@@ -189,4 +161,10 @@ void fnRdStatus(uint8_t* i2cBuffer, int numBytes)
 void fnWtStatus(uint8_t* i2cBuffer, int numBytes)
 {
     status_byt = i2cBuffer[1];
+}
+
+/* Dummy function */
+void fnNull(uint8_t* inBytes, int numBytes)
+{
+    return; 
 }
