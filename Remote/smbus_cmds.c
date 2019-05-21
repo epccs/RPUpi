@@ -39,7 +39,7 @@ void receive1_event(uint8_t* inBytes, int numBytes)
     static void (*pf[GROUP][MGR_CMDS])(uint8_t*, int) = 
     {
         {fnRdMgrAddr, fnWtMgrAddr, fnRdBootldAddr, fnWtBootldAddr, fnRdShtdnDtct, fnWtShtdnDtct, fnRdStatus, fnWtStatus},
-        {fnNull, fnNull, fnNull, fnNull, fnNull, fnNull, fnNull, fnNull},
+        {fnWtArduinMode, fnRdArduinMode, fnNull, fnNull, fnNull, fnNull, fnNull, fnNull},
         {fnNull, fnNull, fnNull, fnNull, fnNull, fnNull, fnNull, fnNull},
         {fnNull, fnNull, fnNull, fnNull, fnNull, fnNull, fnNull, fnNull}
     };

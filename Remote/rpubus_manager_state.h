@@ -9,8 +9,8 @@
 #define RPU_HOST_DISCONNECT ~RPU_HOST_CONNECT
 // return to normal mode address sent on DTR pair
 #define RPU_NORMAL_MODE 0x00
-// disconnect and set error mode on DTR pair
-#define RPU_ERROR_MODE 0xFF
+// bootload last forever, or until controller reads address from I2C
+#define RPU_ARDUINO_MODE 0xFF
 
 #define BOOTLOADER_ACTIVE 115000UL
 #define LOCKOUT_DELAY 120000UL
@@ -42,6 +42,8 @@ extern uint8_t rpu_address;
 extern uint8_t write_rpu_address_to_eeprom;
 extern uint8_t shutdown_detected;
 extern uint8_t shutdown_started;
+extern uint8_t arduino_mode_started;
+extern uint8_t arduino_mode;
 
 // status_byt bits
 #define DTR_READBACK_TIMEOUT 0

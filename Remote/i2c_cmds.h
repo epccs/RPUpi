@@ -33,7 +33,8 @@ extern void fnRdStatus(uint8_t*, int);
 extern void fnWtStatus(uint8_t*, int);
 
 // Prototypes for point 2 point commands
-// TBD
+extern void fnWtArduinMode(uint8_t*, int);
+extern void fnRdArduinMode(uint8_t*, int);
 
 // Prototypes for reserved (e.g. power management?) commands
 // TBD

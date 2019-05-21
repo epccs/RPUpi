@@ -36,7 +36,7 @@ void receive_i2c_event(uint8_t* inBytes, int numBytes)
     static void (*pf[GROUP][MGR_CMDS])(uint8_t*, int) = 
     {
         {fnRdMgrAddr, fnWtMgrAddr, fnRdBootldAddr, fnWtBootldAddr, fnRdShtdnDtct, fnWtShtdnDtct, fnRdStatus, fnWtStatus},
-        {fnNull, fnNull, fnNull, fnNull, fnNull, fnNull, fnNull, fnNull},
+        {fnWtArduinMode, fnRdArduinMode, fnNull, fnNull, fnNull, fnNull, fnNull, fnNull},
         {fnNull, fnNull, fnNull, fnNull, fnNull, fnNull, fnNull, fnNull},
         {fnNull, fnNull, fnNull, fnNull, fnNull, fnNull, fnNull, fnNull}
     };
@@ -161,6 +161,38 @@ void fnRdStatus(uint8_t* i2cBuffer, int numBytes)
 void fnWtStatus(uint8_t* i2cBuffer, int numBytes)
 {
     status_byt = i2cBuffer[1];
+}
+
+// I2C command to set arduino_mode
+void fnWtArduinMode(uint8_t* i2cBuffer, int numBytes)
+{
+    if (i2cBuffer[1] == 1)
+    {
+        if (!arduino_mode_started)
+        {
+            uart_started_at = millis();
+            uart_output = RPU_ARDUINO_MODE;
+            printf("%c", uart_output); 
+            uart_has_TTL = 1; // causes host_is_foreign to be false
+            arduino_mode_started = 1; // it is cleared by check_uart where arduino_mode is set
+            arduino_mode = 0; // system wide state is set by check_uart when RPU_ARDUINO_MODE seen
+        } 
+        else
+        {
+            i2cBuffer[1] = 0; // repeated commands are ignored until check_uart is done
+        }
+    }
+    else 
+    {
+        // read the local address to send a byte on DTR for RPU_NORMAL_MODE
+        i2cBuffer[1] = 0; // ignore everything but the command
+    }
+}
+
+// I2C command to read arduino_mode
+void fnRdArduinMode(uint8_t* i2cBuffer, int numBytes)
+{
+    i2cBuffer[1] = arduino_mode;
 }
 
 /* Dummy function */

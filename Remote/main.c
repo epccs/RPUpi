@@ -208,7 +208,7 @@ void check_Bootload_Time(void)
     {
         unsigned long kRuntime = millis() - bootloader_started_at;
         
-        if ( kRuntime > BOOTLOADER_ACTIVE)
+        if (!arduino_mode && (kRuntime > BOOTLOADER_ACTIVE))
         {
             connect_normal_mode();
             host_active =1;
@@ -267,7 +267,7 @@ void check_lockout(void)
 {
     unsigned long kRuntime = millis() - lockout_started_at;
     
-    if ( lockout_active && (kRuntime > LOCKOUT_DELAY))
+    if (!arduino_mode && ( lockout_active && (kRuntime > LOCKOUT_DELAY) ))
     {
         connect_normal_mode();
 
@@ -317,7 +317,13 @@ void check_uart(void)
             lockout_started_at = millis() - LOCKOUT_DELAY;
             bootloader_started_at = millis() - BOOTLOADER_ACTIVE;
             digitalWrite(LED_BUILTIN, LOW);
+            arduino_mode = 0;
             blink_started_at = millis();
+        }
+        else if (input == RPU_ARDUINO_MODE) 
+        {
+            arduino_mode_started = 0;
+            arduino_mode = 1;
         }
         else if (input == rpu_address) // that is my local address
         {

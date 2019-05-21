@@ -40,6 +40,8 @@ uint8_t rpu_address;
 uint8_t write_rpu_address_to_eeprom;
 uint8_t shutdown_detected;
 uint8_t shutdown_started;
+uint8_t arduino_mode_started;
+uint8_t arduino_mode;
 
 volatile uint8_t status_byt;
 volatile uint8_t uart_output;

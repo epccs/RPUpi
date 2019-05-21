@@ -1,26 +1,26 @@
 # Remote
 
-This firmware is for the bus manager on an RPUpi board, it will watch for a byte matching the local RPU_ADDRESS on the DTR pair and when seen reset the local controller placing it in bootloader mode. A non-matching byte will disconnect the RX and TX lines to the local controller and thus place it in lockout mode until a LOCKOUT_DELAY completes or an RPU_NORMAL_MODE byte is seen on the DTR pair.
+This firmware is for the bus manager on an RPUpi board, it will watch for a byte matching the local RPU_ADDRESS on the DTR pair and when seen reset the local controller placing it in bootloader mode. A non-matching byte will disconnect the RX and TX lines from the local controller and be in lockout mode until a LOCKOUT_DELAY completes or an RPU_NORMAL_MODE byte is seen on the DTR pair.
 
 ## Overview
 
-In normal mode, the serial pairs RX and TX are connected through transceivers to the controller board RX and TX pins. While the DTR pair is connected to the bus manager UART and is used to set the system-wide bus state.
+In normal mode, the RX and TX lines (twisted pairs) are connected through transceivers to the controller board RX and TX pins while the DTR pair is connected to the bus manager UART and is used to set the system-wide bus state.
 
-During lockout mode, the serial pairs RX and TX are disconnected at the transceivers from the controller board RX and TX pins. Use LOCKOUT_DELAY to set the time in mSec.
+During lockout mode, the RX and TX serial lines are disconnected at the transceivers from the controller board RX and TX pins. Use LOCKOUT_DELAY to set the time in mSec.
 
-Bootload mode occurs when a byte on the DTR pair matches the RPU_ADDRESS of the shield. It will cause a pulse on the shield reset pin to activate the bootloader on the board the shield is plugged into. After the bootloader is done the shield will run the application which, if it reads the RPU_ADDRESS. will cause the manager to send an RPU_NORMAL_MODE byte on the DTR pair. The RPU_ADDRESS is read with an I2C command from the controller board. If the RPU_ADDRESS is not read the shield will timeout but not connect the RX and TX transceivers to the controller board. Use BOOTLOADER_ACTIVE to set the time in mSec, it nees to be less than LOCKOUT_DELAY.
+Bootload mode occurs when a byte on the DTR pair matches the RPU_ADDRESS of the shield. It will cause a pulse on the reset pin to activate the bootloader on the local microcontroller board. After the bootloader is done, the local microcontroller will run its application, which, if it reads the RPU_ADDRESS will cause the manager to send an RPU_NORMAL_MODE byte on the DTR pair. The RPU_ADDRESS is read with a command from the controller board. If the RPU_ADDRESS is not read, the bus manager will timeout but not connect the RX and TX transceivers to the local controller board. Use BOOTLOADER_ACTIVE to set the time in mSec; it needs to be less than LOCKOUT_DELAY.
 
 The lockout mode occurs when a byte on the DTR pair does not match the RPU_ADDRESS of the manager. It will cause the lockout condition and last for a duration determined by the LOCKOUT_DELAY or when an RPU_NORMAL_MODE byte is seen on the DTR pair.
 
-When nRTS (or nDTR on RPUadpt) are pulled active the bus manager will connect the HOST_TX and HOST_RX lines to the RX and TX pairs, and pull the nCTS (and nDSR) lines active to let the host know it is Ok to send. If the bus is in use the host will remain disconnected from the bus. Note the Remote firmware sets a status bit at startup that prevents the host from connecting until it is cleared with an I2C command.
+When nRTS (or nDTR on RPUadpt) are pulled active the bus manager will connect the HOST_TX and HOST_RX lines to the RX and TX pairs, and pull the nCTS (and nDSR) lines active to let the host know it is Ok to send. If the bus is in use, the host will remain disconnected from the bus. Note the Remote firmware sets a status bit at startup that prevents the host from connecting until it is cleared with an I2C command.
 
-Arduino Mode (Not Done, it is not yet even a work in progress, this is just a list of ideas). Perhaps a sort of permeate bootload mode that the Arduino IDE can connect to. It would need to be enabled by the host. Perhaps a host connected to a local bus manager I2C1 port with a command (yet to be done). The command would send out a byte (on the DTR pair) that enables a sticky_bootload mode (e.g. point to point communication).
+Arduino Mode is a permanent bootload mode so that the Arduino IDE can connect to a specific address (e.g., point to point). It needs to be enabled by I2C or SMBus. The command will cause a byte to be sent on the DTR pair that sets the arduino_mode thus overriding the lockout timeout and the bootload timeout (e.g., lockout and bootload mode are everlasting).
 
-Test Mode (Not Done, it is not yet even a work in progress, this is just a list of ideas). Disable: turn off all transceivers (even the DTR), allows the controller to measure input current. DtrEnable: turn on the DTR transceiver while the manager has a HIGH on its DTR_TXD line, allows the controller to measure input current. nDtrEnable: turn on the DTR transceiver while the manager has a LOW on its DTR_TXD line, allows the controller to measure input current. Rest is TBD.
+Test Mode (Not Done, it is not yet even a work in progress; this is just a list of ideas). Disable: turn off all transceivers (even the DTR), allows the controller to measure input current. DtrEnable: turn on the DTR transceiver while the manager has a HIGH on its DTR_TXD line, enables the controller to measure input current. nDtrEnable: turn on the DTR transceiver while the manager has a LOW on its DTR_TXD line, allows the controller to measure input current. Rest is TBD.
 
 ## Firmware Upload
 
-Use an ICSP tool connected to the bus manager (set the ISP_PORT in Makefile) run 'make isp' and it should compile and then flash the bus manager.
+Use an ICSP tool connected to the bus manager (set the ISP_PORT in Makefile) run 'make' to compile then 'make isp' to flash the bus manager.
 
 ```
 sudo apt-get install make git gcc-avr binutils-avr gdb-avr avr-libc avrdude
@@ -33,23 +33,23 @@ avrdude done.  Thank you.
 
 ## Addressing
 
-The Address '1' on the RPU_BUS is 0x31, (e.g. not 0x1 but the ASCII value for the character).
+The Address '1' on the RPU_BUS is 0x31, (e.g., not 0x1 but the ASCII value for the character).
 
-When HOST_nRTS are pulled active from a host trying to connect to the serial bus the local bus manager will set localhost_active and send the bootloader_address over the DTR pair. If an address received by way of the DTR pair matches the local RPU_ADDRESS the bus manager will enter bootloader mode (marked with bootloader_started), and connect the shield RX/TX to the RS-422 (see connect_bootload_mode() function), all other addresses are locked out. After a LOCKOUT_DELAY time or when a normal mode byte is seen on the DTR pair, the lockout ends and normal mode resumes. The node that has bootloader_started broadcast the return to normal mode byte on the DTR pair when that node has the RPU_ADDRESS read from its bus manager over I2C (otherwise it will time out and not connect the controller RX/TX to serial).
+When HOST_nRTS is pulled active from a host trying to connect to the serial bus, the local bus manager will set localhost_active and send the bootloader_address over the DTR pair. If an address received by way of the DTR pair matches the local RPU_ADDRESS the bus manager will enter bootloader mode (marked with bootloader_started), and connect the shield RX/TX to the RS-422 (see connect_bootload_mode() function), all other addresses are locked out. After a LOCKOUT_DELAY time or when a normal mode byte is seen on the DTR pair, the lockout ends and normal mode resumes. The node that has bootloader_started broadcast the return to normal mode byte on the DTR pair when that node has the RPU_ADDRESS read from its bus manager over I2C (otherwise it will time out and not connect the controller RX/TX to serial).
 
 
 ## Bus Manager Modes
 
-In Normal Mode, the RPU bus manager connects the local MCU node to the RPU bus if it is RPU aware (e.g. ask for RPU_ADDRESS over I2C). Otherwise, it will not connect the local MCU's TX to the bus but does connect RX. The host will be connected unless it is foreign.
+In Normal Mode, the RPU bus manager connects the local MCU node to the RPU bus if it is RPU aware (e.g., ask for RPU_ADDRESS over I2C). Otherwise, it will not attach the local MCU's TX to the bus but does connect RX. The host will be connected unless it is foreign.
 
 In bootload mode, the RPU bus manager connects the local controller to the serial bus. Also, the host will be connected unless it is foreign. It is expected that all other nodes are in lockout mode. Note the BOOTLOADER_ACTIVE delay is less than the LOCKOUT_DELAY, but it needs to be in bootload mode long enough to allow uploading. A slow bootloader will require longer delays.
 
-In lockout mode, if the host is foreign both the local controller and Host are disconnected from the bus, otherwise, the host remains connected.
+In lockout mode, if the host is foreign, both the local controller and Host are disconnected from the bus. Otherwise, the host remains connected.
 
 
-## I2C/TWI Slave
+## I2C and SMBus Slave
 
-The I2C0 address is 0x29 (dec 41) and I2C1 is 0x2A (dec 42). It is organized as an array of commands. Note: the sent data is used to size the reply, so add a byte after the command for the manager to fill in with the reply.
+There are two TWI interfaces one acts as an I2C slave and is used to connect with the local microcontroller, while the other is an SMBus slave and connects with the local host (e.g., an R-Pi.) The commands sent are the same in both cases, but Linux does not like repeated starts or clock stretching so the SMBus read is done as a second bus transaction. I'm not sure the method is correct, but it seems to work, I echo back the previous transaction for an SMBus read. The masters sent (slave received) data is used to size the reply, so add a byte after the command for the manager to fill in with the reply. The I2C address is 0x29 (dec 41) and SMBus is 0x2A (dec 42). It is organized as an array of commands. 
 
 0. read the shields RPU_BUS address and activate normal mode (broadcast if localhost_active).
 1. set the shields RPU_BUS address and write it to EEPROM.
@@ -380,7 +380,7 @@ The Raspberry Pi can bootload a target on the RPU serial bus.
 
 ## Notes
 
-If the program using a serial device (e.g. avrdude) gets sent a SIGINT (Ctrl+C) it may not leave the UART device driver in the proper state (e.g. the DTR/RTS may remain active). One way to clear this is to use modprobe to remove and reload the device driver.
+If the program using a serial device (e.g., avrdude) gets sent a SIGINT (Ctrl+C) it may not leave the USB UART device or its driver in the proper state (e.g., the DTR/RTS may remain active). One way to clear this is to use modprobe to remove and reload the device driver. Hardware UART (e.g., /dev/ttyAMA0) does not have this issue.
 
 ``` 
 # Serial restart (list device drivers)
