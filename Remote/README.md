@@ -18,6 +18,7 @@ Arduino Mode is a permanent bootload mode so that the Arduino IDE can connect to
 
 Test Mode (Not Done, it is not yet even a work in progress; this is just a list of ideas). Disable: turn off all transceivers (even the DTR), allows the controller to measure input current. DtrEnable: turn on the DTR transceiver while the manager has a HIGH on its DTR_TXD line, enables the controller to measure input current. nDtrEnable: turn on the DTR transceiver while the manager has a LOW on its DTR_TXD line, allows the controller to measure input current. Rest is TBD.
 
+
 ## Firmware Upload
 
 Use an ICSP tool connected to the bus manager (set the ISP_PORT in Makefile) run 'make' to compile then 'make isp' to flash the bus manager.

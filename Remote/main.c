@@ -28,21 +28,8 @@ http://www.gnu.org/licenses/gpl-2.0.html
 #include "rpubus_manager_state.h"
 #include "i2c_cmds.h"
 #include "smbus_cmds.h"
+#include "id_in_ee.h"
 
-// If this ID is matched in EEPROM then the rpu_address is taken from EEPROM
-#define EE_RPU_IDMAX 10
-
-const uint8_t EE_IdTable[] PROGMEM =
-{
-    'R',
-    'P',
-    'U',
-    'i',
-    'd',
-    '\0' // null term
-};
-#define EE_RPU_ID 40
-#define EE_RPU_ADDRESS 50
 
 void setup(void) 
 {
@@ -101,28 +88,9 @@ void setup(void)
     
     _delay_ms(50); // wait for UART glitch to clear
     digitalWrite(DTR_DE, HIGH);  // allow DTR pair driver to enable if DTR_TXD is low
-    
-    // check if eeprom ID is valid
-    uint8_t EE_id_valid = 0;
-    for(uint8_t i = 0; i <EE_RPU_IDMAX; i++)
-    {
-        uint8_t id = pgm_read_byte(&EE_IdTable[i]);
-        uint8_t ee_id = eeprom_read_byte((uint8_t*)(i+EE_RPU_ID)); 
-        if (id != ee_id) 
-        {
-            EE_id_valid = 0;
-            break;
-        }
-        
-        if (id == '\0') 
-        {
-            EE_id_valid = 1;
-            break;
-        }
-    }
 
     // Use eeprom value for rpu_address if ID was valid    
-    if ( EE_id_valid )
+    if (check_for_eeprom_id() )
     {
         rpu_address = eeprom_read_byte((uint8_t*)(EE_RPU_ADDRESS));
     }
@@ -369,34 +337,7 @@ void check_uart(void)
     }
 }
 
-void save_rpu_addr_state(void)
-{
-    if (eeprom_is_ready())
-    {
-        // up to first EE_RPU_IDMAX states may be used for writhing an ID to the EEPROM
-        if ( (write_rpu_address_to_eeprom >= 1) && (write_rpu_address_to_eeprom <= EE_RPU_IDMAX) )
-        { // write "RPUadpt\0" at address EE_RPU_ID thru 4A
-            uint8_t value = pgm_read_byte(&EE_IdTable[write_rpu_address_to_eeprom-1]);
-            eeprom_write_byte( (uint8_t *)((write_rpu_address_to_eeprom-1)+EE_RPU_ID), value);
-            
-            if (value == '\0') 
-            {
-                write_rpu_address_to_eeprom = 11;
-            }
-            else
-            {
-                write_rpu_address_to_eeprom += 1;
-            }
-        }
-        
-        if ( (write_rpu_address_to_eeprom == 11) )
-        { // write the rpu address to eeprom address EE_RPU_ADDRESS 
-            uint8_t value = rpu_address;
-            eeprom_write_byte( (uint8_t *)(EE_RPU_ADDRESS), value);
-            write_rpu_address_to_eeprom = 0;
-        }
-    }
-}
+
 
 void check_shutdown(void)
 {

@@ -6,6 +6,7 @@ OBJECTS = main.o \
 	rpubus_manager_state.o \
 	i2c_cmds.o \
 	smbus_cmds.o \
+	id_in_ee.o \
 	$(LIBDIR)/uart.o \
 	$(LIBDIR)/timers.o \
 	$(LIBDIR)/twi0.o \
@@ -69,9 +70,11 @@ isp:
 linuxspi:
 	sudo avrdude -v -p $(MCU) -C +$(LIBDIR)/avrdude/328pb.conf -c linuxspi -P /dev/spidev0.0 -e -U flash:w:$(TARGET).hex -U lock:w:0xef:m
 
+# binutils (e.g. avr-size) is not getting updates (e.g., atmega328pb is missing)
+# I think only Microchip can fix this issue
 $(TARGET).elf: $(OBJECTS)
 	$(CC) $(LDFLAGS) $(TARGET_ARCH) $^ -o $@
-	$(SIZE) -C --mcu=$(MCU) $@
+	$(SIZE) -C --mcu=atmega328p $@
 	rm -f $(TARGET).o $(OBJECTS)
 
 clean: 
