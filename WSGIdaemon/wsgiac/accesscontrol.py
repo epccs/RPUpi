@@ -1,4 +1,5 @@
 ## FIXME: should add Access-Control-Max-Age
+# https://developer.mozilla.org/en-US/docs/Web/HTTP/CORS
 # RonS: basestring was remove in Python 3 replace basestring with str
 
 class AccessControlMiddleware(object):

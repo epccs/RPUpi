@@ -55,7 +55,7 @@ kill -KILL [WSGIdaemon-pid]
 ```
 
 
-## Browser
+## Browser as Client
 
 Place URL in a browser (the host I have the WSGIdaemon running on is at 192.168.0.7)
 
@@ -86,6 +86,31 @@ That is the bus manager I2C address (an I2C slave) on the RPUftdi (same for RPUa
 [i2c-debug]: https://github.com/epccs/RPUno/tree/master/i2c-debug
 
 Next open the "client.html" file as a flat stand-alone HTML sourced from the disk with Edge, Chrome, or Firefox. Make sure to modify the HTML file so that the correct host address is used (e.g. it has to match the WSGIdaemon host.
+
+![client_html](./WSGIdaemon_client_html.png "client html example")
+
+the blue button is from cycle_state, which means the irrigation valve is flowing. The flow count is updated as the cycle_state machine advances. The solenoid control cycle_states that are normally reported are 0,4, and 11 but others can show up and that would be like winning the lottery.
+
+https://github.com/epccs/RPUno/blob/028b808fae9b6b1022a0e60a702f900a3815a00d/Solenoid/solenoid.c#L791
+
+
+## Python as Client
+
+A quick look at Python as the client.
+
+https://2.python-requests.org//en/master/
+
+```Python
+#!/usr/bin/env python3
+import requests
+
+r = requests.get('http://192.168.0.7:8000/?addr=1&cmd=id&q=true')
+if (r.status_code == 200):
+    print( str(r.json()) )
+    print( "id.name=" + str(r.json()["id"]["name"]))
+```
+
+WSGIdaemon turns "?addr=1&cmd=id&q=true" into "/1/id?" and sends that to the AVR. The AVR sends back a JSON reply: {'id': {'name': 'KNL', 'desc': 'RPUno (14140^9) Board /w atmega328p', 'avr-gcc': '5.4.0'}}, which the WSGIdaemon sends back, and requests can turn the json right into a dictionary.
 
 
 ## WSGI Python Referance

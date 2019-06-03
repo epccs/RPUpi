@@ -1,0 +1,81 @@
+#!/bin/bash
+# Copyright (C) 2019  Ronald Steven Sutherland
+#
+# This program is free software; you can redistribute it and/or modify
+# it under the terms of the GNU General Public License as published by
+# the Free Software Foundation; either version 2 of the License, or
+# (at your option) any later version.
+#
+# This program is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU General Public License for more details.
+#
+# You should have received a copy of the GNU General Public License
+# along with this program; if not, write to the Free Software
+# Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
+#
+# To rotate my wifi ssid key on a R-Pi I add  a network with the new psk value to
+# each R-Pi and then when I change the wifi router the R-Pi's switch over as they 
+# try to use there network, so what  I am saying is that this script is not usd.
+#
+## my username is rsutherland
+# cd /home/rsutherland/bin
+# wget https://raw.githubusercontent.com/epccs/RPUpi/master/Testing/wifi_check
+# chmod ugo+x wifi_check
+#
+# Run as a cron job every 5 mins. 
+# https://www.raspberrypi.org/documentation/linux/usage/cron.md
+#
+# */5 * * * * /home/rsutherland/bin/wifi_check
+#
+
+lockfile='/var/run/wifi_check.pid'
+# Interface to test
+wlan='wlan0'
+pingip='192.168.4.1'
+##################################################################
+echo
+echo "Starting WiFi check for $wlan"
+date
+echo
+
+# Check if there is a valid lock file  
+if [ -e $lockfile ]; then
+    # A lockfile exists but is it still valid
+    pid=`cat $lockfile`
+    if kill -0 &>1 > /dev/null $pid; then
+        # it is valid so let it be.
+        #echo "Process still running, lockfile valid"
+        exit 1
+    else
+        # It is an old lockfile, so remove it
+        #echo "Old lockfile, removing lockfile"
+        rm $lockfile
+    fi
+fi
+# set a lock file with our current PID#
+echo $$ > $lockfile
+
+#  perform check
+# echo "Performing network check for $wlan"
+/bin/ping -c 2 -I $wlan $pingip > /dev/null 2> /dev/null
+if [ $? -ge 1 ] ; then
+    echo "Network $wlan connection down! Attempting reconnect."
+    /sbin/ifdown $wlan
+    /bin/sleep 5
+    /sbin/ifup --force $wlan
+# else
+    # echo "Network is Okay"
+fi
+
+echo
+echo "Current Setting:"
+/sbin/ifconfig $wlan | grep "inet addr:"
+echo
+
+# complete, remove lockfile and exit
+rm $lockfile
+exit 0
+
+
