@@ -11,6 +11,10 @@
 #define RPU_NORMAL_MODE 0x00
 // bootload last forever, or until controller reads address from I2C
 #define RPU_ARDUINO_MODE 0xFF
+// test sent on DTR pair
+#define RPU_START_TEST_MODE 0x01
+// end test mode sent on DTR pair
+#define RPU_END_TEST_MODE 0xFE
 
 #define BOOTLOADER_ACTIVE 115000UL
 #define LOCKOUT_DELAY 120000UL
@@ -44,6 +48,9 @@ extern uint8_t shutdown_detected;
 extern uint8_t shutdown_started;
 extern uint8_t arduino_mode_started;
 extern uint8_t arduino_mode;
+extern uint8_t test_mode_started;
+extern uint8_t test_mode;
+extern uint8_t transceiver_state;
 
 // status_byt bits
 #define DTR_READBACK_TIMEOUT 0

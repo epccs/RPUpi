@@ -45,6 +45,9 @@ uint8_t shutdown_detected;
 uint8_t shutdown_started;
 uint8_t arduino_mode_started;
 uint8_t arduino_mode;
+uint8_t test_mode_started;
+uint8_t test_mode;
+uint8_t transceiver_state;
 
 volatile uint8_t status_byt;
 volatile uint8_t uart_output;
@@ -302,6 +305,35 @@ void check_uart(void)
         {
             arduino_mode_started = 0;
             arduino_mode = 1;
+        }
+        else if (input == RPU_START_TEST_MODE) 
+        {
+            // fill transceiver_state with 0:0:TX_nRE:TX_DE:DTR_nRE:DTR_DE:RX_nRE:RX_DE
+            transceiver_state =   (digitalRead(TX_nRE)<<5) | (digitalRead(TX_DE)<<4) | (digitalRead(DTR_nRE)<<3) | (digitalRead(DTR_DE)<<2) | (digitalRead(RX_nRE)<<1) | (digitalRead(RX_DE));
+            
+            // turn off transceiver controls except the DTR recevior
+            digitalWrite(TX_nRE, HIGH);
+            digitalWrite(TX_DE, LOW);
+            // DTR_nRE active would block uart from seeing RPU_END_TEST_MODE
+            digitalWrite(DTR_DE, LOW); 
+            digitalWrite(RX_nRE, HIGH);
+            digitalWrite(RX_DE, LOW);
+
+            test_mode_started = 0;
+            test_mode = 1;
+        }
+        else if (input == RPU_END_TEST_MODE) 
+        {
+            // recover transceiver controls
+            digitalWrite(TX_nRE, ( (transceiver_state>>5) & 0x01) );
+            digitalWrite(TX_DE, ( (transceiver_state>>4) & 0x01) );
+            // DTR_nRE is always active
+            // DTR_DE was made active when the I2C command ran fnEndTestMode()
+            digitalWrite(RX_nRE, ( (transceiver_state>>1) & 0x01) );
+            digitalWrite(RX_DE, ( (transceiver_state) & 0x01) );
+
+            test_mode_started = 0;
+            test_mode = 0;
         }
         else if (input == rpu_address) // that is my local address
         {

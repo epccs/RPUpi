@@ -52,6 +52,8 @@ void setup(void)
     digitalWrite(TX_nRE, LOW);  // enable TX pair recevior to output to FTDI_RX input
     pinMode(DTR_DE, OUTPUT);
     digitalWrite(DTR_DE, HIGH);  // uart startup glitch has been fixed but this was originaly set LOW to block it
+    pinMode(DTR_nRE, OUTPUT);
+    digitalWrite(DTR_nRE, LOW); 
     pinMode(nSS, OUTPUT); // nSS is input to a Open collector buffer used to pull to MCU nRESET low
     digitalWrite(nSS, HIGH); 
     pinMode(SHUTDOWN, INPUT);
@@ -123,13 +125,16 @@ int main(void)
 
     while (1) 
     {
-        blink_on_activate();
-        check_Bootload_Time();
-        check_DTR();
-        check_lockout();
+        if (!test_mode) 
+        {
+            blink_on_activate();
+            check_Bootload_Time();
+            check_DTR();
+            check_lockout();
+            if(write_rpu_address_to_eeprom) save_rpu_addr_state();
+            check_shutdown();
+        }
         check_uart();
-        if(write_rpu_address_to_eeprom) save_rpu_addr_state();
-        check_shutdown();
     }    
 }
 

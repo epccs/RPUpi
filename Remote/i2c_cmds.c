@@ -73,6 +73,14 @@ void transmit_i2c_event(void)
         status_byt &= (1<<DTR_I2C_TRANSMIT_FAIL);
 }
 
+/********* MULTI-POINT MODE ***********
+  *    each manager knows its address.
+  *    each of the multiple controlers has a manager.
+  *    the manager connects the controler to the bus when the address is read.
+  *    each manager has a bootload address.
+  *    the manager broadcast the bootload address when the host serial is active (e.g., nRTS) 
+  *    all managers lockout serial except the address to bootload and the host */
+
 // I2C_COMMAND_TO_READ_RPU_ADDRESS
 void fnRdMgrAddr(uint8_t* inBytes, int numBytes)
 {
@@ -163,6 +171,9 @@ void fnWtStatus(uint8_t* i2cBuffer, int numBytes)
     status_byt = i2cBuffer[1];
 }
 
+/********* PIONT TO POINT MODE ***********
+  *    arduino_mode LOCKOUT_DELAY and BOOTLOADER_ACTIVE last forever when the host RTS toggles   */
+
 // I2C command to set arduino_mode
 void fnWtArduinMode(uint8_t* i2cBuffer, int numBytes)
 {
@@ -193,6 +204,63 @@ void fnWtArduinMode(uint8_t* i2cBuffer, int numBytes)
 void fnRdArduinMode(uint8_t* i2cBuffer, int numBytes)
 {
     i2cBuffer[1] = arduino_mode;
+}
+
+/********* RESERVED ***********
+  *  for PWR_I, PWR_V reading     */
+
+/********* TEST MODE ***********
+  *    trancever control for testing      */
+
+// I2C command to start test_mode
+void fnStartTestMode(uint8_t* i2cBuffer, int numBytes)
+{
+    if (i2cBuffer[1] == 1)
+    {
+        if (!test_mode_started && !test_mode)
+        {
+            uart_started_at = millis();
+            uart_output = RPU_START_TEST_MODE;
+            printf("%c", uart_output); 
+            uart_has_TTL = 1; // causes host_is_foreign to be false
+            test_mode_started = 1; // it is cleared by check_uart where test_mode is set
+        } 
+        else
+        {
+            i2cBuffer[1] = 0; // repeated commands are ignored until check_uart is done
+        }
+    }
+    else 
+    {
+        // read the local address to send a byte on DTR for RPU_NORMAL_MODE
+        i2cBuffer[1] = 0; // ignore everything but the command
+    }
+}
+
+// I2C command to end test_mode
+void fnEndTestMode(uint8_t* i2cBuffer, int numBytes)
+{
+    if (i2cBuffer[1] == 1)
+    {
+        if (!test_mode_started && test_mode)
+        {
+            digitalWrite(DTR_DE, HIGH); //DTR transceiver may be off at this time
+            uart_started_at = millis();
+            uart_output = RPU_END_TEST_MODE;
+            printf("%c", uart_output); 
+            uart_has_TTL = 1; // causes host_is_foreign to be false
+            test_mode_started = 1; // it is cleared by check_uart where test_mode is also cleared
+        } 
+        else
+        {
+            i2cBuffer[1] = 0; // repeated commands are ignored until check_uart is done
+        }
+    }
+    else 
+    {
+        // read the local address to send a byte on DTR for RPU_NORMAL_MODE
+        i2cBuffer[1] = 0; // ignore everything but the command
+    }
 }
 
 /* Dummy function */
