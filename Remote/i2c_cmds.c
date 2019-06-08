@@ -33,7 +33,7 @@ uint8_t i2c0BufferLength = 0;
 void receive_i2c_event(uint8_t* inBytes, int numBytes) 
 {
     // table of pointers to functions that are selected by the i2c cmmand byte
-    static void (*pf[GROUP][MGR_CMDS])(uint8_t*, int) = 
+    static void (*pf[GROUP][MGR_CMDS])(uint8_t*) = 
     {
         {fnRdMgrAddr, fnWtMgrAddr, fnRdBootldAddr, fnWtBootldAddr, fnRdShtdnDtct, fnWtShtdnDtct, fnRdStatus, fnWtStatus},
         {fnWtArduinMode, fnRdArduinMode, fnNull, fnNull, fnNull, fnNull, fnNull, fnNull},
@@ -48,20 +48,32 @@ void receive_i2c_event(uint8_t* inBytes, int numBytes)
     }
     i2c0BufferLength = numBytes;
 
-    if(i2c0BufferLength <= 1) return; // not valid, do nothing just echo.
+    if(i2c0BufferLength <= 1) 
+    {
+        i2c0Buffer[0] = 0xFF; // error code for small size.
+        return; // not valid, do nothing just echo.
+    }
 
     // mask the group bits (6 and 7) so they are alone then roll those bits to the left so they can be used as an index.
     uint8_t group;
     group = (i2c0Buffer[0] & 0xc0) >> 6;
-    // if(group >= GROUP) return; // it can not happen
+     if(group >= GROUP) 
+     {
+         i2c0Buffer[0] = 0xFE; // error code for bad group.
+        return; //this can not happen... but
+     }
 
     // mask the command bits (0..5) so they can be used as an index.
     uint8_t command;
     command = i2c0Buffer[0] & 0x3F;
-    if(command >= MGR_CMDS) return; // not valid, do nothing but the echo.
+    if(command >= MGR_CMDS) 
+    {
+        i2c0Buffer[0] = 0xFD; // error code for bad command.
+        return; // not valid, do nothing but echo error code.
+    }
 
     /* Call the command function and return */
-    (* pf[group][command])(i2c0Buffer, numBytes);
+    (* pf[group][command])(i2c0Buffer);
     return;	
 }
 
@@ -81,10 +93,10 @@ void transmit_i2c_event(void)
   *    the manager broadcast the bootload address when the host serial is active (e.g., nRTS) 
   *    all managers lockout serial except the address to bootload and the host */
 
-// I2C_COMMAND_TO_READ_RPU_ADDRESS
-void fnRdMgrAddr(uint8_t* inBytes, int numBytes)
+// I2C_COMMAND_TO_READ_RPU_ADDRESS and set RPU_NORMAL_MODE
+void fnRdMgrAddr(uint8_t* i2cBuffer)
 {
-    i2c0Buffer[1] = rpu_address; // '1' is 0x31
+    i2cBuffer[1] = rpu_address; // '1' is 0x31
     local_mcu_is_rpu_aware =1; 
     
     // end the local mcu lockout. 
@@ -112,29 +124,35 @@ void fnRdMgrAddr(uint8_t* inBytes, int numBytes)
         }
 }
 
+// I2C_COMMAND_TO_READ_RPU_ADDRESS
+void fnRdMgrAddrQuietly(uint8_t* i2cBuffer)
+{
+    i2cBuffer[1] = rpu_address; // '1' is 0x31
+}
+
 // I2C_COMMAND_TO_SET_RPU_ADDRESS
-void fnWtMgrAddr(uint8_t* i2cBuffer, int numBytes)
+void fnWtMgrAddr(uint8_t* i2cBuffer)
 {
     rpu_address = i2cBuffer[1];
     write_rpu_address_to_eeprom = 1;
 }
 
 // I2C_COMMAND_TO_READ_ADDRESS_SENT_ON_ACTIVE_DTR
-void fnRdBootldAddr(uint8_t* i2cBuffer, int numBytes)
+void fnRdBootldAddr(uint8_t* i2cBuffer)
 {
     // replace data[1] with address sent when HOST_nRTS toggles
     i2cBuffer[1] = bootloader_address;
 }
 
 // I2C_COMMAND_TO_SET_ADDRESS_SENT_ON_ACTIVE_DTR
-void fnWtBootldAddr(uint8_t* i2cBuffer, int numBytes)
+void fnWtBootldAddr(uint8_t* i2cBuffer)
 {
     // set the byte that is sent when HOST_nRTS toggles
     bootloader_address = i2cBuffer[1];
 }
 
 // I2C_COMMAND_TO_READ_SW_SHUTDOWN_DETECTED
-void fnRdShtdnDtct(uint8_t* i2cBuffer, int numBytes)
+void fnRdShtdnDtct(uint8_t* i2cBuffer)
 {
     // when ICP1 pin is pulled  down the host (e.g. R-Pi Zero) should be set up to hault
     i2cBuffer[1] = shutdown_detected;
@@ -143,7 +161,7 @@ void fnRdShtdnDtct(uint8_t* i2cBuffer, int numBytes)
 }
 
 // I2C_COMMAND_TO_SET_SW_FOR_SHUTDOWN
-void fnWtShtdnDtct(uint8_t* i2cBuffer, int numBytes)
+void fnWtShtdnDtct(uint8_t* i2cBuffer)
 {
     // pull ICP1 pin low to hault the host (e.g. Pi Zero on RPUpi)
     if (i2cBuffer[1] == 1)
@@ -160,13 +178,13 @@ void fnWtShtdnDtct(uint8_t* i2cBuffer, int numBytes)
 }
 
 // I2C_COMMAND_TO_READ_STATUS
-void fnRdStatus(uint8_t* i2cBuffer, int numBytes)
+void fnRdStatus(uint8_t* i2cBuffer)
 {
     i2cBuffer[1] = status_byt;
 }
 
 // I2C_COMMAND_TO_SET_STATUS
-void fnWtStatus(uint8_t* i2cBuffer, int numBytes)
+void fnWtStatus(uint8_t* i2cBuffer)
 {
     status_byt = i2cBuffer[1];
 }
@@ -175,7 +193,7 @@ void fnWtStatus(uint8_t* i2cBuffer, int numBytes)
   *    arduino_mode LOCKOUT_DELAY and BOOTLOADER_ACTIVE last forever when the host RTS toggles   */
 
 // I2C command to set arduino_mode
-void fnWtArduinMode(uint8_t* i2cBuffer, int numBytes)
+void fnWtArduinMode(uint8_t* i2cBuffer)
 {
     if (i2cBuffer[1] == 1)
     {
@@ -201,7 +219,7 @@ void fnWtArduinMode(uint8_t* i2cBuffer, int numBytes)
 }
 
 // I2C command to read arduino_mode
-void fnRdArduinMode(uint8_t* i2cBuffer, int numBytes)
+void fnRdArduinMode(uint8_t* i2cBuffer)
 {
     i2cBuffer[1] = arduino_mode;
 }
@@ -213,7 +231,7 @@ void fnRdArduinMode(uint8_t* i2cBuffer, int numBytes)
   *    trancever control for testing      */
 
 // I2C command to start test_mode
-void fnStartTestMode(uint8_t* i2cBuffer, int numBytes)
+void fnStartTestMode(uint8_t* i2cBuffer)
 {
     if (i2cBuffer[1] == 1)
     {
@@ -238,7 +256,7 @@ void fnStartTestMode(uint8_t* i2cBuffer, int numBytes)
 }
 
 // I2C command to end test_mode
-void fnEndTestMode(uint8_t* i2cBuffer, int numBytes)
+void fnEndTestMode(uint8_t* i2cBuffer)
 {
     if (i2cBuffer[1] == 1)
     {
@@ -264,7 +282,7 @@ void fnEndTestMode(uint8_t* i2cBuffer, int numBytes)
 }
 
 /* Dummy function */
-void fnNull(uint8_t* inBytes, int numBytes)
+void fnNull(uint8_t* i2cBuffer)
 {
     return; 
 }

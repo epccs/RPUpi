@@ -15,6 +15,7 @@ For a copy of the GNU General Public License use
 http://www.gnu.org/licenses/gpl-2.0.html
  */ 
 
+#include <util/delay.h>
 #include <avr/io.h>
 #include <avr/eeprom.h>
 #include <avr/pgmspace.h>
@@ -51,7 +52,7 @@ void setup(void)
     pinMode(TX_nRE, OUTPUT);
     digitalWrite(TX_nRE, LOW);  // enable TX pair recevior to output to FTDI_RX input
     pinMode(DTR_DE, OUTPUT);
-    digitalWrite(DTR_DE, HIGH);  // uart startup glitch has been fixed but this was originaly set LOW to block it
+    digitalWrite(DTR_DE, LOW);  // use this to block UART startup glitch
     pinMode(DTR_nRE, OUTPUT);
     digitalWrite(DTR_nRE, LOW); 
     pinMode(nSS, OUTPUT); // nSS is input to a Open collector buffer used to pull to MCU nRESET low
@@ -87,8 +88,8 @@ void setup(void)
 
     sei(); // Enable global interrupts to start TIMER0 and UART
     
-    // _delay_ms(50); // wait for UART glitch to clear
-    // digitalWrite(DTR_DE, HIGH);  // then allow DTR pair driver to enable when DTR_TXD is low
+    _delay_ms(50); // wait for UART glitch to clear
+    digitalWrite(DTR_DE, HIGH);  // then allow DTR pair driver to enable
 
     // Use eeprom value for rpu_address if ID was valid    
     if (check_for_eeprom_id() )

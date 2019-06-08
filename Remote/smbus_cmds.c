@@ -36,9 +36,9 @@ uint8_t smbus_oldBufferLength = 0;
 void receive1_event(uint8_t* inBytes, int numBytes) 
 {
     // table of pointers to functions that are selected by the i2c cmmand byte
-    static void (*pf[GROUP][MGR_CMDS])(uint8_t*, int) = 
+    static void (*pf[GROUP][MGR_CMDS])(uint8_t*) = 
     {
-        {fnRdMgrAddr, fnWtMgrAddr, fnRdBootldAddr, fnWtBootldAddr, fnRdShtdnDtct, fnWtShtdnDtct, fnRdStatus, fnWtStatus},
+        {fnRdMgrAddrQuietly, fnWtMgrAddr, fnRdBootldAddr, fnWtBootldAddr, fnRdShtdnDtct, fnWtShtdnDtct, fnRdStatus, fnWtStatus},
         {fnWtArduinMode, fnRdArduinMode, fnNull, fnNull, fnNull, fnNull, fnNull, fnNull},
         {fnNull, fnNull, fnNull, fnNull, fnNull, fnNull, fnNull, fnNull},
         {fnNull, fnNull, fnNull, fnNull, fnNull, fnNull, fnNull, fnNull}
@@ -56,20 +56,32 @@ void receive1_event(uint8_t* inBytes, int numBytes)
     smbusBufferLength = numBytes;
     // skip commands without data and assume they are for read_i2c_block_data
 
-    if(smbusBufferLength <= 1) return; // not valid, do nothing just echo.
+    if( !(smbusBufferLength > 1) ) 
+    {
+        smbusBuffer[0] = 0xFF; // error code for small size.
+        return; // not valid, do nothing just echo an error code.
+    }
 
     // mask the group bits (6 and 7) so they are alone then roll those bits to the left so they can be used as an index.
     uint8_t group;
     group = (smbusBuffer[0] & 0xc0) >> 6;
-    // if(group >= GROUP) return; // it can not happen
+    if(group >= GROUP) 
+    {
+        smbusBuffer[0] = 0xFE; // error code for bad group.
+        return; //this can not happen... but
+    }
 
     // mask the command bits (0..5) so they can be used as an index.
     uint8_t command;
     command = smbusBuffer[0] & 0x3F;
-    if(command >= MGR_CMDS) return; // not valid, do nothing but the echo.
+    if(command >= MGR_CMDS) 
+    {
+        smbusBuffer[0] = 0xFD; // error code for bad command.
+        return; // not valid, do nothing but echo error code.
+    }
 
-    // Call the command function and return, note these are same as i2c commands
-    (* pf[group][command])(smbusBuffer, smbusBufferLength);
+    // Call the i2c command function and return
+    (* pf[group][command])(smbusBuffer);
     return;	
 }
 

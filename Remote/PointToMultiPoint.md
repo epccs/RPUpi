@@ -244,7 +244,7 @@ picocom -b 38400 /dev/ttyUSB0
 
 ## Raspberry Pi sets status bits
 
-I2C1 can be used by the host to read the local status bits.
+I2C1 can be used by the host to set the local status bits.
 
 0. DTR readback timeout
 1. twi transmit fail 

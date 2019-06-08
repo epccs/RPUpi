@@ -177,36 +177,40 @@ sudo nano /media/rsutherland/rootfs/etc/wpa_supplicant/wpa_supplicant.conf
 On Ubuntu the SD card mounts at /media/username. This is how I want to edit the /etc/wpa_supplicant/wpa_supplicant.conf file.
 
 ```
-#country=GB
-#ctrl_interface=DIR=/var/run/wpa_supplicant GROUP=netdev
-#update_config=1
-
-# bellow are the settings I used
+## to get a copy from another R-Pi, I have to be in the remote shell of the target
+# ssh pi2.local
+# cd ~
+# scp pi1.local:/etc/wpa_supplicant/wpa_supplicant.conf wpa_supplicant.conf
+# sudo cp wpa_supplicant.conf /etc/wpa_supplicant/wpa_supplicant.conf
+# sudo chmod ugo+r,go-w,go-x wpa_supplicant.conf
 ctrl_interface=DIR=/var/run/wpa_supplicant GROUP=netdev
 update_config=1
 country=US
 
 network={
- ssid="EPCCS4"
- psk="yourkeynotmynetworkey"
- key_mgmt=WPA-PSK
- priority=1
+    scan_ssid=1
+	ssid="EPCCS2"
+	psk="yourkey!mynetworkey"
+	key_mgmt=WPA-PSK
+	priority=1
 }
 
+# key rotation first
 network={
- ssid="epccs3"
- psk="yourkeynotmynetworkey"
- key_mgmt=WPA-PSK
- priority=2
+    scan_ssid=1
+	ssid="EPCCS2"
+	psk="yourkeynotmynetworkey"
+	key_mgmt=WPA-PSK
+	priority=2
 }
 
-# scan  to detect a hidden SSID 
+# key rotation second
 network={
- scan_ssid=1
- ssid="EPCCS2"
- psk="yourkeynotmynetworkey"
- key_mgmt=WPA-PSK
- priority=3
+	scan_ssid=1
+	ssid="EPCCS2"
+	psk="yourkeynotmykey"
+	key_mgmt=WPA-PSK
+	priority=3
 }
 ```
 
