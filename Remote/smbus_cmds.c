@@ -41,7 +41,7 @@ void receive1_event(uint8_t* inBytes, int numBytes)
         {fnRdMgrAddrQuietly, fnWtMgrAddr, fnRdBootldAddr, fnWtBootldAddr, fnRdShtdnDtct, fnWtShtdnDtct, fnRdStatus, fnWtStatus},
         {fnWtArduinMode, fnRdArduinMode, fnNull, fnNull, fnNull, fnNull, fnNull, fnNull},
         {fnNull, fnNull, fnNull, fnNull, fnNull, fnNull, fnNull, fnNull},
-        {fnNull, fnNull, fnNull, fnNull, fnNull, fnNull, fnNull, fnNull}
+        {fnStartTestMode, fnEndTestMode, fnNull, fnNull, fnNull, fnNull, fnNull, fnNull}
     };
 
     for(uint8_t i = 0; i < smbusBufferLength; ++i)

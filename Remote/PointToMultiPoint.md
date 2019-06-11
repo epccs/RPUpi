@@ -1,5 +1,16 @@
 # Point To Multi-Point Commands
 
+0..63 (Ox00..0x3F | 0b00000000..0b00111111)
+
+0. read the shields RPU_BUS address and activate normal mode (broadcast if localhost_active).
+1. set the shields RPU_BUS address and write it to EEPROM.
+2. read the address sent when RTS toggles active (e.g. the bootload address).
+3. write the address that will be sent when RTS toggles active (e.g. the bootload address).
+4. read RPUpi shutdown detected (it is from the ICP1 pin which has a weak pull-up to a momentary switch).
+5. set RPUpi shutdown (pull down the ICP1 pin for SHUTDOWN_TIME to cause the host to halt, set shutdown detected).
+6. reads status bits [0:DTR readback timeout, 1:twi transmit fail, 2:DTR readback not match, 3:host lockout].
+7. writes (or clears) status.
+
 
 ## RPU /w i2c-debug read the shield address
 

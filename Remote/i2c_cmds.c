@@ -38,7 +38,7 @@ void receive_i2c_event(uint8_t* inBytes, int numBytes)
         {fnRdMgrAddr, fnWtMgrAddr, fnRdBootldAddr, fnWtBootldAddr, fnRdShtdnDtct, fnWtShtdnDtct, fnRdStatus, fnWtStatus},
         {fnWtArduinMode, fnRdArduinMode, fnNull, fnNull, fnNull, fnNull, fnNull, fnNull},
         {fnNull, fnNull, fnNull, fnNull, fnNull, fnNull, fnNull, fnNull},
-        {fnNull, fnNull, fnNull, fnNull, fnNull, fnNull, fnNull, fnNull}
+        {fnStartTestMode, fnEndTestMode, fnNull, fnNull, fnNull, fnNull, fnNull, fnNull}
     };
 
     // i2c will echo's back what was sent (plus modifications) with transmit event
@@ -242,6 +242,8 @@ void fnStartTestMode(uint8_t* i2cBuffer)
             printf("%c", uart_output); 
             uart_has_TTL = 1; // causes host_is_foreign to be false
             test_mode_started = 1; // it is cleared by check_uart where test_mode is set
+/*******************TEST**************************/
+            i2cBuffer[1] = i2cBuffer[0]; // return the command in the data byte as a test
         } 
         else
         {
@@ -268,6 +270,7 @@ void fnEndTestMode(uint8_t* i2cBuffer)
             printf("%c", uart_output); 
             uart_has_TTL = 1; // causes host_is_foreign to be false
             test_mode_started = 1; // it is cleared by check_uart where test_mode is also cleared
+            i2cBuffer[1] = transceiver_state; // replace the data byte with the transceiver_state.
         } 
         else
         {

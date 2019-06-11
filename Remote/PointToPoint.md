@@ -1,5 +1,9 @@
 # Point To Point Commands
 
+64..127 (Ox40..0x7F | 0b01000000..0b01111111)
+
+64. set arduino_mode which is the number of times LOCKOUT_DELAY and BOOTLOADER_ACTIVE last forever when the host RTS toggles active (should allow Arduino IDE to make a number of p2p connections to the bootload address)
+65. read arduino_mode
 
 ## RPU /w i2c-debug read the shield address
 
