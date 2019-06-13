@@ -4,6 +4,7 @@ Some lessons I learned doing RPUpi.
 
 # Table Of Contents:
 
+1. ^5 SMBus Confusion
 1. ^4 Bootload Speed
 1. ^4 nSS to CE10 WTF
 1. ^3 Connect nSS to SBC CE10
@@ -15,6 +16,15 @@ Some lessons I learned doing RPUpi.
 1. ^1 Pi Tx Pull-Up
 1. ^1 I2C
 1. ^0 U3 Placed Backward
+
+
+## ^5 SMBus Confusion
+
+I have been using the Python write_i2c_block_data and read_i2c_block_data. Originally those were from was lm-sensors.org, but now pimoroni seems to have the best copy I can find:
+
+https://github.com/pimoroni/py-smbus
+
+Looking at the SMBus_read_i2c_block_data, I see nothing about an OFFEST; in fact, I see nothing about OFFSET anywhere so I guess that idea was from looking at the smbus2 implementation which does say it is a drop-in replacement (but it is not). Anyway, it is a command byte, not an offset; it is sent just before the read data bytes start and will break the shit out of things if I don't use a null function (e.g., 255) during the read. 
 
 
 ## ^4 Bootload Speed

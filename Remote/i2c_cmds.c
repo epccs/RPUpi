@@ -42,12 +42,15 @@ void receive_i2c_event(uint8_t* inBytes, int numBytes)
     };
 
     // i2c will echo's back what was sent (plus modifications) with transmit event
-    for(uint8_t i = 0; i < numBytes; ++i)
+    uint8_t i;
+    for(i = 0; i < numBytes; ++i)
     {
         i2c0Buffer[i] = inBytes[i];    
     }
+    if(i < I2C_BUFFER_LENGTH) i2c0Buffer[i+1] = 0; // room for null
     i2c0BufferLength = numBytes;
 
+    // my i2c commands size themselfs with data, so at least two bytes (e.g., cmd + one_data_byte)
     if(i2c0BufferLength <= 1) 
     {
         i2c0Buffer[0] = 0xFF; // error code for small size.

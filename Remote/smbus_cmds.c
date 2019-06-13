@@ -44,19 +44,22 @@ void receive1_event(uint8_t* inBytes, int numBytes)
         {fnStartTestMode, fnEndTestMode, fnNull, fnNull, fnNull, fnNull, fnNull, fnNull}
     };
 
-    for(uint8_t i = 0; i < smbusBufferLength; ++i)
+    uint8_t i;
+    for(i = 0; i < smbusBufferLength; ++i)
     {
-        smbus_oldBuffer[i] = smbusBuffer[i];    
+        smbus_oldBuffer[i] = smbusBuffer[i];
     }
+    if(i < SMBUS_BUFFER_LENGTH) smbus_oldBuffer[i+1] = 0; // room for null
     smbus_oldBufferLength = smbusBufferLength;
-    for(uint8_t i = 0; i < numBytes; ++i)
+    for(i = 0; i < numBytes; ++i)
     {
         smbusBuffer[i] = inBytes[i];    
     }
+    if(i < SMBUS_BUFFER_LENGTH) smbusBuffer[i+1] = 0; // room for null
     smbusBufferLength = numBytes;
-    // skip commands without data and assume they are for read_i2c_block_data
 
-    if( !(smbusBufferLength > 1) ) 
+    // an read_i2c_block_data has a command byte 
+    if( !(smbusBufferLength > 0) ) 
     {
         smbusBuffer[0] = 0xFF; // error code for small size.
         return; // not valid, do nothing just echo an error code.
