@@ -18,6 +18,7 @@ Copyright (C) 2019 Ronald Sutherland
 */
 
 #include <avr/io.h>
+#include <util/delay.h>
 #include "../lib/timers.h"
 #include "../lib/twi1.h"
 #include "../lib/uart.h"
@@ -31,6 +32,7 @@ uint8_t smbusBuffer[SMBUS_BUFFER_LENGTH];
 uint8_t smbusBufferLength = 0;
 uint8_t smbus_oldBuffer[SMBUS_BUFFER_LENGTH]; //i2c1_old is for SMBus
 uint8_t smbus_oldBufferLength = 0;
+uint8_t transmit_data_ready = 0;
 
 // called when SMBus slave has received data
 void receive1_event(uint8_t* inBytes, int numBytes) 
@@ -45,12 +47,31 @@ void receive1_event(uint8_t* inBytes, int numBytes)
     };
 
     uint8_t i;
-    for(i = 0; i < smbusBufferLength; ++i)
+
+    // read_i2c_block_data has a single command byte in its data set
+    // it will write i2c address, the command* byte, and then cause a repeated start
+    // followed by the i2c address (again) and then reading** the data
+    // * clock stretching occures now during the receive 
+    // ** and the transmit events
+    if( (numBytes == 1)  )
     {
-        smbus_oldBuffer[i] = smbusBuffer[i];
+        // transmit event is set up to work from an old buffer, the data it needs is in the current buffer. 
+        if ( (inBytes[0] == smbusBuffer[0]) && (!transmit_data_ready) )
+        {
+            for(i = 0; i < smbusBufferLength; ++i)
+            {
+                smbus_oldBuffer[i] = smbusBuffer[i];
+            }
+            if(i < SMBUS_BUFFER_LENGTH) smbus_oldBuffer[i+1] = 0; // room for null
+            smbus_oldBufferLength = smbusBufferLength;
+            transmit_data_ready = 1;
+        }
+        
+        // the BCM2835 (e.g., R-Pi 0) picks up on a stretched clock only during the second half of the clock cycle
+        _delay_us(10); // busy-wait so the R-Pi can pick up the stretched clock
+        
+        return; // done. Even if command does not match.
     }
-    if(i < SMBUS_BUFFER_LENGTH) smbus_oldBuffer[i+1] = 0; // room for null
-    smbus_oldBufferLength = smbusBufferLength;
     for(i = 0; i < numBytes; ++i)
     {
         smbusBuffer[i] = inBytes[i];    
@@ -65,18 +86,18 @@ void receive1_event(uint8_t* inBytes, int numBytes)
         return; // not valid, do nothing just echo an error code.
     }
 
-    // mask the group bits (6 and 7) so they are alone then roll those bits to the left so they can be used as an index.
+    // mask the group bits (4..7) so they are alone then roll those bits to the left so they can be used as an index.
     uint8_t group;
-    group = (smbusBuffer[0] & 0xc0) >> 6;
+    group = (smbusBuffer[0] & 0xF0) >> 4;
     if(group >= GROUP) 
     {
         smbusBuffer[0] = 0xFE; // error code for bad group.
-        return; //this can not happen... but
+        return; 
     }
 
-    // mask the command bits (0..5) so they can be used as an index.
+    // mask the command bits (0..3) so they can be used as an index.
     uint8_t command;
-    command = smbusBuffer[0] & 0x3F;
+    command = smbusBuffer[0] & 0x0F;
     if(command >= MGR_CMDS) 
     {
         smbusBuffer[0] = 0xFD; // error code for bad command.
@@ -93,4 +114,8 @@ void transmit1_event(void)
 {
     // For SMBus echo the old data from the previous I2C receive event
     twi1_transmit(smbus_oldBuffer, smbus_oldBufferLength);
+    transmit_data_ready = 0;
+    
+    // the BCM2835 (e.g., R-Pi 0) picks up on a stretched clock only during the second half of the clock cycle
+    _delay_us(10); // busy-wait so the R-Pi can pick up the stretched clock
 }

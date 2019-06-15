@@ -1,6 +1,6 @@
 # Point To Multi-Point Commands
 
-0..63 (Ox00..0x3F | 0b00000000..0b00111111)
+0..15 (Ox00..0xF | 0b00000000..0b00001111)
 
 0. read the shields RPU_BUS address and activate normal mode (broadcast if localhost_active).
 1. set the shields RPU_BUS address and write it to EEPROM.
@@ -37,9 +37,8 @@ import smbus
 bus = smbus.SMBus(1)
 #write_i2c_block_data(I2C_ADDR, I2C_COMMAND, DATA)
 #read_i2c_block_data(I2C_ADDR, I2C_COMMAND, NUM_OF_BYTES)
-# use command 255 during the read since a valid command can have undesired effects
 bus.write_i2c_block_data(42, 0, [255])
-print(bus.read_i2c_block_data(42, 255, 2))
+print(bus.read_i2c_block_data(42, 0, 2))
 [0, 49]
 ``` 
 
@@ -95,9 +94,8 @@ import smbus
 bus = smbus.SMBus(1)
 #write_i2c_block_data(I2C_ADDR, I2C_COMMAND, DATA)
 #read_i2c_block_data(I2C_ADDR, I2C_COMMAND, NUM_OF_BYTES)
-# use command 255 during the read since a valid command can have undesired effects
 bus.write_i2c_block_data(42, 2, [255])
-print(bus.read_i2c_block_data(42, 255, 2))
+print(bus.read_i2c_block_data(42, 2, 2))
 [2, 48]
 ``` 
 
@@ -143,9 +141,8 @@ import smbus
 bus = smbus.SMBus(1)
 #write_i2c_block_data(I2C_ADDR, I2C_COMMAND, DATA)
 #read_i2c_block_data(I2C_ADDR, I2C_COMMAND, NUM_OF_BYTES)
-# use command 255 during the read since a valid command can have undesired effects
 bus.write_i2c_block_data(42, 3, [50])
-print(bus.read_i2c_block_data(42,255, 2))
+print(bus.read_i2c_block_data(42, 3, 2))
 [3, 50]
 ``` 
 
@@ -225,9 +222,8 @@ import smbus
 bus = smbus.SMBus(1)
 #write_i2c_block_data(I2C_ADDR, I2C_COMMAND, DATA)
 #read_i2c_block_data(I2C_ADDR, I2C_COMMAND, NUM_OF_BYTES)
-# use command 255 during the read since a valid command can have undesired effects
 bus.write_i2c_block_data(42, 6, [255])
-print(bus.read_i2c_block_data(42,255, 2))
+print(bus.read_i2c_block_data(42, 6, 2))
 [6, 8]
 ``` 
 
@@ -268,9 +264,8 @@ import smbus
 bus = smbus.SMBus(1)
 #write_i2c_block_data(I2C_ADDR, I2C_COMMAND, DATA)
 #read_i2c_block_data(I2C_ADDR, I2C_COMMAND, NUM_OF_BYTES)
-# use command 255 during the read since a valid command can have undesired effects
 bus.write_i2c_block_data(42, 7, [0])
-print(bus.read_i2c_block_data(42,255, 2))
+print(bus.read_i2c_block_data(42, 7, 2))
 [7, 0]
 exit()
 picocom -b 38400 /dev/ttyAMA0

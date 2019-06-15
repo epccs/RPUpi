@@ -24,7 +24,63 @@ I have been using the Python write_i2c_block_data and read_i2c_block_data. Origi
 
 https://github.com/pimoroni/py-smbus
 
-Looking at the SMBus_read_i2c_block_data, I see nothing about an OFFEST; in fact, I see nothing about OFFSET anywhere so I guess that idea was from looking at the smbus2 implementation which does say it is a drop-in replacement (but it is not). Anyway, it is a command byte, not an offset; it is sent just before the read data bytes start and will break the shit out of things if I don't use a null function (e.g., 255) during the read. 
+Looking at the SMBus_read_i2c_block_data, I see nothing about an OFFEST; in fact, I see nothing about OFFSET anywhere so I guess that idea was from looking at the smbus2 implementation which does say it is a drop-in replacement (but it is not). Anyway, it is a command byte, not an offset; it is sent as data just before a repeated start after which the data bytes are read. 
+
+This is an example of reading a 32bit value from an SMBus device with Wire that I found.
+
+```
+uint32_t read32u(uint8_t device_comand)
+{
+	uint32_t registerValue;
+      Wire.beginTransmission(I2C_Address);
+	Wire.write(device_comand);
+	Wire.endTransmission();
+	Wire.requestFrom(I2C_Address,4,true);
+	registerValue = Wire.read();
+        registerValue |= (Wire.read()<<8);
+        registerValue |= (Wire.read() << 16);
+        registerValue |= (Wire.read() << 24);
+	Wire.endTransmission();
+        return registerValue;
+}
+```
+
+I think that has some clues of how write_i2c_block_data(42, 192, [1]) may work. My think is that it does this.
+
+``` 
+/1/iaddr 42
+{"address":"0x2A"}
+/1/ibuff 192,1
+{"txBuffer[2]":[{"data":"0xC0"},{"data":"0x01"}]}
+/1/iwrite
+{"returnCode":"success"}
+```
+
+So device command 192 has been given a byte of data [1]. 
+
+```
+/1/ibuff 192
+{"txBuffer[2]":[{"data":"0xC0"}]}
+/1/iread? 2
+{"rxBuffer":[{"data":"0xC0"},{"data":"0x01"}]}
+```
+
+That should be like read_i2c_block_data(42, 192, 2). Unfortunately, the return value is [64,0x1]. I am starting to think that keeping the command byte to less than 127 could help. 
+
+Linux notest:
+
+https://www.kernel.org/doc/Documentation/i2c/dev-interface
+
+https://git.kernel.org/pub/scm/linux/kernel/git/torvalds/linux.git/plain/Documentation/i2c/smbus-protocol
+
+Some R-Pi notes:
+
+https://www.raspberrypi.org/forums/viewtopic.php?f=44&t=15840&start=25
+
+https://www.raspberrypi.org/forums/viewtopic.php?p=146272
+
+Known bug; the BCM2835 (e.g., R-Pi 0) picks up on a stretched clock only during the second half of the clock cycle. Hmm... so I could try a 10uSec delay in the receive event which is what causes clock stretching. I have an RPUno and RPUpi combination that seems to work over the SMBus, however after adding a delay in the slave events the working one has problems now. 
+
 
 
 ## ^4 Bootload Speed

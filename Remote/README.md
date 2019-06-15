@@ -32,6 +32,17 @@ make isp
 avrdude done.  Thank you.
 ```
 
+## R-Pi Prep
+
+```
+sudo apt-get install python-pip python-smbus
+```
+
+https://github.com/raspberrypi/firmware/issues/1103
+
+https://github.com/raspberrypi/firmware/issues/828
+
+
 ## Addressing
 
 The Address '1' on the RPU_BUS is 0x31, (e.g., not 0x1 but the ASCII value for the character).

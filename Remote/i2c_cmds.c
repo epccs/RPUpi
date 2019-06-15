@@ -57,18 +57,18 @@ void receive_i2c_event(uint8_t* inBytes, int numBytes)
         return; // not valid, do nothing just echo.
     }
 
-    // mask the group bits (6 and 7) so they are alone then roll those bits to the left so they can be used as an index.
+    // mask the group bits (4..7) so they are alone then roll those bits to the left so they can be used as an index.
     uint8_t group;
-    group = (i2c0Buffer[0] & 0xc0) >> 6;
+    group = (i2c0Buffer[0] & 0xF0) >> 4;
      if(group >= GROUP) 
      {
          i2c0Buffer[0] = 0xFE; // error code for bad group.
-        return; //this can not happen... but
+        return; 
      }
 
-    // mask the command bits (0..5) so they can be used as an index.
+    // mask the command bits (0..3) so they can be used as an index.
     uint8_t command;
-    command = i2c0Buffer[0] & 0x3F;
+    command = i2c0Buffer[0] & 0x0F;
     if(command >= MGR_CMDS) 
     {
         i2c0Buffer[0] = 0xFD; // error code for bad command.
@@ -245,8 +245,6 @@ void fnStartTestMode(uint8_t* i2cBuffer)
             printf("%c", uart_output); 
             uart_has_TTL = 1; // causes host_is_foreign to be false
             test_mode_started = 1; // it is cleared by check_uart where test_mode is set
-/*******************TEST**************************/
-            i2cBuffer[1] = i2cBuffer[0]; // return the command in the data byte as a test
         } 
         else
         {
