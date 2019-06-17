@@ -33,9 +33,23 @@ uint8_t smbusBufferLength = 0;
 uint8_t smbus_oldBuffer[SMBUS_BUFFER_LENGTH]; //i2c1_old is for SMBus
 uint8_t smbus_oldBufferLength = 0;
 uint8_t transmit_data_ready = 0;
+uint8_t* inBytes_to_handle;
+int smbus_has_numBytes_to_handle;
+
+
 
 // called when SMBus slave has received data
-void receive1_event(uint8_t* inBytes, int numBytes) 
+// minimize clock streatching for R-Pi. 
+// use smbus_has_numBytes_to_handle as smbus flag to run handle routine outside ISR
+void receive_smbus_event(uint8_t* inBytes, int numBytes)
+{
+    inBytes_to_handle = inBytes;
+    smbus_has_numBytes_to_handle = numBytes;
+}
+
+// twi1.c has been modified, so it has an interleaved buffer that allows  
+// the event to put a copy of the pointer where I can use it outside the ISR.
+void handle_smbus_receive(void)
 {
     // table of pointers to functions that are selected by the i2c cmmand byte
     static void (*pf[GROUP][MGR_CMDS])(uint8_t*) = 
@@ -46,17 +60,20 @@ void receive1_event(uint8_t* inBytes, int numBytes)
         {fnStartTestMode, fnEndTestMode, fnNull, fnNull, fnNull, fnNull, fnNull, fnNull}
     };
 
+    int numBytes = smbus_has_numBytes_to_handle; // place value on stack so it will go away when done.
+    smbus_has_numBytes_to_handle = 0; 
+    
     uint8_t i;
 
     // read_i2c_block_data has a single command byte in its data set
     // it will write i2c address, the command* byte, and then cause a repeated start
     // followed by the i2c address (again) and then reading** the data
-    // * clock stretching occures now during the receive 
+    // * clock stretching occures during the receive (so handle was done to move this code outside the ISR)
     // ** and the transmit events
     if( (numBytes == 1)  )
     {
         // transmit event is set up to work from an old buffer, the data it needs is in the current buffer. 
-        if ( (inBytes[0] == smbusBuffer[0]) && (!transmit_data_ready) )
+        if ( (inBytes_to_handle[0] == smbusBuffer[0]) && (!transmit_data_ready) )
         {
             for(i = 0; i < smbusBufferLength; ++i)
             {
@@ -66,15 +83,11 @@ void receive1_event(uint8_t* inBytes, int numBytes)
             smbus_oldBufferLength = smbusBufferLength;
             transmit_data_ready = 1;
         }
-        
-        // the BCM2835 (e.g., R-Pi 0) picks up on a stretched clock only during the second half of the clock cycle
-        _delay_us(10); // busy-wait so the R-Pi can pick up the stretched clock
-        
         return; // done. Even if command does not match.
     }
     for(i = 0; i < numBytes; ++i)
     {
-        smbusBuffer[i] = inBytes[i];    
+        smbusBuffer[i] = inBytes_to_handle[i];    
     }
     if(i < SMBUS_BUFFER_LENGTH) smbusBuffer[i+1] = 0; // room for null
     smbusBufferLength = numBytes;
@@ -110,12 +123,9 @@ void receive1_event(uint8_t* inBytes, int numBytes)
 }
 
 // called when SMBus slave has been requested to send data
-void transmit1_event(void) 
+void transmit_smbus_event(void) 
 {
     // For SMBus echo the old data from the previous I2C receive event
     twi1_transmit(smbus_oldBuffer, smbus_oldBufferLength);
     transmit_data_ready = 0;
-    
-    // the BCM2835 (e.g., R-Pi 0) picks up on a stretched clock only during the second half of the clock cycle
-    _delay_us(10); // busy-wait so the R-Pi can pick up the stretched clock
 }

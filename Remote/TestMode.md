@@ -14,11 +14,11 @@ Set test_mode, use the bootload port interface since the RPUbus transceivers are
 
 ``` 
 picocom -b 38400 /dev/ttyUSB0
-/2/iaddr 41
+/1/iaddr 41
 {"address":"0x29"}
-/2/ibuff 48,1
+/1/ibuff 48,1
 {"txBuffer[2]":[{"data":"0x30"},{"data":"0x1"}]}
-/2/iread? 2
+/1/iread? 2
 {"rxBuffer":[{"data":"0x30"},{"data":"0x1"}]}
 ``` 
 
@@ -136,10 +136,8 @@ bus = smbus.SMBus(1)
 #write_i2c_block_data(I2C_ADDR, I2C_COMMAND, DATA)
 #read_i2c_block_data(I2C_ADDR, I2C_COMMAND, NUM_OF_BYTES)
 # end the test_mode data byte is replaced with the recoverd trancever control
-bus.write_i2c_block_data(42, 49, [255])
+bus.write_i2c_block_data(42, 49, [1])
 print(bus.read_i2c_block_data(42, 49, 2))
-[49, 0]
-# R-Pi zero is having a problem most of the time, but some times it works.
 [49, 21]
 bin(21)
 '0b10101'

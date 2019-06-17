@@ -248,13 +248,13 @@ void fnStartTestMode(uint8_t* i2cBuffer)
         } 
         else
         {
-            i2cBuffer[1] = 0; // repeated commands are ignored until check_uart is done
+            i2cBuffer[1] = 2; // repeated commands are ignored until check_uart is done
         }
     }
     else 
     {
         // read the local address to send a byte on DTR for RPU_NORMAL_MODE
-        i2cBuffer[1] = 0; // ignore everything but the command
+        i2cBuffer[1] = 3; // ignore everything but the command
     }
 }
 

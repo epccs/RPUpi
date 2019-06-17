@@ -20,11 +20,15 @@ Some lessons I learned doing RPUpi.
 
 ## ^5 SMBus Confusion
 
-I have been using the Python write_i2c_block_data and read_i2c_block_data. Originally those were from was lm-sensors.org, but now pimoroni seems to have the best copy I can find:
+I have been using the Python write_i2c_block_data and read_i2c_block_data. It is from:
 
-https://github.com/pimoroni/py-smbus
+https://git.kernel.org/pub/scm/utils/i2c-tools/i2c-tools.git/
 
-Looking at the SMBus_read_i2c_block_data, I see nothing about an OFFEST; in fact, I see nothing about OFFSET anywhere so I guess that idea was from looking at the smbus2 implementation which does say it is a drop-in replacement (but it is not). Anyway, it is a command byte, not an offset; it is sent as data just before a repeated start after which the data bytes are read. 
+at this time the read function is at line 519.
+
+https://git.kernel.org/pub/scm/utils/i2c-tools/i2c-tools.git/tree/py-smbus/smbusmodule.c#n519
+
+Looking at the SMBus_read_i2c_block_data function, I see nothing about an OFFEST; in fact, I see nothing about OFFSET anywhere so I guess that idea was from looking at the smbus2 implementation which does say it is a drop-in replacement. Anyway, it is a command byte, not an offset; it is sent as data just before a repeated start after which the slave address is repeated and data bytes are read back. 
 
 This is an example of reading a 32bit value from an SMBus device with Wire that I found.
 
@@ -45,7 +49,7 @@ uint32_t read32u(uint8_t device_comand)
 }
 ```
 
-I think that has some clues of how write_i2c_block_data(42, 192, [1]) may work. My think is that it does this.
+My thinking is that a write_i2c_block_data(42, 192, [1]) does this. 
 
 ``` 
 /1/iaddr 42
@@ -56,7 +60,7 @@ I think that has some clues of how write_i2c_block_data(42, 192, [1]) may work. 
 {"returnCode":"success"}
 ```
 
-So device command 192 has been given a byte of data [1]. 
+And that read_i2c_block_data(42, 192, 2) does this.
 
 ```
 /1/ibuff 192
@@ -65,13 +69,21 @@ So device command 192 has been given a byte of data [1].
 {"rxBuffer":[{"data":"0xC0"},{"data":"0x01"}]}
 ```
 
-That should be like read_i2c_block_data(42, 192, 2). Unfortunately, the return value is [64,0x1]. I am starting to think that keeping the command byte to less than 127 could help. 
+Unfortunately, the return value is [64,0x1] shows that clock-stretching has corrupted that data. It is a known bug; the BCM2835 (e.g., R-Pi 0) picks up on a stretched clock only during the second half of the clock cycle. It only work at the end of I2C-read-ACK-phases (after reading ACK/NACK), not at the beginning. 
+
+![RPiBadI2C](./BCM2835_bad_i2c_clock_stretching.jpg "R-Pi bad clock stretching")
+
+Clock-stretching at the end/directly after an I2C-read-ACK-phase only works correctly, if the slave stretches SCL by more than 0.5 I2C clock periods. 
+
+![RPiGoodI2C](./BCM2835_good_i2c_clock_stretching.jpg "R-Pi good clock stretching")
+
+http://www.advamation.com/knowhow/raspberrypi/rpi-i2c-bug.html
 
 Linux notest:
 
-https://www.kernel.org/doc/Documentation/i2c/dev-interface
-
 https://git.kernel.org/pub/scm/linux/kernel/git/torvalds/linux.git/plain/Documentation/i2c/smbus-protocol
+
+https://www.kernel.org/doc/Documentation/i2c/dev-interface
 
 Some R-Pi notes:
 
@@ -79,8 +91,88 @@ https://www.raspberrypi.org/forums/viewtopic.php?f=44&t=15840&start=25
 
 https://www.raspberrypi.org/forums/viewtopic.php?p=146272
 
-Known bug; the BCM2835 (e.g., R-Pi 0) picks up on a stretched clock only during the second half of the clock cycle. Hmm... so I could try a 10uSec delay in the receive event which is what causes clock stretching. I have an RPUno and RPUpi combination that seems to work over the SMBus, however after adding a delay in the slave events the working one has problems now. 
+Known bug?; the BCM2835 (e.g., R-Pi 0) picks up on a stretched clock only during the second half of the clock cycle. Hmm... so I could try a 10uSec delay in the receive event which is what causes clock stretching. I have an RPUno and RPUpi combination that seems to work over the SMBus, however after adding a delay in the slave events the working one has problems now. 
 
+https://github.com/raspberrypi/firmware/issues/828
+
+```
+dtoverlay=i2c1-bcm2708,combine=no
+```
+
+```
+sudo apt-get install python3-smbus i2c-tools
+```
+
+The package i2c-tools, for exampel "i2cdetect -r -y 1" can scan. Its man page is easy to read on the Linux machine but anyway.
+
+https://git.kernel.org/pub/scm/utils/i2c-tools/i2c-tools.git/tree/tools/i2cdetect.8
+
+```
+     0  1  2  3  4  5  6  7  8  9  a  b  c  d  e  f
+00:          -- -- -- -- -- -- -- -- -- -- -- -- --
+10: -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- --
+20: -- -- -- -- -- -- -- -- -- -- 2a -- -- -- -- --
+30: -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- --
+40: -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- --
+50: -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- --
+60: -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- --
+70: -- -- -- -- -- -- -- --
+```
+
+and "i2cdetect -F 1" will list of functionalities implemented by the adapter
+
+```
+I2C                              yes
+SMBus Quick Command              yes
+SMBus Send Byte                  yes
+SMBus Receive Byte               yes
+SMBus Write Byte                 yes
+SMBus Read Byte                  yes
+SMBus Write Word                 yes
+SMBus Read Word                  yes
+SMBus Process Call               yes
+SMBus Block Write                yes
+SMBus Block Read                 no
+SMBus Block Process Call         no
+SMBus PEC                        yes
+I2C Block Write                  yes
+I2C Block Read                   yes
+```
+
+The next man page I see has "i2cdump -V" and on my R-Pi zero it shows
+
+https://git.kernel.org/pub/scm/utils/i2c-tools/i2c-tools.git/tree/tools/i2cdump.8
+
+```
+i2cdump version 3.1.2
+```
+
+But I don't see anything that looks like what I think SMBus_read_i2c_block_data does.  This "i2cdump 1 0x2a i" does not send a command byte.
+
+The next man page I see is for "i2cget [-f] [-y] i2cbus chip-address [data-address [mode]]"
+
+https://git.kernel.org/pub/scm/utils/i2c-tools/i2c-tools.git/tree/tools/i2cget.8
+
+```
+i2cget 1 0x2a 0x00
+WARNING! This program can confuse your I2C bus, cause data loss and worse!
+I will read from device file /dev/i2c-1, chip address 0x2a, data address
+0x00, using read byte data.
+Continue? [Y/n] Y
+0x00
+```
+
+Another tool is i2ctransfer but it is not yet on the R-Pi.
+
+https://git.kernel.org/pub/scm/utils/i2c-tools/i2c-tools.git/tree/tools/i2ctransfer.8
+
+Also it does not do what I though SMBus_read_i2c_block_data does, sadness.
+
+https://oscarliang.com/raspberry-pi-arduino-connected-i2c/
+
+https://github.com/xmos/vocalfusion-rpi-setup/issues/13
+
+Linux 4.19 will soon be the new OS, but it seems to have new or changed clock stretching problems with these BCM SoC. I need to try and do away with I2C clock stretching. I am going to try interleaving the buffer returned with the receive event, so the user will have to work with it befor the next receive event. The interleaving buffer will need to be added to the twi1.c lib file (e.g., a core file that is complex).
 
 
 ## ^4 Bootload Speed

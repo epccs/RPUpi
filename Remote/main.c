@@ -82,8 +82,8 @@ void setup(void)
 
     // can use with a SMbus bus master that has to deal with constraints imposed by time sharing 
     twi1_setAddress(I2C1_ADDRESS);
-    twi1_attachSlaveTxEvent(transmit1_event); // called when I2C1 slave has been requested to send data
-    twi1_attachSlaveRxEvent(receive1_event); // called when I2C1 slave has received data
+    twi1_attachSlaveTxEvent(transmit_smbus_event); // called when I2C1 slave has been requested to send data
+    twi1_attachSlaveRxEvent(receive_smbus_event); // called when I2C1 slave has received data
     twi1_init(false); // do not use internal pull-up a Raspberry Pi has them on board
 
     sei(); // Enable global interrupts to start TIMER0 and UART
@@ -136,6 +136,7 @@ int main(void)
             check_shutdown();
         }
         check_uart();
+        if (smbus_has_numBytes_to_handle) handle_smbus_receive();
     }    
 }
 

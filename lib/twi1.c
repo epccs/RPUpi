@@ -63,7 +63,11 @@ static uint8_t twi1_txBuffer[TWI1_BUFFER_LENGTH];
 static volatile uint8_t twi1_txBufferIndex;
 static volatile uint8_t twi1_txBufferLength;
 
-static uint8_t twi1_rxBuffer[TWI1_BUFFER_LENGTH];
+//twi1_rxBuffers are for interleaving so the user can work with one outside of the ISR context and minimize clock stretching.
+static uint8_t twi1_rxBufferA[TWI1_BUFFER_LENGTH];
+static uint8_t twi1_rxBufferB[TWI1_BUFFER_LENGTH];
+
+static uint8_t *twi1_rxBuffer;
 static volatile uint8_t twi1_rxBufferIndex;
 
 static volatile uint8_t twi1_error;
@@ -71,6 +75,9 @@ static volatile uint8_t twi1_error;
 /* init twi pins and set bitrate */
 void twi1_init(uint8_t pull_up)
 {
+    // use buffer A to start
+    twi1_rxBuffer = twi1_rxBufferA;
+    
     // initialize state
     twi1_state = TWI1_READY;
     twi1_sendStop = 1;		// default value
@@ -525,7 +532,15 @@ ISR(TWI1_vect)
             }
             // callback to user defined callback
             twi1_onSlaveReceive(twi1_rxBuffer, twi1_rxBufferIndex);
-            // since we submit rx buffer to "wire" library, we can reset it
+            // assume user has the rx buffer so we can swap to the other twi1_rxBuffer and reset the index
+            if (twi1_rxBuffer == twi1_rxBufferA) 
+            {
+                twi1_rxBuffer = twi1_rxBufferB;
+            }
+            else
+            {
+                twi1_rxBuffer = twi1_rxBufferA;
+            }
             twi1_rxBufferIndex = 0;
             break;
 
