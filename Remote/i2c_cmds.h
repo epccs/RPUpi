@@ -33,6 +33,8 @@ extern void fnRdArduinMode(uint8_t*);
 // Prototypes for test mode commands
 extern void fnStartTestMode(uint8_t*);
 extern void fnEndTestMode(uint8_t*);
+extern void fnRdXcvrCntlInTestMode(uint8_t*);
+extern void fnWtXcvrCntlInTestMode(uint8_t*);
 
 /* Dummy function */
 extern  void fnNull(uint8_t*);

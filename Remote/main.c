@@ -26,6 +26,7 @@ http://www.gnu.org/licenses/gpl-2.0.html
 #include "../lib/pin_num.h"
 #include "../lib/pins_board.h"
 #include "rpubus_manager_state.h"
+#include "dtr_transmition.h"
 #include "i2c_cmds.h"
 #include "smbus_cmds.h"
 #include "id_in_ee.h"
@@ -60,6 +61,7 @@ void setup(void)
     pinMode(SHUTDOWN, INPUT);
     digitalWrite(SHUTDOWN, HIGH); // trun on a weak pullup 
 
+    // from rpubus_manager_state.h
     bootloader_address = RPU_HOST_CONNECT; 
     host_active = 0;
     lockout_active = 0;
@@ -67,6 +69,14 @@ void setup(void)
     write_rpu_address_to_eeprom = 0;
     shutdown_detected = 0;
     shutdown_started = 0;
+    arduino_mode_started =0;
+    arduino_mode = 0;
+    test_mode_started = 0;
+    test_mode = 0;
+    transceiver_state = 0;
+    
+    //from smbus_cmds.h
+    smbus_has_numBytes_to_handle = 0; 
 
     //Timer0 Fast PWM mode, Timer1 & Timer2 Phase Correct PWM mode.
     initTimers(); 
@@ -80,14 +90,14 @@ void setup(void)
     twi0_attachSlaveRxEvent(receive_i2c_event); // called when I2C slave has received data
     twi0_init(false); // do not use internal pull-up
 
-    // can use with a SMbus bus master that has to deal with constraints imposed by time sharing 
+    // with interleaved buffer for use with SMbus bus master that does not like clock-stretching (e.g., R-Pi Zero) 
     twi1_setAddress(I2C1_ADDRESS);
-    twi1_attachSlaveTxEvent(transmit_smbus_event); // called when I2C1 slave has been requested to send data
-    twi1_attachSlaveRxEvent(receive_smbus_event); // called when I2C1 slave has received data
+    twi1_attachSlaveTxEvent(transmit_smbus_event); // called when SMBus slave has been requested to send data
+    twi1_attachSlaveRxEvent(receive_smbus_event); // called when SMBus slave has received data
     twi1_init(false); // do not use internal pull-up a Raspberry Pi has them on board
 
     sei(); // Enable global interrupts to start TIMER0 and UART
-    
+
     _delay_ms(50); // wait for UART glitch to clear
     digitalWrite(DTR_DE, HIGH);  // then allow DTR pair driver to enable
 
@@ -100,10 +110,10 @@ void setup(void)
     {
         rpu_address = RPU_ADDRESS;
     }
-    
+
     // is foreign host in control? (ask over the DTR pair)
     uart_has_TTL = 0;
-    
+
 #if defined(DISCONNECT_AT_PWRUP)
     // at power up send a byte on the DTR pair to unlock the bus 
     // problem is if a foreign host has the bus this would be bad
@@ -132,9 +142,9 @@ int main(void)
             check_Bootload_Time();
             check_DTR();
             check_lockout();
-            if(write_rpu_address_to_eeprom) save_rpu_addr_state();
             check_shutdown();
         }
+        if(write_rpu_address_to_eeprom) save_rpu_addr_state();
         check_uart();
         if (smbus_has_numBytes_to_handle) handle_smbus_receive();
     }    

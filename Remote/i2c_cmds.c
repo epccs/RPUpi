@@ -24,6 +24,7 @@ Copyright (C) 2019 Ronald Sutherland
 #include "../lib/pin_num.h"
 #include "../lib/pins_board.h"
 #include "rpubus_manager_state.h"
+#include "dtr_transmition.h"
 #include "i2c_cmds.h"
 
 uint8_t i2c0Buffer[I2C_BUFFER_LENGTH];
@@ -38,7 +39,7 @@ void receive_i2c_event(uint8_t* inBytes, int numBytes)
         {fnRdMgrAddr, fnWtMgrAddr, fnRdBootldAddr, fnWtBootldAddr, fnRdShtdnDtct, fnWtShtdnDtct, fnRdStatus, fnWtStatus},
         {fnWtArduinMode, fnRdArduinMode, fnNull, fnNull, fnNull, fnNull, fnNull, fnNull},
         {fnNull, fnNull, fnNull, fnNull, fnNull, fnNull, fnNull, fnNull},
-        {fnStartTestMode, fnEndTestMode, fnNull, fnNull, fnNull, fnNull, fnNull, fnNull}
+        {fnStartTestMode, fnEndTestMode, fnRdXcvrCntlInTestMode, fnWtXcvrCntlInTestMode, fnNull, fnNull, fnNull, fnNull}
     };
 
     // i2c will echo's back what was sent (plus modifications) with transmit event
@@ -265,7 +266,8 @@ void fnEndTestMode(uint8_t* i2cBuffer)
     {
         if (!test_mode_started && test_mode)
         {
-            digitalWrite(DTR_DE, HIGH); //DTR transceiver may be off at this time
+            digitalWrite(DTR_DE, HIGH); //DTR transceiver may have been turned off during the test
+            digitalWrite(DTR_nRE, LOW); 
             uart_started_at = millis();
             uart_output = RPU_END_TEST_MODE;
             printf("%c", uart_output); 
@@ -282,6 +284,41 @@ void fnEndTestMode(uint8_t* i2cBuffer)
     {
         // read the local address to send a byte on DTR for RPU_NORMAL_MODE
         i2cBuffer[1] = 0; // ignore everything but the command
+    }
+}
+
+// I2C command to read transceiver control bits
+void fnRdXcvrCntlInTestMode(uint8_t* i2cBuffer)
+{
+    if (test_mode)
+    {
+        i2cBuffer[1] = ( (digitalRead(TX_nRE)<<5) | (digitalRead(TX_DE)<<4) | (digitalRead(DTR_nRE)<<3) | (digitalRead(DTR_DE)<<2) | (digitalRead(RX_nRE)<<1) | (digitalRead(RX_DE)) ); 
+    }
+    else 
+    {
+        i2cBuffer[1] = 0; 
+    }
+}
+
+// I2C command to write transceiver control bits
+void fnWtXcvrCntlInTestMode(uint8_t* i2cBuffer)
+{
+    if (test_mode)
+    {
+        // clean up for echo, user should not use bits 6 and 7 but if they do.
+        i2cBuffer[1] = (i2cBuffer[1] & 0x3F);
+        
+        // mask the needed bit and shift it to position zero so digitalWrite can move it to where it needs to go.
+        digitalWrite(TX_nRE, ( (i2cBuffer[1] & (1<<5))>>5 ) );
+        digitalWrite(TX_DE, ( (i2cBuffer[1] & (1<<4))>>4 ) );
+        digitalWrite(DTR_nRE, ( (i2cBuffer[1] & (1<<3))>>3 ) ); // setting this will blind others state change but I need it for testing
+        digitalWrite(DTR_DE, ( (i2cBuffer[1] & (1<<2))>>2 ) );
+        digitalWrite(RX_nRE, ( (i2cBuffer[1] & (1<<1))>>1 ) );
+        digitalWrite(RX_DE,  (i2cBuffer[1] & 1) );
+    }
+    else 
+    {
+        i2cBuffer[1] = 0; 
     }
 }
 

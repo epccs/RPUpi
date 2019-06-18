@@ -35,12 +35,10 @@ avrdude done.  Thank you.
 ## R-Pi Prep
 
 ```
-sudo apt-get install python-pip python-smbus
+sudo apt-get install i2c-tools python3-smbus
+sudo usermod -a -G i2c your_username
+# logout for the change to take
 ```
-
-https://github.com/raspberrypi/firmware/issues/1103
-
-https://github.com/raspberrypi/firmware/issues/828
 
 
 ## Addressing
@@ -52,7 +50,7 @@ When HOST_nRTS is pulled active from a host trying to connect to the serial bus,
 
 ## Bus Manager Modes
 
-In Normal Mode, the RPU bus manager connects the local MCU node to the RPU bus if it is RPU aware (e.g., ask for RPU_ADDRESS over I2C). Otherwise, it will not attach the local MCU's TX to the bus but does connect RX. The host will be connected unless it is foreign.
+In Normal Mode, the RPU bus manager connects the local controller to the RPU bus if it is RPU aware (e.g., ask for RPU_ADDRESS over I2C). Otherwise, it will not attach the local MCU's TX to the bus but does connect RX. The host side of the transceivers connects unless it is foreign (e.g., keep out the locals when foreigners are around).
 
 In bootload mode, the RPU bus manager connects the local controller to the serial bus. Also, the host will be connected unless it is foreign. It is expected that all other nodes are in lockout mode. Note the BOOTLOADER_ACTIVE delay is less than the LOCKOUT_DELAY, but it needs to be in bootload mode long enough to allow uploading. A slow bootloader will require longer delays.
 
@@ -63,7 +61,7 @@ In lockout mode, if the host is foreign, both the local controller and Host are 
 
 There are two TWI interfaces one acts as an I2C slave and is used to connect with the local microcontroller, while the other is an SMBus slave and connects with the local host (e.g., an R-Pi.) The commands sent are the same in both cases, but Linux does not like repeated starts or clock stretching so the SMBus read is done as a second bus transaction. I'm not sure the method is correct, but it seems to work, I echo back the previous transaction for an SMBus read. The masters sent (slave received) data is used to size the reply, so add a byte after the command for the manager to fill in with the reply. The I2C address is 0x29 (dec 41) and SMBus is 0x2A (dec 42). It is organized as an array of commands. 
 
-[Point To Multi-Point] commands 0..63 (Ox00..0x3F | 0b00000000..0b00111111)
+[Point To Multi-Point] commands 0..15 (Ox00..0x0F | 0b00000000..0b00001111)
 
 [Point To Multi-Point]: ./PointToMultiPoint.md
 
@@ -76,20 +74,21 @@ There are two TWI interfaces one acts as an I2C slave and is used to connect wit
 6. reads status bits [0:DTR readback timeout, 1:twi transmit fail, 2:DTR readback not match, 3:host lockout].
 7. writes (or clears) status.
 
-[Point To Point] commands (control unit must not read the manager address or it will set up multi-point) 64..127 (Ox40..0x7F | 0b01000000..0b01111111)
+[Point To Point] commands (control unit must not read the manager address or it will set up multi-point) 64..127 (Ox10..0x1F | 0b00010000..0b00011111)
 
 [Point To Point]: ./PointToPoint.md
 
-64. set arduino_mode 
-65. read arduino_mode
+16. set arduino_mode 
+17. read arduino_mode
 
-reserved (for PWR_I, PWR_V reading) 128..191 (Ox80..0xBF | 0b10000000..0b10111111)
+reserved (for PWR_I, PWR_V reading) 32..47 (Ox20..0x2F | 0b10000000..0b10111111)
 
-test_mode commands (nothing will happen until command 192 is run) 192..254 (OxC0..0xFF | 0b11000000..0b11111111)
+test_mode commands 48..63 (Ox30..0x3F | 0b00110000..0b00111111)
 
-192. save trancever control bits 0:0:TX_nRE:TX_DE:DTR_nRE:DTR_DE:RX_nRE:RX_DE for test_mode.
-193. recover trancever control bits after test_mode.
+48. save trancever control bits 0:0:TX_nRE:TX_DE:DTR_nRE:DTR_DE:RX_nRE:RX_DE for test_mode.
+49. recover trancever control bits after test_mode, and return it value.
 
+[Test Mode]: ./TestMode.md
 
 
 Connect to i2c-debug on an RPUno with an RPU shield using picocom (or ilk). 
@@ -112,14 +111,11 @@ picocom -b 38400 /dev/ttyUSB0
 ```
 
 
-## Raspberry Pi scan the shield address
+## Raspberry Pi to scan the shields SMBus address
 
-I2C1 slave port is for host access. A Raspberry Pi is set up as follows.
+The I2C1 port is for SMBus access. A Raspberry Pi is set up as follows.
 
 ```
-sudo apt-get install i2c-tools python3-smbus
-sudo usermod -a -G i2c rsutherland
-# logout for the change to take
 i2cdetect 1
 WARNING! This program can confuse your I2C bus, cause data loss and worse!
 I will probe file /dev/i2c-1.
@@ -136,22 +132,3 @@ Continue? [Y/n] Y
 70: -- -- -- -- -- -- -- --
 ```
 
-
-## Notes
-
-If the program using a serial device (e.g., avrdude) gets sent a SIGINT (Ctrl+C) it may not leave the USB UART device or its driver in the proper state (e.g., the DTR/RTS may remain active). One way to clear this is to use modprobe to remove and reload the device driver. Hardware UART (e.g., /dev/ttyAMA0) does not have this issue.
-
-``` 
-# Serial restart (list device drivers)
-lsmod | grep usbserial
-# ftdi uses the ftdi_sio driver
-# try to remove the driver
-sudo modprobe -r ftdi_sio
-# then load the driver again
-sudo modprobe ftdi_sio
-# the physcal UART chip will still have DTR/RTS active
-# but picocom can open and release it now to clear the
-# active lines.
-picocom -b 38400 /dev/ttyUSB0
-# C-a, C-x.
-``` 

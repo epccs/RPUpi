@@ -25,12 +25,10 @@
 #define BLINK_LOCKOUT_DELAY 2000
 #define BLINK_STATUS_DELAY 200
 
-#define UART_TTL 500
 #define SHUTDOWN_TIME 1000
 
 extern unsigned long blink_started_at;
 extern unsigned long lockout_started_at;
-extern unsigned long uart_started_at;
 extern unsigned long bootloader_started_at;
 extern unsigned long shutdown_started_at;
 
@@ -59,7 +57,6 @@ extern uint8_t transceiver_state;
 #define HOST_LOCKOUT_STATUS 3
 
 volatile extern uint8_t status_byt;
-volatile extern uint8_t uart_output;
 
 // rpubus mode setup
 extern void connect_normal_mode(void);
@@ -67,9 +64,7 @@ extern void connect_bootload_mode(void);
 extern void connect_lockout_mode(void);
 extern void blink_on_activate(void);
 extern void check_Bootload_Time(void);
-extern void check_DTR(void);
 extern void check_lockout(void);
-extern void check_uart(void);
 extern void check_shutdown(void);
 
 #endif // RPUbus_manager_state_H 

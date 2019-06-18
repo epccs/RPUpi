@@ -4,8 +4,11 @@
 
 48. save trancever control bits 0:0:TX_nRE:TX_DE:DTR_nRE:DTR_DE:RX_nRE:RX_DE for test_mode.
 49. recover trancever control bits after test_mode.
-50. read trancever control bits durring test_mode bits, e.g. 0b00101010 is TX_nRE = 1, TX_DE =0, DTR_nRE =1, DTR_DE = 0, RX_nRE =1, RX_DE = 0.
-51. set trancever control bits durring test_mode bits, e.g. 0b00101010 is TX_nRE = 1, TX_DE =0, DTR_nRE =1, DTR_DE = 0, RX_nRE =1, RX_DE = 0.
+50. read trancever control bits durring test_mode, e.g. 0b00101010 is TX_nRE = 1, TX_DE =0, DTR_nRE =1, DTR_DE = 0, RX_nRE =1, RX_DE = 0.
+51. set trancever control bits durring test_mode, e.g. 0b00101010 is TX_nRE = 1, TX_DE =0, DTR_nRE =1, DTR_DE = 0, RX_nRE =1, RX_DE = 0.
+
+
+
 
 
 ## Cmd 48 from a controller /w i2c-debug set transceiver test mode
@@ -22,7 +25,7 @@ picocom -b 38400 /dev/ttyUSB0
 {"rxBuffer":[{"data":"0x30"},{"data":"0x1"}]}
 ``` 
 
-also done on the second I2C channel that I buffer and use SMBus commands
+on the second I2C channel that is for SMBus's i2c block commands
 
 ``` 
 picocom -b 38400 /dev/ttyUSB0
@@ -79,7 +82,7 @@ print(bus.read_i2c_block_data(42, 48, 2))
 [48, 1]
 ``` 
 
-I have the I2C function copy the command byte to the data byte, so it is correct within the I2C function that starts the test_mode. However, somewhere along the line, the command is getting corrupted and that is what gets sent back during the buffered (for SMbus) read. 
+I had picocom in another SSH connection to see how the test mode was working (e.g., it turns off the transceivers and serial stops operating). 
 
 ``` 
 picocom -b 38400 /dev/ttyAMA0
@@ -87,7 +90,7 @@ a
 
 ``` 
 
-Start another SSH session to set transceiver control bits (e.g. command 195) while using picocom to verify they are working.
+Use  command 50 to set the transceiver control bits and check them with picocom.
 
 
 ## Cmd 49 from a controller /w i2c-debug recover after transceiver test
@@ -106,7 +109,7 @@ picocom -b 38400 /dev/ttyUSB0
 {"rxBuffer":[{"data":"0x31"},{"data":"0x15"}]}
 ``` 
 
-also done on the second I2C channel that I use SMBus with
+on the second I2C channel that is for SMBus's i2c block commands
 
 ``` 
 picocom -b 38400 /dev/ttyUSB0
@@ -146,3 +149,103 @@ bin(21)
 The trancever control bits are: 0:0:TX_nRE:TX_DE:DTR_nRE:DTR_DE:RX_nRE:RX_DE
 
 So everything was enabled, it is sort of a stealth mode after power-up, and can allow a host to talk to new controllers on the bus if they don't toggle there RTS lines (e.g., the test case is an R-Pi on an RPUpi shield on an RPUno, all freshly powered.) Stealth mode ends when a byte is seen on the DTR pair, that is what will establish an accurate bus state, so stealth mode is an artifact of laziness after power up and may need to change. 
+
+
+## Cmd 50 from a controller /w i2c-debug read trancever control bits
+
+Read trancever control bits (0:0:TX_nRE:TX_DE:DTR_nRE:DTR_DE:RX_nRE:RX_DE) durring test_mode on bootload port with i2c-debug.
+
+``` 
+picocom -b 38400 /dev/ttyUSB0
+/1/iaddr 41
+{"address":"0x29"}
+/1/ibuff 50,255
+{"txBuffer[2]":[{"data":"0x32"},{"data":"0xFF"}]}
+/1/iread? 2
+{"rxBuffer":[{"data":"0x32"},{"data":"0xTBD"}]}
+``` 
+
+on the second I2C channel that is for SMBus's i2c block commands
+
+``` 
+picocom -b 38400 /dev/ttyUSB0
+/1/iaddr 42
+{"address":"0x2A"}
+/1/ibuff 50,255
+{"txBuffer[2]":[{"data":"0x32"},{"data":"0xFF"}]}
+/1/iwrite
+{"returnCode":"success"}
+/1/ibuff 50
+{"txBuffer[2]":[{"data":"0x32"}]}
+/1/iread? 2
+{"rxBuffer":[{"data":"0x32"},{"data":"0xTBD"}]}
+```
+
+
+## Cmd 50 from a Raspberry Pi read trancever control bits
+
+Read trancever control bits (0:0:TX_nRE:TX_DE:DTR_nRE:DTR_DE:RX_nRE:RX_DE) durring test_mode with an R-Pi over SMBus.
+
+``` 
+python3
+import smbus
+bus = smbus.SMBus(1)
+#write_i2c_block_data(I2C_ADDR, I2C_COMMAND, DATA)
+#read_i2c_block_data(I2C_ADDR, I2C_COMMAND, NUM_OF_BYTES)
+# end the test_mode data byte is replaced with the recoverd trancever control
+bus.write_i2c_block_data(42, 50, [255])
+print(bus.read_i2c_block_data(42, 50, 2))
+[50, TBD]
+``` 
+
+
+## Cmd 51 from a controller /w i2c-debug set trancever control bits
+
+Set trancever control bits (0:0:TX_nRE:TX_DE:DTR_nRE:DTR_DE:RX_nRE:RX_DE) durring test_mode on bootload port with i2c-debug.
+
+``` 
+picocom -b 38400 /dev/ttyUSB0
+/1/iaddr 41
+{"address":"0x29"}
+/1/ibuff 51,38
+{"txBuffer[2]":[{"data":"0x33"},{"data":"0x26"}]}
+/1/iread? 2
+{"rxBuffer":[{"data":"0x33"},{"data":"0x26"}]}
+``` 
+
+0x26 = 0:0:TX_nRE==1:TX_DE==0:DTR_nRE==0:DTR_DE==1:RX_nRE==1:RX_DE==0 e.g., DTR trancever is on.
+
+on the second I2C channel that is for SMBus's i2c block commands
+
+``` 
+picocom -b 38400 /dev/ttyUSB0
+/1/iaddr 42
+{"address":"0x2A"}
+/1/ibuff 51,38
+{"txBuffer[2]":[{"data":"0x33"},{"data":"0x26"}]}
+/1/iwrite
+{"returnCode":"success"}
+/1/ibuff 50
+{"txBuffer[2]":[{"data":"0x33"}]}
+/1/iread? 2
+{"rxBuffer":[{"data":"0x33"},{"data":"0x26"}]}
+```
+
+
+## Cmd 50 from a Raspberry Pi read trancever control bits
+
+Set trancever control bits (0:0:TX_nRE:TX_DE:DTR_nRE:DTR_DE:RX_nRE:RX_DE) durring test_mode with an R-Pi over SMBus.
+
+``` 
+python3
+import smbus
+bus = smbus.SMBus(1)
+#write_i2c_block_data(I2C_ADDR, I2C_COMMAND, DATA)
+#read_i2c_block_data(I2C_ADDR, I2C_COMMAND, NUM_OF_BYTES)
+# end the test_mode data byte is replaced with the recoverd trancever control
+bus.write_i2c_block_data(42, 51, [38])
+print(bus.read_i2c_block_data(42, 51, 2))
+[51, 38]
+``` 
+
+

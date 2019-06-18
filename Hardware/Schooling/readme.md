@@ -172,7 +172,11 @@ https://oscarliang.com/raspberry-pi-arduino-connected-i2c/
 
 https://github.com/xmos/vocalfusion-rpi-setup/issues/13
 
-Linux 4.19 will soon be the new OS, but it seems to have new or changed clock stretching problems with these BCM SoC. I need to try and do away with I2C clock stretching. I am going to try interleaving the buffer returned with the receive event, so the user will have to work with it befor the next receive event. The interleaving buffer will need to be added to the twi1.c lib file (e.g., a core file that is complex).
+Linux 4.19 will soon be the new OS, but it seems to have new or changed clock stretching problems with these BCM SoC. I need to try and do away with I2C clock stretching. I am going to try interleaving the buffer returned with the receive event, so the user will have to work with it befor the next receive event. The interleaving buffer will need to be added to the twi1.c lib file (e.g., a core file that is complex). While I was struggling with the SMBus, the Linux gurus are dealing with never-ending networking issues. 
+
+https://news.ycombinator.com/item?id=20205566
+
+How long before these updates are on the R-Pi? I don't know, but I do know that the R-Pi and Linux is not my product, and I will not provide support for them. The R-Pi will be the customer's computer, and they are responsible for keeping it up to data and making it work on their network if that sounds like attitude then sorry, guess I struggled with SMBus for too long.
 
 
 ## ^4 Bootload Speed

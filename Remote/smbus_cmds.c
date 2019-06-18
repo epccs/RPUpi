@@ -57,7 +57,7 @@ void handle_smbus_receive(void)
         {fnRdMgrAddrQuietly, fnWtMgrAddr, fnRdBootldAddr, fnWtBootldAddr, fnRdShtdnDtct, fnWtShtdnDtct, fnRdStatus, fnWtStatus},
         {fnWtArduinMode, fnRdArduinMode, fnNull, fnNull, fnNull, fnNull, fnNull, fnNull},
         {fnNull, fnNull, fnNull, fnNull, fnNull, fnNull, fnNull, fnNull},
-        {fnStartTestMode, fnEndTestMode, fnNull, fnNull, fnNull, fnNull, fnNull, fnNull}
+        {fnStartTestMode, fnEndTestMode, fnRdXcvrCntlInTestMode, fnWtXcvrCntlInTestMode, fnNull, fnNull, fnNull, fnNull}
     };
 
     int numBytes = smbus_has_numBytes_to_handle; // place value on stack so it will go away when done.

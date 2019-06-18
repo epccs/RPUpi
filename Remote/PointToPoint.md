@@ -22,7 +22,7 @@ picocom -b 38400 /dev/ttyUSB0
 That was silly since i2c-debug will read the RPUbus address over I2C and cause the manager to send a normal mode (e.g., point to multi-point) on the DTR pair. 
 
 
-## Cmd 64 from a Raspberry Pi set p2p mode
+## Cmd 16 from a Raspberry Pi set p2p mode
 
 An R-Pi host can do it with SMBus, lets try with two RPUpi boards.
 
