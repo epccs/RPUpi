@@ -7,6 +7,7 @@ This shows the setup and methods used for evaluation of RPUpi.
 
 # Table Of Contents:
 
+1. ^5 Test Mode
 1. ^5 Point To Point Mode
 1. ^4 I2C1 Checked With Raspberry Pi Zero
 1. ^4 SPI 2MHz Checked With Raspberry Pi Zero
@@ -18,6 +19,116 @@ This shows the setup and methods used for evaluation of RPUpi.
 1. ^2 Clearance Between Pi and Plugable
 1. ^1 Vertical Mounting
 1. ^0 Mounting
+
+
+## ^5 Test Mode
+
+The test mode commands from an RPUno's I2C running i2c-test
+
+```
+/1/iaddr 41
+{"address":"0x29"}
+/1/ibuff 48,1
+{"txBuffer[2]":[{"data":"0x30"},{"data":"0x1"}]}
+/1/iread? 2
+{"rxBuffer":[{"data":"0x30"},{"data":"0x1"}]}
+/1/ibuff 49,1
+{"txBuffer[2]":[{"data":"0x31"},{"data":"0x1"}]}
+/1/iread? 2
+{"rxBuffer":[{"data":"0x31"},{"data":"0x15"}]}
+/1/ibuff 48,1
+{"txBuffer[2]":[{"data":"0x30"},{"data":"0x1"}]}
+/1/iread? 2
+{"rxBuffer":[{"data":"0x30"},{"data":"0x1"}]}
+/1/ibuff 50,255
+{"txBuffer[2]":[{"data":"0x32"},{"data":"0xFF"}]}
+/1/iread? 2
+{"rxBuffer":[{"data":"0x32"},{"data":"0x22"}]}
+/1/ibuff 51,38
+{"txBuffer[2]":[{"data":"0x33"},{"data":"0x26"}]}
+/1/iread? 2
+{"rxBuffer":[{"data":"0x33"},{"data":"0x26"}]}
+```
+
+The test mode commands from an RPUno's I2C running i2c-test on the SMBus interface.
+
+```
+/0/id?
+{"id":{"name":"I2Cdebug^1","desc":"RPUno (14140^9) Board /w atmega328p","avr-gcc":"5.4.0"}}
+/0/iscan?
+{"scan":[{"addr":"0x2A"}]}
+/0/iaddr 42
+{"address":"0x2A"}
+/0/ibuff 48,1
+{"txBuffer[2]":[{"data":"0x30"},{"data":"0x1"}]}
+/0/iwrite
+{"returnCode":"success"}
+/0/ibuff 48
+{"txBuffer[1]":[{"data":"0x30"}]}
+/0/iread? 2
+{"rxBuffer":[{"data":"0x30"},{"data":"0x1"}]}
+/0/ibuff 49,1
+{"txBuffer[2]":[{"data":"0x31"},{"data":"0x1"}]}
+/0/iwrite
+{"returnCode":"success"}
+/0/ibuff 49
+{"txBuffer[1]":[{"data":"0x31"}]}
+/0/iread? 2
+{"rxBuffer":[{"data":"0x31"},{"data":"0x15"}]}
+/0/ibuff 48,1
+{"txBuffer[2]":[{"data":"0x30"},{"data":"0x1"}]}
+/0/iwrite
+{"returnCode":"success"}
+/0/ibuff 48
+{"txBuffer[1]":[{"data":"0x30"}]}
+/0/iread? 2
+{"rxBuffer":[{"data":"0x30"},{"data":"0x1"}]}
+/0/ibuff 50,255
+{"txBuffer[2]":[{"data":"0x32"},{"data":"0xFF"}]}
+/0/iwrite
+{"returnCode":"success"}
+/0/ibuff 50
+{"txBuffer[1]":[{"data":"0x32"}]}
+/0/iread? 2
+{"rxBuffer":[{"data":"0x32"},{"data":"0x22"}]}
+/0/ibuff 51,38
+{"txBuffer[2]":[{"data":"0x33"},{"data":"0x26"}]}
+/0/iwrite
+{"returnCode":"success"}
+/0/ibuff 51
+{"txBuffer[1]":[{"data":"0x33"}]}
+/0/iread? 2
+{"rxBuffer":[{"data":"0x33"},{"data":"0x26"}]}
+```
+
+The SMBus test mode commands from a R-Pi Zero mounted on the RPUpi itself.
+
+```
+>>> import smbus
+>>> bus = smbus.SMBus(1)
+>>> bus.write_i2c_block_data(42, 0, [255])
+>>> bus.read_i2c_block_data(42, 0, 2)
+[0, 50]
+>>> bus.write_i2c_block_data(42, 48, [1])
+>>> print(bus.read_i2c_block_data(42, 48, 2))
+[48, 1]
+>>> bus.write_i2c_block_data(42, 49, [1])
+>>> print(bus.read_i2c_block_data(42, 49, 2))
+[49, 21]
+>>> bus.write_i2c_block_data(42, 48, [1])
+>>> print(bus.read_i2c_block_data(42, 48, 2))
+[48, 1]
+>>> bus.write_i2c_block_data(42, 50, [255])
+>>> print(bus.read_i2c_block_data(42, 50, 2))
+[50, 34]
+>>> bus.write_i2c_block_data(42, 51, [38])
+>>> print(bus.read_i2c_block_data(42, 51, 2))
+[51, 38]
+>>> bus.write_i2c_block_data(42, 49, [1])
+>>> print(bus.read_i2c_block_data(42, 49, 2))
+[49, 21]
+>>> exit()
+```
 
 
 ## ^5 Point To Point Mode

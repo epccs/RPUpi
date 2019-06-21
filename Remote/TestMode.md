@@ -8,9 +8,6 @@
 51. set trancever control bits durring test_mode, e.g. 0b00101010 is TX_nRE = 1, TX_DE =0, DTR_nRE =1, DTR_DE = 0, RX_nRE =1, RX_DE = 0.
 
 
-
-
-
 ## Cmd 48 from a controller /w i2c-debug set transceiver test mode
 
 Set test_mode, use the bootload port interface since the RPUbus transceivers are turned off.
@@ -29,15 +26,15 @@ on the second I2C channel that is for SMBus's i2c block commands
 
 ``` 
 picocom -b 38400 /dev/ttyUSB0
-/1/iaddr 42
+/0/iaddr 42
 {"address":"0x2A"}
-/1/ibuff 48,1
+/0/ibuff 48,1
 {"txBuffer[2]":[{"data":"0x30"},{"data":"0x1"}]}
-/1/iwrite
+/0/iwrite
 {"returnCode":"success"}
-/1/ibuff 48
-{"txBuffer[2]":[{"data":"0x30"}]}
-/1/iread? 2
+/0/ibuff 48
+{"txBuffer[1]":[{"data":"0x30"}]}
+/0/iread? 2
 {"rxBuffer":[{"data":"0x30"},{"data":"0x1"}]}
 ```
 
@@ -101,11 +98,11 @@ data returned is the recoverd trancever control bits: 0:0:TX_nRE:TX_DE:DTR_nRE:D
 
 ``` 
 picocom -b 38400 /dev/ttyUSB0
-/2/iaddr 41
+/1/iaddr 41
 {"address":"0x29"}
-/2/ibuff 49,1
+/1/ibuff 49,1
 {"txBuffer[2]":[{"data":"0x31"},{"data":"0x1"}]}
-/2/iread? 2
+/1/iread? 2
 {"rxBuffer":[{"data":"0x31"},{"data":"0x15"}]}
 ``` 
 
@@ -113,15 +110,15 @@ on the second I2C channel that is for SMBus's i2c block commands
 
 ``` 
 picocom -b 38400 /dev/ttyUSB0
-/1/iaddr 42
+/0/iaddr 42
 {"address":"0x2A"}
-/1/ibuff 49,1
+/0/ibuff 49,1
 {"txBuffer[2]":[{"data":"0x31"},{"data":"0x1"}]}
-/1/iwrite
+/0/iwrite
 {"returnCode":"success"}
-/1/ibuff 49
-{"txBuffer[2]":[{"data":"0x31"}]}
-/1/iread? 2
+/0/ibuff 49
+{"txBuffer[1]":[{"data":"0x31"}]}
+/0/iread? 2
 {"rxBuffer":[{"data":"0x31"},{"data":"0x15"}]}
 ``` 
 
@@ -162,23 +159,23 @@ picocom -b 38400 /dev/ttyUSB0
 /1/ibuff 50,255
 {"txBuffer[2]":[{"data":"0x32"},{"data":"0xFF"}]}
 /1/iread? 2
-{"rxBuffer":[{"data":"0x32"},{"data":"0xTBD"}]}
+{"rxBuffer":[{"data":"0x32"},{"data":"0x22"}]}
 ``` 
 
 on the second I2C channel that is for SMBus's i2c block commands
 
 ``` 
 picocom -b 38400 /dev/ttyUSB0
-/1/iaddr 42
+/0/iaddr 42
 {"address":"0x2A"}
-/1/ibuff 50,255
+/0/ibuff 50,255
 {"txBuffer[2]":[{"data":"0x32"},{"data":"0xFF"}]}
-/1/iwrite
+/0/iwrite
 {"returnCode":"success"}
-/1/ibuff 50
-{"txBuffer[2]":[{"data":"0x32"}]}
-/1/iread? 2
-{"rxBuffer":[{"data":"0x32"},{"data":"0xTBD"}]}
+/0/ibuff 50
+{"txBuffer[1]":[{"data":"0x32"}]}
+/0/iread? 2
+{"rxBuffer":[{"data":"0x32"},{"data":"0x22"}]}
 ```
 
 
@@ -195,7 +192,7 @@ bus = smbus.SMBus(1)
 # end the test_mode data byte is replaced with the recoverd trancever control
 bus.write_i2c_block_data(42, 50, [255])
 print(bus.read_i2c_block_data(42, 50, 2))
-[50, TBD]
+[50, 34]
 ``` 
 
 
@@ -219,20 +216,20 @@ on the second I2C channel that is for SMBus's i2c block commands
 
 ``` 
 picocom -b 38400 /dev/ttyUSB0
-/1/iaddr 42
+/0/iaddr 42
 {"address":"0x2A"}
-/1/ibuff 51,38
+/0/ibuff 51,38
 {"txBuffer[2]":[{"data":"0x33"},{"data":"0x26"}]}
-/1/iwrite
+/0/iwrite
 {"returnCode":"success"}
-/1/ibuff 50
-{"txBuffer[2]":[{"data":"0x33"}]}
-/1/iread? 2
+/0/ibuff 51
+{"txBuffer[1]":[{"data":"0x33"}]}
+/0/iread? 2
 {"rxBuffer":[{"data":"0x33"},{"data":"0x26"}]}
 ```
 
 
-## Cmd 50 from a Raspberry Pi read trancever control bits
+## Cmd 51 from a Raspberry Pi read trancever control bits
 
 Set trancever control bits (0:0:TX_nRE:TX_DE:DTR_nRE:DTR_DE:RX_nRE:RX_DE) durring test_mode with an R-Pi over SMBus.
 

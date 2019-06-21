@@ -109,7 +109,7 @@ void fnRdMgrAddr(uint8_t* i2cBuffer)
         // If the local host is active then broadcast on DTR pair
         uart_started_at = millis();
         uart_output = RPU_NORMAL_MODE;
-        printf("%c", uart_output); 
+        printf("%c%c", uart_output, ( (~uart_output & 0x0A) << 4 | (~uart_output & 0x50) >> 4 ) ); 
         uart_has_TTL = 1; // causes host_is_foreign to be false
     }
     else 
@@ -118,7 +118,7 @@ void fnRdMgrAddr(uint8_t* i2cBuffer)
             // If the bootloader_started has not timed out yet broadcast on DTR pair
             uart_started_at = millis();
             uart_output = RPU_NORMAL_MODE;
-            printf("%c", uart_output); 
+            printf("%c%c", uart_output, ( (~uart_output & 0x0A) << 4 | (~uart_output & 0x50) >> 4 ) ); 
             uart_has_TTL = 0; // causes host_is_foreign to be true, so local DTR/RTS is not accepted
         } 
         else
@@ -205,7 +205,7 @@ void fnWtArduinMode(uint8_t* i2cBuffer)
         {
             uart_started_at = millis();
             uart_output = RPU_ARDUINO_MODE;
-            printf("%c", uart_output); 
+            printf("%c%c", uart_output, ( (~uart_output & 0x0A) << 4 | (~uart_output & 0x50) >> 4 ) ); 
             uart_has_TTL = 1; // causes host_is_foreign to be false
             arduino_mode_started = 1; // it is cleared by check_uart where arduino_mode is set
             arduino_mode = 0; // system wide state is set by check_uart when RPU_ARDUINO_MODE seen
@@ -243,7 +243,7 @@ void fnStartTestMode(uint8_t* i2cBuffer)
         {
             uart_started_at = millis();
             uart_output = RPU_START_TEST_MODE;
-            printf("%c", uart_output); 
+            printf("%c%c", uart_output, ( (~uart_output & 0x0A) << 4 | (~uart_output & 0x50) >> 4 ) ); 
             uart_has_TTL = 1; // causes host_is_foreign to be false
             test_mode_started = 1; // it is cleared by check_uart where test_mode is set
         } 
@@ -270,7 +270,7 @@ void fnEndTestMode(uint8_t* i2cBuffer)
             digitalWrite(DTR_nRE, LOW); 
             uart_started_at = millis();
             uart_output = RPU_END_TEST_MODE;
-            printf("%c", uart_output); 
+            printf("%c%c", uart_output, ( (~uart_output & 0x0A) << 4 | (~uart_output & 0x50) >> 4 ) ); 
             uart_has_TTL = 1; // causes host_is_foreign to be false
             test_mode_started = 1; // it is cleared by check_uart where test_mode is also cleared
             i2cBuffer[1] = transceiver_state; // replace the data byte with the transceiver_state.

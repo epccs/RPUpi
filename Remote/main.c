@@ -75,11 +75,15 @@ void setup(void)
     test_mode = 0;
     transceiver_state = 0;
     
-    //from smbus_cmds.h
-    smbus_has_numBytes_to_handle = 0; 
+    // from smbus_cmds.h
+    smbus_has_numBytes_to_handle = 0;
+    
+    // from dtr_transmition.h
+    uart_previous_byte = 0;
+    uart_output = 0;
 
     //Timer0 Fast PWM mode, Timer1 & Timer2 Phase Correct PWM mode.
-    initTimers(); 
+    initTimers();
 
     /* Initialize UART, it returns a pointer to FILE so redirect of stdin and stdout works*/
     stdout = stdin = uartstream0_init(BAUD);
