@@ -227,13 +227,19 @@ void check_shutdown(void)
         }
     }
     else
-        if (!shutdown_detected)
+        if (!shutdown_detected) 
         { 
+            // I2C cmd set shutdown_started =1 and set shutdown_detected = 0
+            // but if it is a manual event it can have a debounce time
             if( !digitalRead(SHUTDOWN) ) 
             {
+                pinMode(SHUTDOWN, OUTPUT);
+                digitalWrite(SHUTDOWN, LOW);
                 pinMode(LED_BUILTIN, OUTPUT);
                 digitalWrite(LED_BUILTIN, HIGH);
-                shutdown_detected = 1; // clear when reading with I2C command 4
+                shutdown_detected = 0; // set after SHUTDOWN_TIME timer runs
+                shutdown_started = 1; // it is cleared after SHUTDOWN_TIME timer runs
+                shutdown_started_at = millis();
             }
         }
 }
