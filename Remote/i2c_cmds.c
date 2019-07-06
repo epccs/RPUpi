@@ -292,7 +292,7 @@ void fnRdXcvrCntlInTestMode(uint8_t* i2cBuffer)
 {
     if (test_mode)
     {
-        i2cBuffer[1] = ( (digitalRead(TX_nRE)<<5) | (digitalRead(TX_DE)<<4) | (digitalRead(DTR_nRE)<<3) | (digitalRead(DTR_DE)<<2) | (digitalRead(RX_nRE)<<1) | (digitalRead(RX_DE)) ); 
+        i2cBuffer[1] = ( (digitalRead(HOST_nRTS)<<7) | (digitalRead(HOST_nCTS)<<6) | (digitalRead(TX_nRE)<<5) | (digitalRead(TX_DE)<<4) | (digitalRead(DTR_nRE)<<3) | (digitalRead(DTR_DE)<<2) | (digitalRead(RX_nRE)<<1) | (digitalRead(RX_DE)) ); 
     }
     else 
     {
@@ -305,10 +305,9 @@ void fnWtXcvrCntlInTestMode(uint8_t* i2cBuffer)
 {
     if (test_mode)
     {
-        // clean up for echo, user should not use bits 6 and 7 but if they do.
-        i2cBuffer[1] = (i2cBuffer[1] & 0x3F);
-        
         // mask the needed bit and shift it to position zero so digitalWrite can move it to where it needs to go.
+        digitalWrite(HOST_nRTS, ( (i2cBuffer[1] & (1<<7))>>7 ) );
+        digitalWrite(HOST_nCTS, ( (i2cBuffer[1] & (1<<6))>>6 ) );
         digitalWrite(TX_nRE, ( (i2cBuffer[1] & (1<<5))>>5 ) );
         digitalWrite(TX_DE, ( (i2cBuffer[1] & (1<<4))>>4 ) );
         digitalWrite(DTR_nRE, ( (i2cBuffer[1] & (1<<3))>>3 ) ); // setting this will blind others state change but I need it for testing

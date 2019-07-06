@@ -157,8 +157,8 @@ void check_uart(void)
             }
             if (input == RPU_START_TEST_MODE) 
             {
-                // fill transceiver_state with 0:0:TX_nRE:TX_DE:DTR_nRE:DTR_DE:RX_nRE:RX_DE
-                transceiver_state =   (digitalRead(TX_nRE)<<5) | (digitalRead(TX_DE)<<4) | (digitalRead(DTR_nRE)<<3) | (digitalRead(DTR_DE)<<2) | (digitalRead(RX_nRE)<<1) | (digitalRead(RX_DE));
+                // fill transceiver_state with HOST_nRTS:HOST_nCTS:TX_nRE:TX_DE:DTR_nRE:DTR_DE:RX_nRE:RX_DE
+                transceiver_state = (digitalRead(HOST_nRTS)<<7) | (digitalRead(HOST_nCTS)<<6) |  (digitalRead(TX_nRE)<<5) | (digitalRead(TX_DE)<<4) | (digitalRead(DTR_nRE)<<3) | (digitalRead(DTR_DE)<<2) | (digitalRead(RX_nRE)<<1) | (digitalRead(RX_DE));
                 
                 // turn off transceiver controls except the DTR recevior
                 digitalWrite(TX_nRE, HIGH);
@@ -175,6 +175,8 @@ void check_uart(void)
             if (input == RPU_END_TEST_MODE) 
             {
                 // recover transceiver controls
+                digitalWrite(HOST_nRTS, ( (transceiver_state>>7) & 0x01) );
+                digitalWrite(HOST_nCTS, ( (transceiver_state>>6) & 0x01) );
                 digitalWrite(TX_nRE, ( (transceiver_state>>5) & 0x01) );
                 digitalWrite(TX_DE, ( (transceiver_state>>4) & 0x01) );
                 // DTR_nRE is always active
