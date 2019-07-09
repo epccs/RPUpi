@@ -179,8 +179,13 @@ void check_uart(void)
                 digitalWrite(HOST_nCTS, ( (transceiver_state>>6) & 0x01) );
                 digitalWrite(TX_nRE, ( (transceiver_state>>5) & 0x01) );
                 digitalWrite(TX_DE, ( (transceiver_state>>4) & 0x01) );
-                // DTR_nRE is always active
-                // DTR_DE was made active when the I2C command ran fnEndTestMode()
+                // DTR_nRE is always active... but
+                digitalWrite(DTR_nRE, ( (transceiver_state>>3) & 0x01) );
+                // the I2C command fnEndTestMode() sets the DTR_TXD pin and turns on the UART... but
+                digitalWrite(DTR_TXD,HIGH); // strong pullup
+                pinMode(DTR_TXD,INPUT); // the DTR pair driver will see a weak pullup when UART starts
+                UCSR0B |= (1<<RXEN0)|(1<<TXEN0); // turn on UART
+                digitalWrite(DTR_DE, ( (transceiver_state>>2) & 0x01) );
                 digitalWrite(RX_nRE, ( (transceiver_state>>1) & 0x01) );
                 digitalWrite(RX_DE, ( (transceiver_state) & 0x01) );
 

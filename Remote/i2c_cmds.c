@@ -266,6 +266,9 @@ void fnEndTestMode(uint8_t* i2cBuffer)
     {
         if (!test_mode_started && test_mode)
         {
+            digitalWrite(DTR_TXD,HIGH); // strong pullup
+            pinMode(DTR_TXD,INPUT); // the DTR pair driver will see a weak pullup when UART starts
+            UCSR0B |= (1<<RXEN0)|(1<<TXEN0); // turn on UART
             digitalWrite(DTR_DE, HIGH); //DTR transceiver may have been turned off during the test
             digitalWrite(DTR_nRE, LOW); 
             uart_started_at = millis();
@@ -311,7 +314,13 @@ void fnWtXcvrCntlInTestMode(uint8_t* i2cBuffer)
         digitalWrite(TX_nRE, ( (i2cBuffer[1] & (1<<5))>>5 ) );
         digitalWrite(TX_DE, ( (i2cBuffer[1] & (1<<4))>>4 ) );
         digitalWrite(DTR_nRE, ( (i2cBuffer[1] & (1<<3))>>3 ) ); // setting this will blind others state change but I need it for testing
-        digitalWrite(DTR_DE, ( (i2cBuffer[1] & (1<<2))>>2 ) );
+        if ( (i2cBuffer[1] & (1<<2))>>2 ) // enabling the dtr driver in testmode needs to cause a transcever load on the dtr pair
+        {
+            UCSR0B &= ~( (1<<RXEN0)|(1<<TXEN0) ); // turn off UART 
+            pinMode(DTR_TXD,OUTPUT);
+            digitalWrite(DTR_TXD,LOW); // the DTR pair will be driven and load the transceiver 
+            digitalWrite(DTR_DE,  1); 
+        }
         digitalWrite(RX_nRE, ( (i2cBuffer[1] & (1<<1))>>1 ) );
         digitalWrite(RX_DE,  (i2cBuffer[1] & 1) );
     }
