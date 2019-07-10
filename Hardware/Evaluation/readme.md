@@ -7,6 +7,7 @@ This shows the setup and methods used for evaluation of RPUpi.
 
 # Table Of Contents:
 
+1. ^5 Test Mode Self-Test Style From RPUno
 1. ^5 Test Mode
 1. ^5 Point To Point Mode
 1. ^4 I2C1 Checked With Raspberry Pi Zero
@@ -19,6 +20,69 @@ This shows the setup and methods used for evaluation of RPUpi.
 1. ^2 Clearance Between Pi and Plugable
 1. ^1 Vertical Mounting
 1. ^0 Mounting
+
+
+## ^5 Test Mode Self-Test Style From RPUno
+
+If the RPUpi was to be integrated onto an RPUno I would want it tested with a self test.
+
+https://github.com/epccs/RPUno/tree/master/XcvrTest
+
+Done (with RPUno^9), but that was a lot of effort, the good news is that it should mostly copy to my other boards which I plan to gradually integrate this into (and then ditch all sorts of headers). The 40 pin R-Pi interface will be my path forward, I have grown comfortable with what the R-Pi foundation is doing. 
+
+```
+picocom -b 38400 /dev/ttyUSB0
+picocom v2.2
+...
+Terminal ready
+RPUpi Transceiver Test date: Jul  9 2019
+avr-gcc --version: 5.4.0
+I2C provided address 0x31 from manager
+SMBUS cmd 0 provided address 49 from manager
+MISO loopback to MOSI == HIGH
+MISO loopback to MOSI == LOW
+SCK with Shutdown loopback == HIGH
+I2C Shutdown cmd is clean {5, 1}
+SCK with Shutdown loopback == LOW
+I2C Shutdown Detect cmd is clean {4, 1}
+
+Testmode: default trancever control bits
+I2C Start Test Mode cmd was clean {48, 1}
+I2C End Test Mode hex is Xcvr cntl bits {49, 0xD5}
+Testmode: read  Xcvr cntl bits {50, 0xE2}
+PWR_I /w no load using INTERNAL_1V1: 0.023 A
+
+Testmode: nCTS loopback to nRTS
+I2C Start Test Mode cmd was clean {48, 1}
+I2C End Test Mode hex is Xcvr cntl bits {49, 0xD5}
+Testmode: set  Xcvr cntl bits {51, 0xA2}
+Testmode: read  Xcvr cntl bits {50, 0x22}
+
+Testmode: Enable TX pair driver
+I2C Start Test Mode cmd was clean {48, 1}
+I2C End Test Mode hex is Xcvr cntl bits {49, 0xD5}
+Testmode: set  Xcvr cntl bits {51, 0xF2}
+Testmode: read  Xcvr cntl bits {50, 0xF2}
+PWR_I /w TX pair load: 0.035 A
+
+Testmode: Enable TX & RX(loopback) pair drivers
+I2C Start Test Mode cmd was clean {48, 1}
+I2C End Test Mode hex is Xcvr cntl bits {49, 0xD5}
+Testmode: set  Xcvr cntl bits {51, 0xD1}
+Testmode: read  Xcvr cntl bits {50, 0xD1}
+PWR_I /w TX and RX pairs loaded: 0.050 A
+RX loopback checked
+
+Testmode: Enable DTR pair driver
+I2C Start Test Mode cmd was clean {48, 1}
+I2C End Test Mode hex is Xcvr cntl bits {49, 0xD5}
+Testmode: set  Xcvr cntl bits {51, 0xE6}
+Testmode: read  Xcvr cntl bits {50, 0xE6}
+PWR_I /w DTR pair load: 0.035 A
+[PASS]
+```
+
+![RPUpi^5 Self-Test Style](./16197^5,SelfTestStyleWithRPUno^9.jpg "RPUpi^5 Self-Test Style With RPUno^9")
 
 
 ## ^5 Test Mode

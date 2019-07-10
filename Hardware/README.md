@@ -34,7 +34,7 @@ This board connects a Pi Zero [W] to a multi-drop serial bus and a control board
 ```
         If the Pi Zero bootloads its local board (the one under the RPUpi) then 
         the VIN power from the local board must not turn off after a reset 
-        (he defaut setup has been tested and works). 
+        (the defaut setup has been tested and works). 
  ```
 
 
@@ -51,9 +51,9 @@ This board connects a Pi Zero [W] to a multi-drop serial bus and a control board
 ![Status](./status_icon.png "RPUpi Status")
 
 ```
-        ^5  Done: Design, Layout, BOM, Review*, Order Boards, Assembly,
-            WIP: Testing,
-            Todo: Evaluation.
+        ^5  Done: Design, Layout, BOM, Review*, Order Boards, Assembly, Testing,
+            WIP: Evaluation.
+            Todo: 
             *during review the Design may change without changing the revision.
             AVR's nSS should goto R-Pi's nCE00 not nCE10.
 
@@ -70,15 +70,6 @@ This board connects a Pi Zero [W] to a multi-drop serial bus and a control board
             Run Manager at 5V to match trancever's.
             Remove 3V3 regulator, which is no longer needed.
             Change Q1..Q3 to use K1N. 
-
-        ^3  Done: Design, Layout, BOM, Review*, Order Boards, Assembly, Testing, Evaluation.
-            WIP: 
-            Todo: 
-            *during review the Design may change without changing the revision.
-            I2C added 182 Ohm between shield pins and bus manager
-            RS-422 Buffer has Power (power U3 with +3V3) 
-            Swaped U3E and U3F with U1E and U1F.
-            Through hole LED so it can be moved outside the enclosure.
 ```
 
 Debugging and fixing problems i.e. [Schooling](./Schooling/)
@@ -140,7 +131,7 @@ Y. | [BRD] [SMD] [HDR] [POL] [CAT5]
 
 # How To Use
 
-Your [Raspberry Pi] is your computer, you are the expert because I am not. Don't buy an RPUpi board and expect that I can help with your computer, I can not. So far I have found that SSH works and the AVR toolchain, so I am able to serial bootload the  ATmega328p, ATmega328pb, and ATmega1284p. I have tested SMBus and found it works but it does not do repeated starts or clock stretching, so let's not call it I2C. I have also tested SPI somewhat. The serial console program I use is picocom, the install package is built to do standard baud rates (e.g. 38.4k bps) so that is what I have been using. 
+Your [Raspberry Pi] is your computer, you are the expert because I am not. Don't buy an RPUpi board and expect that I can help with your computer, I can not. So far I have found that SSH works and the AVR toolchain, so I am able to serial bootload the  ATmega328p, ATmega328pb, and ATmega1284p. I have tested SMBus and found it works but it does not do clock stretching, so let's not call it I2C. I have also tested SPI somewhat. The serial console program I use is picocom, the install package is built to do standard baud rates (e.g. 38.4k bps) so that is what I have been using (250kbps may work with other programs). 
 
 [Raspberry Pi]: https://www.raspberrypi.org/forums/
 
@@ -156,20 +147,17 @@ Next, lets set things up to use an AVR at 5V. Using a buffer with IOFF for level
 
 ## ICSP
 
-[ArduinoISP] sketch on an [Uno] with an SPI level converter (not needed for ^4 since it is 5V) is the [ICSP] tool I use to program the bus manager with the [Host2Remote] firmware. I then plug the RPUpi onto a target board and load my application firmware (e.g. target [RPUno] can run [Solenoid] to control a [K3] board). The RPUpi's SBC host can communicate via serial with other target boards that have an [RPUadpt] or RPUpi. The additional boards will need the [Remote] firmware on their bus manager and have a unique rpu_bus address set in EEPROM.
+[ArduinoISP] sketch on an Uno or the [ICSP] tool is what I use to program the bus manager with the [Remote] firmware. I then plug the RPUpi onto a target board and load my application firmware (e.g. target [RPUno] can run [i2c-debug]). The RPUpi's SBC host can communicate via serial with other target boards that have an RPUBUS. The additional boards will need the [Remote] firmware (on there manager) to have a different bus address.
 
 [ArduinoISP]: https://github.com/arduino/Arduino/blob/master/build/shared/examples/11.ArduinoISP/ArduinoISP/ArduinoISP.ino
-[Uno]: https://www.adafruit.com/product/50
 [ICSP]: https://github.com/epccs/Driver/tree/master/ICSP
-[Host2Remote]: ../Host2Remote
-[Remote]: https://github.com/epccs/RPUadpt/tree/master/Remote
-[Solenoid]: https://github.com/epccs/RPUno/tree/master/Solenoid
-[K3]: https://github.com/epccs/Driver/tree/master/K3
-[RPUadpt]: https://github.com/epccs/RPUadpt
+[Remote]: https://github.com/epccs/RPUpi/tree/master/Remote
+[i2c-debug]: https://github.com/epccs/RPUno/tree/master/i2c-debug
+
 
 ## Pi Zero Setup 
 
-The Pi Zero is a Single Board Computer (SBC) running [Linux]. I use it as a network machine to run a toolchain at the network edge. It has enough memory and processing power for the AVR toolchain (and others that I have not tested). It also does self-hosted compiling for (e.g. compiles programs to run on itself) and has lots of applications and services (node.js, mosquitto...). My use is sort of like a headless test bench computer embedded next to the bare metal control boards, I daisy-chain its serial to each target I want to bootload. Is it IoT, no it is not, it is a classic control system (but it is headless). So far I interact with the target boards with an SSH session and then using picocom, I am less sure that is going to change with each passing year. 
+The Pi Zero is a Single Board Computer (SBC) running [Linux]. I use it as a network machine and to run a toolchain at the network edge. It has enough memory and processing power for the AVR toolchain (and others that I have not tested). It also does self-hosted compiling for (e.g. compiles programs to run on itself) and has lots of applications and services. My use is sort of like a headless test bench computer embedded next to the bare metal control boards, I daisy-chain the serial to each target I want to bootload. Is it IoT, no it is not, it is a classic control system (but it is headless), but I can interact with the target boards over an SSH session (e.g. in other words it does what IoT should). 
 
 [Linux]: ./Testing/linux.md
 
@@ -195,27 +183,27 @@ When the Pi's handshake lines are enabled the nRTS line is used to start a targe
 
 ## Full Duplex Serial Management
 
-The shield has a bus manager, through its example firmware is ongoing. It has access to enable/disable each transceiver receiver and/or driver. This means that each (or all) targets can be isolated from the serial bus, the implications are significant. The original intent was to allow boot loading with a point to point full duplex mode (e.g. target with optiboot/xboot and the host running avrdude). The reason Arduino Uno is amazing is that it allows boot loading a new executable binary image over a severely goofed up bare metal application, the rpubus tries to retain the nearly bulletproof upload. 
+The shield has a manager that can enable each transceiver's receiver and driver so that the targets can be isolated or connected from the serial bus; the implications are significant. The original intent was to allow boot loading with a point to point full duplex mode (e.g., target with optiboot/xboot and the host running avrdude). It supports boot loading a new executable binary image over a severely goofed up bare metal application; I have tried to retain the nearly bulletproof upload found with RS232 using optiboot and avrdude.
 
 
 ## Transceiver (RS-485)
 
-The transceivers used have a built-in fail-safe bias, which is a little complicated to explain, but it makes an undriven bus (e.g. 0V or the failed condition) a defined state (true or HIGH). That is if I turn off the transceiver driving the bus (only one should drive the bus at any time), it is guaranteed to be in a defined state (e.g. HIGH). I have set up the transceivers to automatically turn off the driver while the UART output is a true (since HIGH is its default value). That means the driver will automatically drive the bus only when data is sent, so nothing needs to be done in software to turn on or off the transceivers. The bus manager may override. 
+The transceivers used have a built-in fail-safe bias, which is a little complicated to explain, but it makes an undriven bus (e.g., 0V is the failed condition) a defined logic state (HIGH). That is if I turn off the transceiver driving the bus (only one should steer the bus at any time), it is guaranteed to be in a defined state (e.g., HIGH). I have set up the transceivers to automatically turn off the driver while the UART output is HIGH (its default value). That means the driver will automatically drive the bus only when data is sent, so nothing needs to be done in software to turn on or off the transceivers. The bus manager may override.
 
 ## SPI
 
-The SBC's SPI lines (MOSI, SCK, MISO, ^4 adds nSS) are interfaced through a 74LVC07A buffer. The lines MOSI, SCK, and nSS are powered from the SBC 3V3 power. When the SBC is powered off the IOFF feature of the buffer will hi-z its open collector output which will allow a pull-up to set the value on SCK and the MOSI line or allow the shield MCU to control them. 
+The SBC's SPI lines (MOSI, SCK, MISO, ^4 adds nSS) are interfaced through a 74LVC07A buffer. The lines MOSI, SCK, and nSS are powered from the SBC 3V3 power. When the SBC is powered off the IOFF feature of the buffer will hi-z its open collector output which will allow a pull-up to set the value on SCK and the MOSI line or allow the MCU to control them. 
 
 Known issues: RPUno has its SPI lines run to user connectors for digital control so make sure those are free if SPI is to be used.
 
 ## I2C
 
-The SBC has an SMBus port when it is running Linux, it is not actually I2C. It is not clear if anyone has ever done reliable I2C on a time-sharing operating system. The Raspberry Pi Zero has 1.8k pull-ups to 3.3V, and when it is powered down those resistors pull down the I2C lines and lock the bus. That is why the ^4 manager is an ATmega328pb. The second I2C port can talk to the SBC with SMBus commands, and the original I2C port can talk to the target.
+The SBC has an SMBus port when it is running Linux. The Raspberry Pi Zero has 1.8k pull-ups to 3.3V, and when it is powered down those resistors pull the I2C lines and lock the bus. That is why the ^4 manager has an ATmega328pb. The second I2C port can talk to the SBC with SMBus commands, and the original I2C port can talk to the target.
 
 
 ## SD
 
-SBC SD Card [corruption] seems to happen when the SD card is doing wear leveling operations at the time power is removed. It is possible with this setup to push the shutdown button and have that run a [Shutdown] script. In addition, the target can initiate a power down with [PwrMgt] which monitors power before killing power to the shield (VIN pin). The idea is that wear leveling will draw current somewhat randomly until all the page updates are done. The BCM2835 will be halted, and looping (it is checking one of the I2C pins) and using a steady current draw. So when the current draw is stable the wear leveling should be done and safe to disconnect the shield VIN.
+SBC SD Card [corruption] can happen when the SD card is doing wear leveling operations at the time power is removed. It is possible with this setup to push the shutdown button and have that run a [Shutdown] script. Also, the local programmable controller can initiate a power down with [PwrMgt] which monitors power before killing power to the shield (VIN pin). The idea is that wear leveling will draw current somewhat randomly until all the page updates are done. The BCM2835 will be halted, and looping (it is checking one of the I2C pins) and using a steady current draw. So when the current draw is stable, the wear leveling should be done and safe to disconnect the shield VIN.
 
 [Shutdown]: https://github.com/epccs/RPUpi/tree/master/Shutdown
 [PwrMgt]: https://github.com/epccs/RPUno/tree/master/PwrMgt
