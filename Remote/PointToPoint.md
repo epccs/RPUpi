@@ -2,7 +2,7 @@
 
 16..31 (Ox10..0x1F | 0b00010000..0b00011111)
 
-16. set arduino_mode which is the number of times LOCKOUT_DELAY and BOOTLOADER_ACTIVE last forever when the host RTS toggles active (should allow Arduino IDE to make a number of p2p connections to the bootload address)
+16. set arduino_mode 
 17. read arduino_mode
 
 ## Cmd 16 from a controller /w i2c-debug set p2p mode

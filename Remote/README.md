@@ -16,7 +16,7 @@ When nRTS (or nDTR on RPUadpt) are pulled active the bus manager will connect th
 
 Arduino Mode is a permanent bootload mode so that the Arduino IDE can connect to a specific address (e.g., point to point). It needs to be enabled by I2C or SMBus. The command will cause a byte to be sent on the DTR pair that sets the arduino_mode thus overriding the lockout timeout and the bootload timeout (e.g., lockout and bootload mode are everlasting).
 
-Test Mode. I2C command to swithch to test_mode (save trancever control values). I2C command to recover trancever control bits after test_mode. This isnot done, it is a work in progress.
+Test Mode. I2C command to swithch to test_mode (save trancever control values). I2C command to recover trancever control bits after test_mode.
 
 
 ## Firmware Upload
@@ -27,6 +27,7 @@ Use an ICSP tool connected to the bus manager (set the ISP_PORT in Makefile) run
 sudo apt-get install make git gcc-avr binutils-avr gdb-avr avr-libc avrdude
 git clone https://github.com/epccs/RPUpi/
 cd /RPUpi/Remote
+make
 make isp
 ...
 avrdude done.  Thank you.
@@ -65,12 +66,12 @@ There are two TWI interfaces one acts as an I2C slave and is used to connect wit
 
 [Point To Multi-Point]: ./PointToMultiPoint.md
 
-0. read the shields RPU_BUS address and activate normal mode (broadcast if localhost_active).
-1. set the shields RPU_BUS address and write it to EEPROM.
+0. read the RPU_BUS address and activate normal mode (broadcast if localhost_active).
+1. set the RPU_BUS address and write it to EEPROM.
 2. read the address sent when DTR/RTS toggles.
 3. write the address that will be sent when DTR/RTS toggles
-4. read RPUpi shutdown (the ICP1 pin has a weak pull-up and a momentary switch).
-5. set RPUpi shutdown (pull down ICP1 for SHUTDOWN_TIME to cause the host to halt).
+4. read shutdown switch (the ICP1 pin has a weak pull-up and a momentary switch).
+5. set shutdown switch (pull down ICP1 for SHUTDOWN_TIME to cause the host to halt).
 6. reads status bits [0:DTR readback timeout, 1:twi transmit fail, 2:DTR readback not match, 3:host lockout].
 7. writes (or clears) status.
 
@@ -85,8 +86,10 @@ reserved (for PWR_I, PWR_V reading) 32..47 (Ox20..0x2F | 0b10000000..0b10111111)
 
 test_mode commands 48..63 (Ox30..0x3F | 0b00110000..0b00111111)
 
-48. save trancever control bits 0:0:TX_nRE:TX_DE:DTR_nRE:DTR_DE:RX_nRE:RX_DE for test_mode.
-49. recover trancever control bits after test_mode, and return it value.
+48. save trancever control bits HOST_nRTS:HOST_nCTS:TX_nRE:TX_DE:DTR_nRE:DTR_DE:RX_nRE:RX_DE for test_mode.
+49. recover trancever control bits after test_mode.
+50. read trancever control bits durring test_mode, e.g. 0b11101010 is HOST_nRTS = 1, HOST_nCTS =1, DTR_nRE =1, TX_nRE = 1, TX_DE =0, DTR_nRE =1, DTR_DE = 0, RX_nRE =1, RX_DE = 0.
+51. set trancever control bits durring test_mode, e.g. 0b11101010 is HOST_nRTS = 1, HOST_nCTS =1, TX_nRE = 1, TX_DE =0, DTR_nRE =1, DTR_DE = 0, RX_nRE =1, RX_DE = 0.
 
 [Test Mode]: ./TestMode.md
 
