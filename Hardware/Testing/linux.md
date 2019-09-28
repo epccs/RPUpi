@@ -259,12 +259,15 @@ chmod u+x mkeys
 # and added the public key to the authorized file 
 # now try to log in, and it should not ask for a password since it used keys
 ssh localhost
-# if that works one of the putty tools can convert the private key for use on Windows.
-# mkeys can also place the public key on the authorized file of other Linux machines, e.g. conversion is a 
-# Ubuntu 16.04 and it's zeroconf seems to work (try with a ping first).
+# mkeys can also place the public key on the authorized file of other Linux machines, 
+# e.g., on conversion.local with Ubuntu 18.04 and zeroconf I have differet keys, so 
+# I need to place my public keys on that machine to auto login. 
 ~/bin/mkeys conversion.local
+# now I can automatically login with keys rather than passwords
 ssh conversion.local
 ```
+
+Windows 10 has its own version of OpenSSH, so putty is not needed.
 
 
 ## Samba
@@ -378,24 +381,9 @@ picocom -b 38400 /dev/ttyAMA0
 sudo apt-get install git make gcc-avr binutils-avr gdb-avr avr-libc avrdude
 ```
 
-Link the avr includes to the Samba share so I can use intelliSense with VSC from Windows.
+[VSCode Remote] with IntelliSense runs on R-Pi[3b|3b+:4] (ARMv7) from Windows or Linux (x86_64).
 
-```
-# unfortunately, the toolchain does not have a group my user name can be part of
-# so I will just copy the files I need for intelliSense
-mkdir ~/Samba/lib
-mkdir ~/Samba/lib/avr-libc
-#  copy -r(ecursively) <target> <to_target_name>
-cp -r /usr/lib/avr/include /home/rsutherland/Samba/lib/avr-libc/include
-cp -r /usr/lib/gcc/avr /home/rsutherland/Samba/lib/gcc-avr
-# I also like a copy of avrdude.conf
-mkdir ~/Samba/lib/etc
-cp /etc/avrdude.conf /home/rsutherland/Samba/lib/etc/avrdude.conf
-```
-
-Setup intelliSense with Visual Studio Code 
-
-I use a samba share so VSC can see the includes on my Win 10 machine. Then copy avr-libc includes from /usr/lib/avr/include, and gcc-avr includes from /usr/lib/gcc/avr/5.4.0/include.
+[VSCode Remote]: https://github.com/Microsoft/vscode-remote-release
 
 c_cpp_properties.json in the .vscode folder.
 
@@ -404,25 +392,25 @@ c_cpp_properties.json in the .vscode folder.
     "configurations": [
         {
             "name": "AVR",
-            "includePath": [
-                "${workspaceRoot}",
-                "Y:/lib/avr-libc/include",
-                "Y:/lib/gcc-avr/5.4.0/include"
-            ],
-            "defines": [],
             "intelliSenseMode": "clang-x64",
+            "compilerPath": "/usr/bin/avr-gcc",
+            "includePath": [
+                "${workspaceFolder}",
+                "/usr/lib/avr/include",
+                "/usr/lib/gcc/avr/5.4.0/include"
+            ],
+            "forcedInclude": [ "${workspaceFolder}/lib/Atmel.ATmega_DFP.1.3.300.atpack/include/avr/iom324pb.h" ],
+            "defines": ["__AVR_ATmega324PB__"],
+            "cStandard": "c11",
+            "cppStandard": "c++17",
             "browse": {
-                "path": [
-                    "${workspaceRoot}"
-                ],
+                "path": [ "${workspaceFolder}" ],
                 "limitSymbolsToIncludedHeaders": true,
                 "databaseFilename": ""
-            },
-            "cStandard": "c11",
-            "cppStandard": "c++17"
+            }
         }
     ],
-    "version": 3
+    "version": 4
 }
 ```
 

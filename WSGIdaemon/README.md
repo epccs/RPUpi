@@ -2,7 +2,19 @@
 
 ## ToDo
 
+Improve documentation and references
+
+https://www.fullstackpython.com/wsgi-servers.html
+
 Test on the R-Pi, so far this has only been used on a Ubuntu 18.04 desktop (using an RPUftdi shield).
+
+look at [modern-web-development] ideas
+
+[modern-web-development]: https://www.vrk.dev/2019/07/11/why-is-modern-web-development-so-complicated-a-long-yet-hasty-explanation-part-1/
+
+also look at way to trap a hangup signal
+
+https://hackaday.com/2019/08/26/linux-fu-its-a-trap/
 
 
 ## Overview
@@ -150,3 +162,6 @@ CORS can be turned off in Firefox with this extension (check if a callback works
 
 * Cors Everywhere https://github.com/spenibus/cors-everywhere-firefox-addon
 
+The Same-Origin Policy
+
+* http://www.aosabook.org/en/500L/the-same-origin-policy.html

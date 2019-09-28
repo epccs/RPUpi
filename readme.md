@@ -14,8 +14,6 @@ A [RPUadpt] shield is also available if the host SBC does not use the Raspberry 
 [RPUadpt]: https://github.com/epccs/RPUadpt
 [RPUftdi]: https://github.com/epccs/RPUftdi
 
-[Forum](https://rpubus.org/bb/viewforum.php?f=8)
-
 ## Status
 
 [Options](./Hardware#bill-of-materials)
