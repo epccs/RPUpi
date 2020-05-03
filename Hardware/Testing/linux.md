@@ -29,6 +29,10 @@ Download the latest [Raspbin] image.
 Download [Etcher] (note, I have only used this on Ubuntu)
         
 [Etcher]: https://etcher.io/
+
+or new Pi [Imager]
+
+[Imager]: https://www.raspberrypi.org/downloads/
         
 Using Ubuntu 18.04 (on 17.04 I installed libgconf-2-4 to allow etcher to run). Etcher is an application image so it does not install anything it just needs permission to run.
 
@@ -62,11 +66,12 @@ Put it in the Pi and boot... On my network I can then ssh pi@raspberrypi.local w
 
 ```
 # Well fish, I need to remove the old host and IP from the past setup 
-[ssh-keygen -f "/home/rsutherland/.ssh/known_hosts" -R raspberrypi.local]
-[ssh-keygen -f "/home/rsutherland/.ssh/known_hosts" -R 192.168.0.21]
-[ssh-keygen -f "/home/rsutherland/.ssh/known_hosts" -R 192.168.0.22]
-[ssh-keygen -f "/home/rsutherland/.ssh/known_hosts" -R pi1.local]
-[ssh-keygen -f "/home/rsutherland/.ssh/known_hosts" -R 192.168.4.5]
+[cd ~]
+[ssh-keygen -f ".ssh/known_hosts" -R raspberrypi.local]
+[ssh-keygen -f ".ssh/known_hosts" -R 192.168.0.21]
+[ssh-keygen -f ".ssh/known_hosts" -R 192.168.0.22]
+[ssh-keygen -f ".ssh/known_hosts" -R pi1.local]
+[ssh-keygen -f ".ssh/known_hosts" -R 192.168.4.5]
 
 ssh pi@raspberrypi.local
 
@@ -250,6 +255,7 @@ sudo nano /etc/ssh/sshd_config
 cd bin
 wget https://raw.githubusercontent.com/epccs/RPUpi/master/Hardware/Testing/mkeys
 chmod u+x mkeys
+cd ~
 # note if you have a private key (e.g. id_dsa or id_rsa file) 
 # and you want to use it then place it in the .ssh folder now
 [scp rsutherland@leek.local:.ssh/id_dsa .ssh/id_dsa]
@@ -294,14 +300,15 @@ Add the share to the /etc/samba/[smb.conf] file.
 # allow linking /var/www, /usr/lib/avr/include, /usr/lib/gcc/avr
 # not secure? nothing about samba is secure 
 # I would not run samba on a macine that needs to be secure
-allow insecure wide links = yes
+# this is no longer needed when VScode remote is used
+#allow insecure wide links = yes
 
 # add this to the very end of the file
 [Samba]
 path = /home/rsutherland/Samba
 valid users = rsutherland
 read only = no
-wide links = yes
+#wide links = yes
 ```
 
 Restart Samba and check for errors.
